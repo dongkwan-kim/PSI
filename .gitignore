@@ -1,6 +1,8 @@
-
 # Created by https://www.gitignore.io/api/vim,code,macos,python,virtualenv,pycharm+all
 # Edit at https://www.gitignore.io/?templates=vim,code,macos,python,virtualenv,pycharm+all
+
+_*.py
+_test*
 
 ### Code ###
 .vscode/*
