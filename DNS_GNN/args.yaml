@@ -1,0 +1,19 @@
+DEFAULT: &DEFAULT
+  use_gpu: False  # todo
+  gpu_ids: [0]
+  num_gpus_total: 4
+  num_gpus_to_use: 1
+  seed: 42
+  verbose: 1
+  save_model: False
+  val_interval: 1
+  num_layers: 3
+
+DNS-FNTN-TEST:
+  <<: *DEFAULT
+  save_model: True
+  model_debug: False
+  dataset_debug: True
+  lambda_aux_x: 1.0
+  lambda_aux_e: 1.0
+  epochs: 2
