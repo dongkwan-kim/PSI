@@ -35,6 +35,10 @@ def get_extra_repr(model, important_args):
                       if a in model.__dict__])
 
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
 # Others
 
 def create_hash(o: dict):
@@ -66,5 +70,12 @@ def cprint_multi_lines(prefix, color, is_sorted=True, **kwargs):
         cprint("{}{}: {}".format(prefix, k, v), color)
 
 
-def count_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+def merge_or_update(old_dict: dict, new_dict: dict):
+    for k, v_new in new_dict.items():
+        if k in old_dict:
+            v_old = old_dict[k]
+            if type(v_new) == list and type(v_old) == list:
+                old_dict[k] = v_old + v_new
+            else:
+                old_dict[k] = v_new
+    return old_dict

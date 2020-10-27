@@ -17,6 +17,7 @@ from pytorch_lightning.core.lightning import LightningModule
 from arguments import get_args_key, get_args, pprint_args, get_args_hash
 from data import DNSDataModule
 from model import DNSNet
+from utils import merge_or_update
 
 
 class MainModel(LightningModule):
@@ -168,7 +169,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
         fast_dev_run=args.model_debug,
     )
     if trainer_given_kwargs:
-        trainer_kwargs.update(trainer_given_kwargs)
+        trainer_kwargs = merge_or_update(trainer_kwargs, trainer_given_kwargs)
 
     trainer = Trainer(**trainer_kwargs)
 
