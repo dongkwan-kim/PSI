@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn.conv import *
 
+from model_utils import Act
 from utils import act
 
 
@@ -24,10 +25,11 @@ def get_gnn_conv_and_kwargs(gnn_name, args):
 
 class DNSEncoder(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, args, activate_last=True):
         super().__init__()
 
         self.args = args
+        self.activate_last = activate_last
         self.num_layers = self.args.num_encoder_layers
 
         self.convs = torch.nn.ModuleList()
@@ -38,15 +40,11 @@ class DNSEncoder(nn.Module):
         gnn, gkw = get_gnn_conv_and_kwargs(self.args.gnn_name, self.args)
         for conv_id in range(self.num_layers):
             if conv_id == 0:  # first
-                conv = gnn(self.args.global_channels, self.args.hidden_channels, **gkw)
-                self.convs.append(conv)
-                self.bns.append(nn.BatchNorm1d(self.args.hidden_channels))
-            elif conv_id == self.num_layers - 1:  # last
-                conv = gnn(self.args.hidden_channels, self.args.hidden_channels, **gkw)
-                self.convs.append(conv)
+                in_channels = self.args.global_channels
             else:
-                conv = gnn(self.args.hidden_channels, self.args.hidden_channels, **gkw)
-                self.convs.append(conv)
+                in_channels = self.args.hidden_channels
+            self.convs.append(gnn(in_channels, self.args.hidden_channels, **gkw))
+            if conv_id != self.num_layers - 1 or self.activate_last:
                 self.bns.append(nn.BatchNorm1d(self.args.hidden_channels))
 
     def reset_parameters(self):
@@ -58,11 +56,18 @@ class DNSEncoder(nn.Module):
     def forward(self, x, edge_index, **kwargs):
         for i, conv in enumerate(self.convs):
             x = conv(x, edge_index, **kwargs)
-            if i != self.num_layers - 1:
+            if i != self.num_layers - 1 or self.activate_last:
                 x = self.bns[i](x)
                 x = act(x, self.args.activation)
                 x = F.dropout(x, p=self.args.dropout_channels, training=self.training)
         return x
+
+    def __repr__(self):
+        return "{}(conv={}, L={}, I={}, H={}, O={}, act={}, act_last={}, bn={})".format(
+            self.__class__.__name__, self.args.gnn_name, self.num_layers,
+            self.args.global_channels, self.args.hidden_channels, self.args.hidden_channels,
+            self.args.activation, self.activate_last, True,
+        )
 
 
 if __name__ == '__main__':

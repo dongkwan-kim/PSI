@@ -8,7 +8,6 @@ import torch.nn.functional as F
 from model_decoder import DNSDecoder
 from model_embedding import DNSEmbedding
 from model_encoder import DNSEncoder
-from model_utils import Act
 
 
 class DNSNet(nn.Module):
@@ -17,16 +16,8 @@ class DNSNet(nn.Module):
         super().__init__()
         self.args = args
         self.emb = DNSEmbedding(args)
-        self.enc = DNSEncoder(args)
-        self.after_enc = self.build_after_enc()
+        self.enc = DNSEncoder(args, activate_last=True)
         self.dec = DNSDecoder(args)
-
-    def build_after_enc(self):
-        return nn.Sequential(
-            nn.BatchNorm1d(self.args.hidden_channels),
-            Act(self.args.activation),
-            nn.Dropout(p=self.args.dropout_channels),
-        )
 
     def pprint(self):
         pprint(next(self.modules()))
@@ -34,7 +25,6 @@ class DNSNet(nn.Module):
     def forward(self, x_idx, obs_x_idx, edge_index_01, edge_index_2=None):
         x = self.emb(x_idx)
         x = self.enc(x, edge_index_01)
-        x = self.after_enc(x)
         logits_g, dec_x, dec_e = self.dec(x, obs_x_idx, edge_index_01, edge_index_2)
         return logits_g, dec_x, dec_e
 
@@ -54,4 +44,4 @@ if __name__ == '__main__':
     _ei2 = torch.randint(0, 7, [2, 13])
     _obs_x_idx = torch.arange(3).long()
 
-    print(net(_xi, _obs_x_idx, _ei, _ei2, None, None))
+    print(net(_xi, _obs_x_idx, _ei, _ei2))

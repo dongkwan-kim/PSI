@@ -32,6 +32,7 @@ class ObsSummarizer(nn.Module):
         x = x.view(1, x.size(0), x.size(1))
         x = self.tf_enc(x)
         x = x.squeeze()
+        x = act(x, self.args.activation)
         x = self.pool(x)
         return x
 

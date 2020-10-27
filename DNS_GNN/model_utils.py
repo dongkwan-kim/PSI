@@ -7,7 +7,7 @@ import math
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, max_len, num_channels, dropout=0.1):
+    def __init__(self, max_len, num_channels, dropout=0.0):
         super(PositionalEncoding, self).__init__()
         self.max_len = max_len
         self.num_channels = num_channels
