@@ -92,8 +92,10 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     parser.add_argument("--activation", default="relu", type=str)
     parser.add_argument("--hidden-channels", default=64, type=int)
     parser.add_argument("--dropout-channels", default=0.2, type=float)
+    parser.add_argument("--is-bidirectional", default=False, type=bool)
 
     # Model Decoder
+    parser.add_argument("--readout-name", default=None, type=str)
     parser.add_argument("--use-decoder", default=True, type=bool)
     parser.add_argument("--num-decoder-body-layers", default=1, type=int)
     parser.add_argument("--main-decoder-type", default="edge", type=str, choices=["node", "edge"])
