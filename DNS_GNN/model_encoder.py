@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn.conv import *
 
-from model_utils import Act
+from model_utils import Act, MyLinear
 from utils import act
 
 
@@ -18,6 +18,8 @@ def get_gnn_conv_and_kwargs(gnn_name, args):
         gnn_cls = SAGEConv
     elif gnn_name == "GATConv":
         gnn_cls = GATConv
+    elif gnn_name == "Linear":
+        gnn_cls = MyLinear
     else:
         raise ValueError(f"Wrong gnn conv name: {gnn_name}")
     return gnn_cls, gkw

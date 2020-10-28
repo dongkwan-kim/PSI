@@ -5,6 +5,15 @@ import numpy as np
 import math
 
 
+class MyLinear(nn.Linear):
+
+    def __init__(self, in_features: int, out_features: int):
+        super().__init__(in_features, out_features)
+
+    def forward(self, x, *args, **kwargs):
+        return super(MyLinear, self).forward(x)
+
+
 class PositionalEncoding(nn.Module):
 
     def __init__(self, max_len, num_channels, dropout=0.0):
