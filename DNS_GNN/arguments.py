@@ -55,8 +55,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     # Training
     parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
                         metavar='LR', help='initial learning rate', dest='lr')
-    parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size')
-    parser.add_argument('--epochs', default=100, type=int, metavar='N',
+    parser.add_argument('--batch-size', default=1, type=int, metavar='N', help='mini-batch size')
+    parser.add_argument('--epochs', default=50, type=int, metavar='N',
                         help='number of total epochs to run')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
@@ -71,7 +71,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
 
     # Global graph
     parser.add_argument("--num-nodes-global", default=-1, type=int)
-    parser.add_argument("--global-channels", default=64, type=int)
+    parser.add_argument("--global-channels", default=32, type=int)
     parser.add_argument("--global-channel-type", default="Embedding", type=str,
                         choices=["Embedding", "Random", "Feature"])
 
@@ -79,6 +79,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     parser.add_argument("--data-sampler-num-hops", default=1, type=int)
     parser.add_argument("--data-sampler-neg-sample-ratio", default=1.0, type=float)
     parser.add_argument("--data-sampler-dropout-edges", default=0.0, type=float)
+    parser.add_argument("--data-use-obs-edge-only", default=False, type=bool)
     parser.add_argument("--data-sampler-balanced-sampling", default=True, type=bool)
     parser.add_argument("--data-sampler-shuffle", default=True, type=bool)
 
@@ -103,7 +104,6 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     parser.add_argument("--use-edge-decoder", default=True)
     parser.add_argument("--obs-max-len", default=30)
     parser.add_argument("--is-obs-sequential", default=True)
-    parser.add_argument("--pool-name", default=None)
     parser.add_argument("--pool-ratio", default=0.1)
     parser.add_argument("--use-pool-min-score", default=False)
 
@@ -116,6 +116,9 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
 
     # Test
     parser.add_argument("--val-interval", default=10)
+
+    # Tuning
+    parser.add_argument("--use-pruner", default=True)
 
     # Experiment specific parameters loaded from .yamls
     with open(yaml_path) as args_file:
@@ -138,15 +141,16 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "dataset_num_slices", "dataset_val_ratio", "dataset_test_ratio", "dataset_debug",
         "data_sampler_num_hops", "data_sampler_neg_sample_ratio",
         "data_sampler_dropout_edges", "data_sampler_balanced_sampling",
-        "data_sampler_shuffle",
+        "data_sampler_shuffle", "data_use_obs_edge_only",
         "model_sampler_name", "model_sampler_kwargs",
         "model_name", "dataset_name", "custom_key", "seed", "model_debug",
         "lr", "batch_size", "lambda_l2", "lambda_aux_x", "lambda_aux_e",
         "use_early_stop", "early_stop_patience", "early_stop_min_delta",
         "global_channel_type",
-        "gnn_name", "num_encoder_layers", "activation", "hidden_channels", "dropout_channels",
-        "pool_name", "num_decoder_body_layers", "main_decoder_type", "use_node_decoder", "use_edge_decoder",
-        "obs_max_len",
+        "gnn_name", "num_encoder_layers", "activation", "hidden_channels", "dropout_channels", "is_bidirectional",
+        "readout_name", "use_decoder", "num_decoder_body_layers",
+        "main_decoder_type", "use_node_decoder", "use_edge_decoder",
+        "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
         "use_pergraph_channels", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
     ret = {}
