@@ -29,6 +29,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
     def __init__(self, global_data, subdata_list, num_hops,
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
+                 use_obs_edge_only=False,
                  balanced_sampling=True, shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -39,6 +40,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         self.neg_sample_ratio = neg_sample_ratio * (1 - dropout_edges)
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
+        self.use_obs_edge_only = use_obs_edge_only
         self.balanced_sampling = balanced_sampling
         self.N = global_data.edge_index.max() + 1
 
@@ -69,14 +71,17 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         :obj:`node_idx` to their new location, and (4) the edge mask indicating
         which edges were preserved.
         """
-        khop_nodes, khop_edge_index, mapping, edge_mask = k_hop_subgraph(
-            node_idx=observed_nodes,
-            num_hops=self.num_hops,
-            edge_index=self.G.edge_index,
-            relabel_nodes=False,  # Relabel later.
-            num_nodes=self.N,
-            flow="target_to_source",  # Important.
-        )
+        if not self.use_obs_edge_only:
+            khop_nodes, khop_edge_index, mapping, _ = k_hop_subgraph(
+                node_idx=observed_nodes,
+                num_hops=self.num_hops,
+                edge_index=self.G.edge_index,
+                relabel_nodes=False,  # Relabel later.
+                num_nodes=self.N,
+                flow="target_to_source",  # Important.
+            )
+        else:
+            khop_nodes, khop_edge_index, mapping = observed_nodes, observed_edge_index, None
 
         khp_edge_idx_npy = (khop_edge_index[0] * self.N + khop_edge_index[1]).numpy()
         sub_edge_idx_npy = (edge_index[0] * self.N + edge_index[1]).numpy()
@@ -152,10 +157,15 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 labels_x[x_0] = 0.
             labels_x = labels_x.long()
 
+        if mapping is not None and mapping.size(0) != khop_nodes.size(0):
+            obs_x_idx = mapping
+        else:
+            obs_x_idx = None
+
         # noinspection PyUnresolvedReferences
         sampled_data = Data(
             x=khop_nodes,
-            obs_x_idx=mapping,
+            obs_x_idx=obs_x_idx,
             labels_x=labels_x,
             mask_x=mask_x,
             edge_index_01=khop_edge_index,
@@ -194,6 +204,8 @@ if __name__ == '__main__':
     )
     print("Train first")
     for i, b in enumerate(sampler):
+        # Data(edge_index_01=[2, 97688], edge_index_2=[2, 147], labels_e=[440], labels_x=[298],
+        #      mask_e=[97835], mask_x=[7261], obs_x_idx=[9], x=[7261], y=[1])
         print(i, b)
         if i == 2:
             break
@@ -212,5 +224,18 @@ if __name__ == '__main__':
     print("Val")
     for b in sampler:
         # Data(edge_index_01=[2, 31539], obs_x_idx=[8], x=[3029], y=[1])
+        print(b)
+        break
+
+    sampler = KHopWithLabelsXESampler(
+        fntn.global_data, train_fntn,
+        num_hops=0, use_labels_x=False, use_labels_e=False,
+        neg_sample_ratio=0.0, dropout_edges=0.0,
+        use_obs_edge_only=True,  # this.
+        shuffle=True,
+    )
+    print("WO Sampler")
+    for b in sampler:
+        # Data(edge_index_01=[2, 15], x=[10], y=[1])
         print(b)
         break

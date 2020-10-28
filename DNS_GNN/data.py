@@ -64,6 +64,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_labels_e=self.hparams.use_edge_decoder,
             neg_sample_ratio=self.hparams.data_sampler_neg_sample_ratio,
             dropout_edges=self.hparams.data_sampler_dropout_edges,
+            use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             shuffle=self.hparams.data_sampler_shuffle,
         )
@@ -74,6 +75,7 @@ class DNSDataModule(pl.LightningDataModule):
             num_hops=self.hparams.data_sampler_num_hops,
             use_labels_x=False, use_labels_e=False,
             neg_sample_ratio=0.0, dropout_edges=0.0,
+            use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             balanced_sampling=False, shuffle=False,
         )
         kw.update(kwargs)
