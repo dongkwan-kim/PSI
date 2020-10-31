@@ -76,7 +76,7 @@ class BilinearWith1d(nn.Bilinear):
 class MultiLinear(nn.Module):
 
     def __init__(self, num_layers, num_input, num_hidden, num_out, activation,
-                 use_bn=True, dropout=0.0, activate_last=False):
+                 use_bn=False, dropout=0.0, activate_last=False):
         super().__init__()
         self.num_layers, self.num_input, self.num_hidden, self.num_out = num_layers, num_input, num_hidden, num_out
         self.activation, self.use_bn, self.dropout = activation, use_bn, dropout

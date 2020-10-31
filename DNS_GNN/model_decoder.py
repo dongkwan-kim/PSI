@@ -104,7 +104,7 @@ class DNSDecoder(nn.Module):
             num_hidden=self.args.hidden_channels,
             num_out=self.args.hidden_channels,
             activation=self.args.activation,
-            use_bn=True,
+            use_bn=self.args.use_bn,
             dropout=self.args.dropout_channels,
             activate_last=True,  # important
         )

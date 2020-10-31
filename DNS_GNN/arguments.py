@@ -90,6 +90,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     # Model Encoder
     parser.add_argument("--gnn-name", default="GCNConv", type=str)
     parser.add_argument("--num-encoder-layers", default=2, type=int)
+    parser.add_argument("--use-bn", default=False, type=bool)
     parser.add_argument("--activation", default="relu", type=str)
     parser.add_argument("--hidden-channels", default=64, type=int)
     parser.add_argument("--dropout-channels", default=0.2, type=float)
