@@ -87,7 +87,7 @@ class MainModel(LightningModule):
             total_loss = out["total_loss"]
         else:
             out = {}
-            logits_g = self(batch.x, batch.edge_index)
+            logits_g = self(batch.x, batch.obs_x_idx, batch.edge_index_01)
             total_loss = F.cross_entropy(logits_g, batch.y)
         return logits_g, total_loss, {k: v for k, v in out.items() if k not in ["logits_g", "total_loss"]}
 
