@@ -50,6 +50,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     parser.add_argument("--seed", default=42)
     parser.add_argument("--model-debug", default=False)
     parser.add_argument("--use-tensorboard", default=True)
+    parser.add_argument("--precision", default=32)
     parser.add_argument("--version", default="1.0")
 
     # Training

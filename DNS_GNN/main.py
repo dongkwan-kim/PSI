@@ -167,6 +167,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
         callbacks=callbacks if len(callbacks) > 0 else None,
         num_sanity_val_steps=0,
         fast_dev_run=args.model_debug,
+        precision=args.precision,
     )
     if trainer_given_kwargs:
         trainer_kwargs = merge_or_update(trainer_kwargs, trainer_given_kwargs)
