@@ -34,8 +34,10 @@ class DNSEncoder(nn.Module):
         self.activate_last = activate_last
         self.num_layers = self.args.num_encoder_layers
 
-        self.convs = torch.nn.ModuleList()
         self.use_bn = args.use_bn
+        self.use_skip = args.use_skip
+
+        self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList() if self.use_bn else []
         self.build()
 
@@ -57,6 +59,7 @@ class DNSEncoder(nn.Module):
             bn.reset_parameters()
 
     def forward(self, x, edge_index, **kwargs):
+        prev_x = None
         for i, conv in enumerate(self.convs):
             x = conv(x, edge_index, **kwargs)
             if i != self.num_layers - 1 or self.activate_last:
@@ -64,13 +67,16 @@ class DNSEncoder(nn.Module):
                     x = self.bns[i](x)
                 x = act(x, self.args.activation)
                 x = F.dropout(x, p=self.args.dropout_channels, training=self.training)
+                if self.use_skip and prev_x is not None:
+                    x = x + prev_x
+                prev_x = x
         return x
 
     def __repr__(self):
-        return "{}(conv={}, L={}, I={}, H={}, O={}, act={}, act_last={}, bn={})".format(
+        return "{}(conv={}, L={}, I={}, H={}, O={}, act={}, act_last={}, skip={}, bn={})".format(
             self.__class__.__name__, self.args.gnn_name, self.num_layers,
             self.args.global_channels, self.args.hidden_channels, self.args.hidden_channels,
-            self.args.activation, self.activate_last, self.use_bn,
+            self.args.activation, self.activate_last, self.use_skip, self.use_bn,
         )
 
 

@@ -96,6 +96,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
     parser.add_argument("--hidden-channels", default=64, type=int)
     parser.add_argument("--dropout-channels", default=0.2, type=float)
     parser.add_argument("--is-bidirectional", default=False, type=bool)
+    parser.add_argument("--use-skip", default=True, type=bool)
 
     # Model Decoder
     parser.add_argument("--readout-name", default=None, type=str)
