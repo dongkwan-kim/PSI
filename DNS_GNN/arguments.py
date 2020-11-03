@@ -11,7 +11,7 @@ def get_args_key(args):
     return "-".join([args.model_name, args.dataset_name, args.custom_key])
 
 
-def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argparse.Namespace:
+def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check=True) -> argparse.Namespace:
 
     yaml_path = yaml_path or os.path.join(os.path.dirname(os.path.realpath(__file__)), "args.yaml")
 
@@ -128,7 +128,13 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None) -> argpars
         args = parser.parse_args()
         args_key = "-".join([args.model_name, args.dataset_name or args.dataset_class, args.custom_key])
         try:
-            parser.set_defaults(**dict(YAML().load(args_file)[args_key].items()))
+            args_from_yaml = dict(YAML().load(args_file)[args_key].items())
+            if yaml_check:
+                dest_list = [action.dest for action in parser._actions]
+                for k in args_from_yaml:
+                    if k not in dest_list:
+                        cprint("Warning: {} is not pre-defined".format(k), "red")
+            parser.set_defaults(**args_from_yaml)
         except KeyError:
             cprint("KeyError: there's no {} in yamls".format(args_key), "red")
             exit()
