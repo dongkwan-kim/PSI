@@ -8,10 +8,16 @@ import torch.nn.functional as F
 
 class BiConv(nn.Module):
 
-    def __init__(self, base_conv):
+    def __init__(self, base_conv, reset_at_init=True):
         super().__init__()
         self.conv = deepcopy(base_conv)
         self.rev_conv = base_conv
+        if reset_at_init:
+            self.reset_parameters()
+
+    def reset_parameters(self):
+        self.conv.reset_parameters()
+        self.rev_conv.reset_parameters()
 
     def forward(self, x, edge_index, *args, **kwargs):
         rev_edge_index = edge_index[[1, 0]]
