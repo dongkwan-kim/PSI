@@ -154,6 +154,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     # False in HP-search
     logger = TensorBoardLogger(args.log_dir, name=args_key) if args.use_tensorboard else False
     gpus = args.gpu_ids if args.use_gpu else None
+    precision = args.precision if args.use_gpu else 32
 
     trainer_kwargs = dict(
         gpus=gpus,
@@ -167,7 +168,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
         callbacks=callbacks if len(callbacks) > 0 else None,
         num_sanity_val_steps=0,
         fast_dev_run=args.model_debug,
-        precision=args.precision,
+        precision=precision,
     )
     if trainer_given_kwargs:
         trainer_kwargs = merge_or_update(trainer_kwargs, trainer_given_kwargs)
