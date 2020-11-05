@@ -104,7 +104,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         # Negative sampling of edges
         neg_edge_index = None
         num_neg_samples = int(self.neg_sample_ratio * torch.sum(khop_edge_attr > 0))
-        if self.neg_sample_ratio > 0:
+        if self.use_labels_e and self.neg_sample_ratio > 0:
             neg_edge_index = negative_sampling(
                 edge_index=khop_edge_index,
                 num_neg_samples=num_neg_samples,
@@ -131,7 +131,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 idx_of_1 = idx_of_1[perm[:num_neg_samples]]
                 full_labels_e_01[idx_of_1] = 1.
                 full_labels_e = torch.cat([full_labels_e_01, labels_e_2])
-                mask_e = full_labels_e >= 0.
+                mask_e = torch.nonzero(full_labels_e >= 0., as_tuple=False).squeeze()
                 labels_e = full_labels_e[mask_e]  # [nearly 3 * E_khop_2]
             else:
                 labels_e_01 = torch.zeros(khop_edge_attr.size(0)).float()  # [E_khop_01]
@@ -150,7 +150,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 perm = torch.randperm(idx_of_1.size(0))
                 idx_of_1 = idx_of_1[perm[:x_0.size(0)]]
                 full_labels_x[idx_of_1] = 1.
-                mask_x = full_labels_x >= 0.
+                mask_x = torch.nonzero(full_labels_x >= 0., as_tuple=False).squeeze()
                 labels_x = full_labels_x[mask_x]
             else:
                 labels_x = torch.ones(khop_nodes.size(0)).float()
