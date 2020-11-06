@@ -184,7 +184,8 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     }
 
     if run_test:
-        trainer.test()
+        from main_test import main_test
+        main_test(trainer)
 
     if clean_ckpt and trainer.checkpoint_callback.best_model_path:
         os.remove(trainer.checkpoint_callback.best_model_path)
@@ -197,7 +198,7 @@ if __name__ == '__main__':
     main_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="TEST",
+        custom_key="SMALL-X",
     )
     pprint_args(main_args)
 
