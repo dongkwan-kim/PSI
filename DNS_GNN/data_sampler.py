@@ -29,6 +29,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
     def __init__(self, global_data, subdata_list, num_hops,
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
+                 obs_x_range=None,
                  use_obs_edge_only=False,
                  balanced_sampling=True, shuffle=False, verbose=0, **kwargs):
 
@@ -40,6 +41,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         self.neg_sample_ratio = neg_sample_ratio * (1 - dropout_edges)
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
+        self.obs_x_range = obs_x_range
         self.use_obs_edge_only = use_obs_edge_only
         self.balanced_sampling = balanced_sampling
         self.N = global_data.edge_index.max() + 1
@@ -62,7 +64,12 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         edge_index, edge_attr = d.edge_index, d.edge_attr
 
-        observed_edge_index = edge_index[:, :int(d.num_obs_x)]
+        if self.obs_x_range is not None:
+            num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
+        else:
+            num_obs_x = int(d.num_obs_x)
+
+        observed_edge_index = edge_index[:, :num_obs_x]
         observed_nodes = observed_edge_index.flatten().unique()
 
         """
@@ -200,6 +207,7 @@ if __name__ == '__main__':
         fntn.global_data, train_fntn,
         num_hops=1, use_labels_x=True, use_labels_e=True,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
+        obs_x_range=(5, 10),
         shuffle=True,
     )
     print("Train first")
