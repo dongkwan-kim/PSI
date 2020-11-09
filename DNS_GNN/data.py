@@ -66,7 +66,7 @@ class DNSDataModule(pl.LightningDataModule):
             dropout_edges=self.hparams.data_sampler_dropout_edges,
             obs_x_range=(self.hparams.dataset_slice_range_1, self.hparams.dataset_slice_range_2),
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
-            use_pergraph_attr=self.hparams.use_pergraph_channels,
+            use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             shuffle=self.hparams.data_sampler_shuffle,
         )

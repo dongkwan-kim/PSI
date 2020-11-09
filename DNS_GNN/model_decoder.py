@@ -66,14 +66,23 @@ class DNSDecoder(nn.Module):
         self.body_fc_q = self.build_body_fc()  # [N, F] -> [N, F]
         self.body_fc_v = self.build_body_fc()  # [N, F] -> [N, F]
 
+        self.use_pergraph_attr = self.args.use_pergraph_attr
+        if self.args.use_pergraph_attr:
+            self.pergraph_fc = self.build_body_fc(
+                num_layers=1, num_input=args.pergraph_channels, num_out=args.pergraph_hidden_channels,
+            )
+            pergraph_channels = self.args.pergraph_hidden_channels
+        else:
+            pergraph_channels = 0
+
         if self.main_decoder_type == "node":
             assert self.args.use_node_decoder, "use_node_decoder is not True."
             num_dec_classes = 2
-            self.graph_fc = nn.Linear(self.args.hidden_channels, self.args.num_classes)
+            self.graph_fc = nn.Linear(self.args.hidden_channels + pergraph_channels, self.args.num_classes)
         elif self.main_decoder_type == "edge":
             assert self.args.use_edge_decoder, "use_edge_decoder is not True."
             num_dec_classes = 3
-            self.graph_fc = nn.Linear(2 * self.args.hidden_channels, self.args.num_classes)
+            self.graph_fc = nn.Linear(2 * self.args.hidden_channels + pergraph_channels, self.args.num_classes)
         else:
             raise ValueError(f"Wrong decoder_type: {self.main_decoder_type}")
 
@@ -97,8 +106,8 @@ class DNSDecoder(nn.Module):
         self.pool_ratio = self.args.pool_ratio
         self.pool_min_score = 1 / num_dec_classes if self.args.use_pool_min_score else None
 
-    def build_body_fc(self):
-        return MultiLinear(
+    def build_body_fc(self, **kwargs):
+        kw = dict(
             num_layers=self.num_body_layers,
             num_input=self.args.hidden_channels,
             num_hidden=self.args.hidden_channels,
@@ -108,9 +117,11 @@ class DNSDecoder(nn.Module):
             dropout=self.args.dropout_channels,
             activate_last=True,  # important
         )
+        kw.update(**kwargs)
+        return MultiLinear(**kw)
 
     def forward(
-            self, x, obs_x_idx, edge_index_01, edge_index_2
+            self, x, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
         obs_x_k = self.obs_summarizer_k(x[obs_x_idx])  # [1, F]
@@ -135,6 +146,8 @@ class DNSDecoder(nn.Module):
             )
 
         o = pool_x if self.main_decoder_type == "node" else pool_e
+        if self.args.use_pergraph_attr:
+            o = torch.cat([o, self.pergraph_fc(pergraph_attr)], dim=0)
         logits_g = self.graph_fc(o).view(1, -1)
         return logits_g, dec_x, dec_e
 
@@ -164,7 +177,8 @@ class DNSDecoder(nn.Module):
 
     def extra_repr(self):
         return get_extra_repr(self, ["main_decoder_type",
-                                     'pool_ratio' if self.pool_min_score is None else 'pool_min_score'])
+                                     'pool_ratio' if self.pool_min_score is None else 'pool_min_score',
+                                     "use_pergraph_attr"])
 
 
 if __name__ == '__main__':
@@ -175,6 +189,7 @@ if __name__ == '__main__':
     _args.main_decoder_type = "node"  # todo
     _args.use_edge_decoder = True
     _args.use_node_decoder = True
+    _args.use_pergraph_attr = True
     dec = DNSDecoder(_args)
     print(dec)
 
@@ -182,7 +197,9 @@ if __name__ == '__main__':
     _ei = torch.randint(0, 7, [2, 17])
     _ei2 = torch.randint(0, 7, [2, 13])
     _obs_x_idx = torch.arange(3).long()
-    _g, _dx, _de = dec(_x, _obs_x_idx, _ei, _ei2)
+    _pga = torch.arange(_args.pergraph_channels) * 0.1
+
+    _g, _dx, _de = dec(_x, _obs_x_idx, _ei, _ei2, _pga)
 
     print(f"__g: {_g.size()}")
     if _dx is not None:

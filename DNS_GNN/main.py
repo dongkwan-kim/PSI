@@ -95,7 +95,7 @@ class MainModel(LightningModule):
             total_loss = out["total_loss"]
         else:
             out = {}
-            logits_g = self(batch.x, batch.obs_x_idx, batch.edge_index_01)
+            logits_g = self(batch.x, batch.obs_x_idx, batch.edge_index_01, pergraph_attr=batch.pergraph_attr)
             total_loss = F.cross_entropy(logits_g, batch.y)
         return logits_g, total_loss, {k: v for k, v in out.items() if k not in ["logits_g", "total_loss"]}
 
@@ -105,7 +105,7 @@ class MainModel(LightningModule):
         #      mask_x=[25868], obs_x_idx=[9], x=[25868], y=[1])
         # forward(x_idx, obs_x_idx, edge_index_01, edge_index_2)
         logits_g, dec_x, dec_e = self(
-            batch.x, batch.obs_x_idx, batch.edge_index_01, batch.edge_index_2,
+            batch.x, batch.obs_x_idx, batch.edge_index_01, batch.edge_index_2, batch.pergraph_attr,
         )
         if batch.mask_x is not None:
             dec_x = dec_x[batch.mask_x]

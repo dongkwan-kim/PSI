@@ -112,7 +112,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--use-pool-min-score", default=False)
 
     # per-graph feature (e.g., text)
-    parser.add_argument("--use-pergraph-channels", default=False, type=bool)
+    parser.add_argument("--use-pergraph-attr", default=False, type=bool)
     parser.add_argument("--pergraph-encoder-type", default=None, type=str)
     parser.add_argument("--pergraph-channels", default=2000, type=int)
     parser.add_argument("--pergraph-hidden-channels", default=64, type=int)
@@ -161,7 +161,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
-        "use_pergraph_channels", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
+        "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
     ret = {}
     for ia_key in important_args:

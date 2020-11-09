@@ -36,14 +36,14 @@ class DNSNet(nn.Module):
     def pprint(self):
         pprint(next(self.modules()))
 
-    def forward(self, x_idx, obs_x_idx, edge_index_01, edge_index_2=None):
+    def forward(self, x_idx, obs_x_idx, edge_index_01, edge_index_2=None, pergraph_attr=None):
         x = self.emb(x_idx)
         x = self.enc(x, edge_index_01)
         if self.args.use_decoder:
-            logits_g, dec_x, dec_e = self.dec_or_readout(x, obs_x_idx, edge_index_01, edge_index_2)
+            logits_g, dec_x, dec_e = self.dec_or_readout(x, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr)
             return logits_g, dec_x, dec_e
         else:
-            return self.dec_or_readout(x)
+            return self.dec_or_readout(x, pergraph_attr)
 
 
 if __name__ == '__main__':
@@ -53,7 +53,8 @@ if __name__ == '__main__':
     _args = get_args("DNS", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 7
     _args.is_bidirectional = True
-    _args.use_decoder = False
+    _args.use_decoder = True
+    _args.use_pergraph_attr = True
     _args.readout_name = "mean-max"
     net = DNSNet(_args)
     print(net)
@@ -63,5 +64,6 @@ if __name__ == '__main__':
     _ei = torch.randint(0, 7, [2, 17])
     _ei2 = torch.randint(0, 7, [2, 13])
     _obs_x_idx = torch.arange(3).long()
+    _pga = torch.arange(_args.pergraph_channels) * 0.1
 
-    print(net(_xi, _obs_x_idx, _ei, _ei2))
+    print(net(_xi, _obs_x_idx, _ei, _ei2, _pga))
