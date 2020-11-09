@@ -46,7 +46,7 @@ class DNSDataModule(pl.LightningDataModule):
                 val_ratio=self.hparams.dataset_val_ratio,
                 test_ratio=self.hparams.dataset_test_ratio,
                 debug=self.hparams.dataset_debug,
-                seed=self.hparams.seed,
+                seed=self.hparams.dataset_seed,
                 transform=None,
                 pre_transform=None,
             )
