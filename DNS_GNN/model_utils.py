@@ -112,10 +112,16 @@ class MultiLinear(nn.Module):
         return self.fc(x)
 
     def __repr__(self):
-        return "{}(L={}, I={}, H={}, O={}, act={}, bn={}, do={})".format(
-            self.__class__.__name__, self.num_layers, self.num_input, self.num_hidden, self.num_out,
-            self.activation, self.use_bn, self.dropout,
-        )
+        if self.num_layers > 1:
+            return "{}(L={}, I={}, H={}, O={}, act={}, bn={}, do={})".format(
+                self.__class__.__name__, self.num_layers, self.num_input, self.num_hidden, self.num_out,
+                self.activation, self.use_bn, self.dropout,
+            )
+        else:
+            return "{}(L={}, I={}, O={}, act={}, bn={}, do={})".format(
+                self.__class__.__name__, self.num_layers, self.num_input, self.num_out,
+                self.activation, self.use_bn, self.dropout,
+            )
 
 
 class Act(nn.Module):
