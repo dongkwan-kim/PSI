@@ -114,7 +114,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     # per-graph feature (e.g., text)
     parser.add_argument("--use-pergraph-channels", default=False, type=bool)
     parser.add_argument("--pergraph-encoder-type", default=None, type=str)
-    parser.add_argument("--pergraph-channels", default=64, type=int)
+    parser.add_argument("--pergraph-channels", default=2000, type=int)
     parser.add_argument("--pergraph-hidden-channels", default=64, type=int)
     parser.add_argument("--vocab-size", default=-1, type=int)
 

@@ -10,36 +10,43 @@ import numpy as np
 import networkx as nx
 import os.path as osp
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
 
-def preprocess_text(text_list: List[str], **kwargs) -> (torch.Tensor, Dict[int, str]):
+def preprocess_text(text_list: List[str], repr_type="tfidf", **kwargs) -> (torch.Tensor, Dict[int, str]):
     """
     :param text_list:
+    :param repr_type:
     :return: Tuple of LongTensor of [G, max_len] and vocabulary
     """
     encoded_texts = []
 
-    vectorizer = CountVectorizer(stop_words="english")
-    vectorizer.fit(text_list)
-    vocab = vectorizer.vocabulary_
-    preprocess_and_tokenize = vectorizer.build_analyzer()
+    if repr_type == "tfidf":
+        vectorizer = TfidfVectorizer(stop_words="english", max_features=2000)
+        vectorizer.fit(text_list)
+        vocab = vectorizer.vocabulary_
+        texts = vectorizer.transform(text_list).toarray()
+        texts = torch.Tensor(texts).float()
+    else:
+        vectorizer = CountVectorizer(stop_words="english")
+        vectorizer.fit(text_list)
+        vocab = vectorizer.vocabulary_
+        preprocess_and_tokenize = vectorizer.build_analyzer()
 
-    for text in text_list:
-        tokens = preprocess_and_tokenize(text)
-        indexed_tokens = [vocab[token] + 1 for token in tokens if token in vocab]
-        encoded_texts.append(indexed_tokens)
+        for text in text_list:
+            tokens = preprocess_and_tokenize(text)
+            indexed_tokens = [vocab[token] + 1 for token in tokens if token in vocab]
+            encoded_texts.append(indexed_tokens)
 
-    max_len = kwargs['max_len'] if 'max_len' in kwargs.keys() else max(len(et) for et in encoded_texts)
+        max_len = kwargs['max_len'] if 'max_len' in kwargs.keys() else max(len(et) for et in encoded_texts)
 
-    pad_encoded_texts = torch.zeros([len(text_list), max_len], dtype=torch.int32)
-    for idx, et in enumerate(encoded_texts):
-        length = len(et) if len(et) <= max_len else max_len
-        pad_encoded_texts[idx, :length] = torch.tensor(et[:length])
-
-    return pad_encoded_texts, vocab
+        texts = torch.zeros([len(text_list), max_len], dtype=torch.int32)
+        for idx, et in enumerate(encoded_texts):
+            length = len(et) if len(et) <= max_len else max_len
+            texts[idx, :length] = torch.tensor(et[:length])
+    return texts, vocab
 
 
 def load_propagation_graphs_and_preprocess_text(paths, **kwargs) -> (List[Data], Dict[int, str]):
@@ -55,12 +62,12 @@ def load_propagation_graphs_and_preprocess_text(paths, **kwargs) -> (List[Data],
     text_tensor, vocab = preprocess_text(text_list, **kwargs)
 
     data_list = []
-    for x_index, edge_index, edge_attr, global_attr, y in tqdm(zip(x_index_list,
-                                                                   edge_index_list,
-                                                                   edge_attr_list,
-                                                                   text_tensor,
-                                                                   labels),
-                                                               total=len(labels)):
+    for x_index, edge_index, edge_attr, pergraph_attr, y in tqdm(zip(x_index_list,
+                                                                     edge_index_list,
+                                                                     edge_attr_list,
+                                                                     text_tensor,
+                                                                     labels),
+                                                                 total=len(labels)):
         x_index = torch.Tensor(x_index).long().view(-1, 1)  # [N, 1]
         edge_attr = torch.Tensor(edge_attr).float().view(-1, 1)  # [E, 1]
 
@@ -71,7 +78,7 @@ def load_propagation_graphs_and_preprocess_text(paths, **kwargs) -> (List[Data],
         y = torch.Tensor([y]).long()  # [1]
         data = Data(x=x_index,
                     edge_index=sorted_edge_index, edge_attr=sorted_edge_attr,
-                    y=y, global_attr=global_attr)
+                    y=y, pergraph_attr=pergraph_attr)
         data_list.append(data)
     return data_list, vocab
 
@@ -247,7 +254,7 @@ class FNTN(InMemoryDataset):
         :param data_list: List of Data
         :param is_not_train: default False
         :return: data_list with sliced edge_attr
-                Data(edge_attr=[new_E, 1], edge_index=[2, E], global_attr=[D], num_obs_x=[1], x=[N, 1], y=[1])
+                Data(edge_attr=[new_E, 1], edge_index=[2, E], pergraph_attr=[D], num_obs_x=[1], x=[N, 1], y=[1])
                 where new_E is num_edges after slicing
         """
         new_data_list = []

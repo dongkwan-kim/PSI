@@ -29,8 +29,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
     def __init__(self, global_data, subdata_list, num_hops,
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
-                 obs_x_range=None,
-                 use_obs_edge_only=False,
+                 obs_x_range=None, use_obs_edge_only=False, use_pergraph_attr=False,
                  balanced_sampling=True, shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -43,6 +42,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
         self.obs_x_range = obs_x_range
         self.use_obs_edge_only = use_obs_edge_only
+        self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.N = global_data.edge_index.max() + 1
 
@@ -169,6 +169,11 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         else:
             obs_x_idx = None
 
+        if self.use_pergraph_attr:
+            pergraph_attr = d.pergraph_attr
+        else:
+            pergraph_attr = None
+
         # noinspection PyUnresolvedReferences
         sampled_data = Data(
             x=khop_nodes,
@@ -180,6 +185,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             labels_e=labels_e,
             mask_e=mask_e,
             y=d.y,
+            pergraph_attr=pergraph_attr,
         )
         return sampled_data
 
