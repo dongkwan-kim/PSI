@@ -1,13 +1,15 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
+from copy import deepcopy
 from pprint import pprint
 import os
-from typing import List, Any
+from typing import List, Any, Dict
 
 import torch
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.metrics.functional import accuracy
+from pytorch_lightning.utilities.memory import garbage_collection_cuda
 from termcolor import cprint
 from torch.nn import functional as F
 from torch import nn
@@ -77,8 +79,14 @@ class MainModel(LightningModule):
         }
 
     def test_epoch_end(self, outputs):
-        self.log("test_loss", torch.stack([output["test_loss"] for output in outputs]).mean())
-        self.log("test_acc", torch.stack([output["test_acc_step"] for output in outputs]).mean())
+        test_acc = torch.stack([output["test_acc_step"] for output in outputs]).mean()
+        test_loss = torch.stack([output["test_loss"] for output in outputs]).mean()
+        self.log("test_loss", test_loss)
+        self.log("test_acc", test_acc)
+        return {
+            "test_loss": test_loss,
+            "test_acc": test_acc,
+        }
 
     def _get_logits_and_loss_and_parts(self, batch, batch_idx):
         if self.hparams.use_decoder:
@@ -120,7 +128,7 @@ class MainModel(LightningModule):
 
 
 def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
-    seed_everything(args.seed)
+    seed_everything(args.model_seed)
 
     dm = DNSDataModule(args, prepare_data_and_setup=True)
     model = MainModel(args, dm)
@@ -180,12 +188,13 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     ret = {
         "trainer": trainer,
         "model": model,
-        "callbacks": trainer_kwargs.get("callbacks", None)  # # for metrics_callback in HP-search
+        "callbacks": trainer_kwargs.get("callbacks", None),  # # for metrics_callback in HP-search
+        "test_results": None,
     }
 
     if run_test:
         from main_test import main_test
-        main_test(trainer)
+        ret["test_results"]: Dict[str, torch.Tensor] = main_test(trainer)[0]  # 1st emt of len-1 list
 
     if clean_ckpt and trainer.checkpoint_callback.best_model_path:
         os.remove(trainer.checkpoint_callback.best_model_path)
@@ -194,11 +203,34 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     return ret
 
 
+def run_train_multiple(num_runs, args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
+    ret_list = defaultdict(list)
+    for r in range(num_runs):
+        _args = deepcopy(args)
+        _args.model_seed += r
+
+        single_results = run_train(
+            _args,
+            trainer_given_kwargs=trainer_given_kwargs,
+            run_test=run_test,
+            clean_ckpt=clean_ckpt,
+        )
+        for k, v in single_results["test_results"].items():
+            ret_list[k].append(v)
+
+        # Make GPU empty.
+        for k in single_results:
+            single_results[k] = None
+        garbage_collection_cuda()
+
+    return ret_list
+
+
 if __name__ == '__main__':
     main_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="SMALL-X",
+        custom_key="SMALL-E",
     )
     pprint_args(main_args)
 
