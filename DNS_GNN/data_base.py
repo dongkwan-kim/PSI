@@ -103,9 +103,14 @@ class DatasetBase(InMemoryDataset):
     def process(self):
         raise NotImplementedError
 
-    def process_with_slice_data_train_val_test(self, data_list):
+    def process_with_slice_data_train_val_test(self, data_list_or_triplet: Tuple or List):
 
-        data_train, data_val, data_test = self.train_val_test_split(data_list)
+        if isinstance(data_list_or_triplet, tuple):
+            data_train, data_val, data_test = data_list_or_triplet
+        elif isinstance(data_list_or_triplet, list):
+            data_train, data_val, data_test = self.train_val_test_split(data_list_or_triplet)
+        else:
+            raise TypeError("{} is not appropriate type".format(type(data_list_or_triplet)))
 
         if self.debug:
             data_train = data_train[:5]
@@ -181,6 +186,10 @@ class DatasetBase(InMemoryDataset):
                 else:
                     random_slices = [targets[len(targets) // 2]]
                 slice_list.append(random_slices)
+        elif self.slice_type == "random":
+            raise NotImplementedError
+        else:
+            raise ValueError("{} is not appropriate slice_type".format(self.slice_type))
 
         for data, random_slices in tqdm(zip(data_list, slice_list), total=len(data_list)):
             for idx in random_slices:  # int-iterators
