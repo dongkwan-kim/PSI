@@ -146,7 +146,7 @@ class DatasetSubGNN(DatasetBase):
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
                  val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
-        assert slice_type in ["random_edges"]
+        assert slice_type in ["random"]
         super(DatasetSubGNN, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
             transform, pre_transform, **kwargs,
