@@ -82,7 +82,7 @@ class MainModel(LightningModule):
         test_acc = torch.stack([output["test_acc_step"] for output in outputs]).mean()
         test_loss = torch.stack([output["test_loss"] for output in outputs]).mean()
         self.log("test_loss", test_loss)
-        self.log("test_acc", test_acc)
+        self.logger.log_metrics({"hp_metric": float(test_acc)})
         return {
             "test_loss": test_loss,
             "test_acc": test_acc,
