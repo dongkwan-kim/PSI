@@ -85,7 +85,7 @@ if __name__ == '__main__':
     tune_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="E2D2F64",  # BISAGE, SMALL-E
+        custom_key="BIE2D2F64",  # BISAGE, SMALL-E
     )
     tune_args.verbose = 0  # Force args' verbose be 0
     tune_args.use_early_stop = False
