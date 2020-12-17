@@ -85,7 +85,7 @@ if __name__ == '__main__':
     tune_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="BISMALL-XE",  # BISAGE, SMALL-E
+        custom_key="E2D2F64",  # BISAGE, SMALL-E
     )
     tune_args.verbose = 0  # Force args' verbose be 0
     tune_args.use_early_stop = False
@@ -100,16 +100,16 @@ if __name__ == '__main__':
     logger.addHandler(logging.FileHandler(os.path.join(hparams_dir, f"{tune_args_key}.log"), mode="w"))
 
     search_config = {
-        # "lambda_l2": ("categorical", [1e-3]),
-        # "lr": ("categorical", [0.0005, 0.001, 0.005, 0.01, 0.05])
+        "lambda_l2": ("categorical", [5e-4, 1e-3, 5e-3]),
+        "lr": ("categorical", [0.001, 0.005, 0.01])
     }
     if tune_args.use_decoder:
         if tune_args.use_node_decoder:
-            search_config["lambda_aux_x"] = ("discrete_uniform", 0.05, 5.0, 0.05)
+            search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 10.0, 0.01)
         if tune_args.use_edge_decoder:
-            search_config["lambda_aux_e"] = ("discrete_uniform", 0.05, 5.0, 0.05)
+            search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 10.0, 0.01)
         if not tune_args.use_pool_min_score:
-            search_config["pool_ratio"] = ("discrete_uniform", 0.05, 0.5, 0.05)
+            search_config["pool_ratio"] = ("loguniform", 5e-4, 0.5)
 
     logger.info("-- HPARAM SEARCH CONFIG --")
     for k, v in search_config.items():

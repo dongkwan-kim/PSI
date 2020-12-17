@@ -106,7 +106,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--main-decoder-type", default="edge", type=str, choices=["node", "edge"])
     parser.add_argument("--use-node-decoder", default=True)
     parser.add_argument("--use-edge-decoder", default=True)
-    parser.add_argument("--obs-max-len", default=30)
+    parser.add_argument("--obs-max-len", default=20)
     parser.add_argument("--is-obs-sequential", default=True)
     parser.add_argument("--pool-ratio", default=0.1)
     parser.add_argument("--use-pool-min-score", default=False)
