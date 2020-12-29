@@ -100,16 +100,16 @@ if __name__ == '__main__':
     logger.addHandler(logging.FileHandler(os.path.join(hparams_dir, f"{tune_args_key}.log"), mode="w"))
 
     search_config = {
-        "lambda_l2": ("categorical", [5e-4, 1e-3, 5e-3]),
-        "lr": ("categorical", [0.001, 0.005, 0.01])
+        "lambda_l2": ("categorical", [1e-4, 2.5e-4, 5e-4, 1e-3, 2e-3]),
+        "lr": ("categorical", [0.001, 0.005])
     }
     if tune_args.use_decoder:
         if tune_args.use_node_decoder:
-            search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 10.0, 0.01)
+            search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 20.0, 0.01)
         if tune_args.use_edge_decoder:
-            search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 10.0, 0.01)
+            search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 20.0, 0.01)
         if not tune_args.use_pool_min_score:
-            search_config["pool_ratio"] = ("loguniform", 5e-4, 0.5)
+            search_config["pool_ratio"] = ("loguniform", 5e-4, 0.25)
 
     logger.info("-- HPARAM SEARCH CONFIG --")
     for k, v in search_config.items():
