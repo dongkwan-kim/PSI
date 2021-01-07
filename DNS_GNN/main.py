@@ -141,8 +141,9 @@ class MainModel(LightningModule):
             total_loss += self.hparams.lambda_aux_e * loss_e
             o["loss_e"] = loss_e
         if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
-            total_loss += self.hparams.lambda_aux_isi * loss_isi
-            o["loss_isi"] = loss_isi
+            if self.training:
+                total_loss += self.hparams.lambda_aux_isi * loss_isi
+                o["loss_isi"] = loss_isi
         o["total_loss"] = total_loss
         return o
 
