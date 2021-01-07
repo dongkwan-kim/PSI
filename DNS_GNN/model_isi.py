@@ -40,6 +40,7 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
         # ref: In discriminate, torch.matmul(z, torch.matmul(self.weight, summary))
         del self.weight
         self.weight = Parameter(torch.Tensor(self.hidden_channels, self.summary_channels))
+        self.reset_parameters()
 
     def reset_parameters(self):
         glorot(self.weight)
