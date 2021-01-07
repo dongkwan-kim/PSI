@@ -65,6 +65,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--lambda-l2", default=0., type=float)
     parser.add_argument("--lambda-aux-x", default=0., type=float)
     parser.add_argument("--lambda-aux-e", default=0., type=float)
+    parser.add_argument("--lambda-aux-isi", default=0., type=float)
 
     # Early stop
     parser.add_argument("--use-early-stop", default=False, type=bool)
@@ -103,13 +104,14 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--readout-name", default=None, type=str)
     parser.add_argument("--use-decoder", default=True, type=bool)
     parser.add_argument("--num-decoder-body-layers", default=1, type=int)
-    parser.add_argument("--main-decoder-type", default="edge", type=str, choices=["node", "edge"])
+    parser.add_argument("--main-decoder-type", default="node", type=str, choices=["node", "edge"])
     parser.add_argument("--use-node-decoder", default=True)
     parser.add_argument("--use-edge-decoder", default=True)
     parser.add_argument("--obs-max-len", default=20)
     parser.add_argument("--is-obs-sequential", default=True)
     parser.add_argument("--pool-ratio", default=0.1)
     parser.add_argument("--use-pool-min-score", default=False)
+    parser.add_argument("--use-inter-subgraph-infomax", default=False)
 
     # per-graph feature (e.g., text)
     parser.add_argument("--use-pergraph-attr", default=False, type=bool)
@@ -154,13 +156,13 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "data_sampler_shuffle", "data_use_obs_edge_only",
         "model_sampler_name", "model_sampler_kwargs",
         "model_name", "dataset_name", "custom_key", "dataset_seed", "model_seed", "model_debug",
-        "lr", "batch_size", "lambda_l2", "lambda_aux_x", "lambda_aux_e",
+        "lr", "batch_size", "lambda_l2", "lambda_aux_x", "lambda_aux_e", "lambda_aux_isi",
         "use_early_stop", "early_stop_patience", "early_stop_min_delta",
         "global_channel_type",
         "gnn_name", "num_encoder_layers", "activation", "hidden_channels", "dropout_channels", "is_bidirectional",
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
-        "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
+        "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score", "use_inter_subgraph_infomax",
         "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
     ret = {}
