@@ -68,6 +68,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
+            use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler

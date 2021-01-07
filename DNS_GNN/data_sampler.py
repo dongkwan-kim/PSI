@@ -1,4 +1,5 @@
 import copy
+import random
 from typing import List
 import time
 
@@ -30,7 +31,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
                  obs_x_range=None, use_obs_edge_only=False, use_pergraph_attr=False,
-                 balanced_sampling=True, shuffle=False, verbose=0, **kwargs):
+                 balanced_sampling=True, use_inter_subgraph_infomax=False,
+                 shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
         self.subdata_list: List[Data] = subdata_list
@@ -44,6 +46,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_obs_edge_only = use_obs_edge_only
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
+        self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
         self.N = global_data.edge_index.max() + 1
 
         self.verbose = verbose
@@ -174,6 +177,20 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         else:
             pergraph_attr = None
 
+        if self.use_inter_subgraph_infomax:
+            d_neg = self.sample_uni_data_neg(uni_data_pos=d)
+            x_isi = torch.cat([d.x, d_neg.x], dim=0).squeeze()  # [N_pos + N_neg]
+            edge_index_isi = torch.cat([d.edge_index, d_neg.edge_index], dim=1)
+
+            # Relabeling
+            _node_idx = observed_nodes.new_full((self.N,), -1)
+            _node_idx[x_isi] = torch.arange(x_isi.size(0))
+            edge_index_isi = _node_idx[edge_index_isi]
+
+            ptr_isi = torch.Tensor([d.x.size(0)]).long()
+        else:
+            x_isi, edge_index_isi, ptr_isi = None, None, None
+
         # noinspection PyUnresolvedReferences
         sampled_data = Data(
             x=khop_nodes,
@@ -186,8 +203,22 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             mask_e=mask_e,
             y=d.y,
             pergraph_attr=pergraph_attr,
+            x_isi=x_isi,
+            edge_index_isi=edge_index_isi,
+            ptr_isi=ptr_isi,
         )
         return sampled_data
+
+    def sample_uni_data_neg(self, uni_data_pos):
+        # todo: support multiple neg samples.
+        neg_idx_list = random.sample(range(len(self.subdata_list)), 2)
+        data_neg_0 = self.subdata_list[neg_idx_list[0]]
+        is_not_neg = (uni_data_pos.x.size(0) == data_neg_0.x.size(0) and
+                      uni_data_pos.x.sum() == data_neg_0.x.sum())
+        if is_not_neg:
+            return self.subdata_list[neg_idx_list[1]]
+        else:
+            return data_neg_0
 
 
 if __name__ == '__main__':
@@ -201,13 +232,27 @@ if __name__ == '__main__':
         name="0.0",  # 0.0 0.001 0.002 0.003 0.004
         slice_type="num_edges",
         slice_range=(5, 10),
-        num_slices=5,
+        num_slices=1,
         val_ratio=0.15,
         test_ratio=0.15,
         debug=DEBUG,
     )
 
     train_fntn, val_fntn, test_fntn = fntn.get_train_val_test()
+
+    sampler = KHopWithLabelsXESampler(
+        fntn.global_data, train_fntn,
+        num_hops=1, use_labels_x=True, use_labels_e=False,
+        neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
+        obs_x_range=(5, 10),
+        use_inter_subgraph_infomax=True,  # todo
+        shuffle=True,
+    )
+    print("Train w/ ISI")
+    for i, b in enumerate(sampler):
+        print(i, b)
+        if i == 2:
+            break
 
     sampler = KHopWithLabelsXESampler(
         fntn.global_data, train_fntn,
