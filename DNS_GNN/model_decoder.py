@@ -122,7 +122,7 @@ class DNSDecoder(nn.Module):
 
     def forward(
             self, x, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr=None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
 
         obs_x_k = self.obs_summarizer_k(x[obs_x_idx])  # [1, F]
         x_q = self.body_fc_q(x)  # [N, F]
@@ -145,11 +145,11 @@ class DNSDecoder(nn.Module):
                 idx_to_pool=edge_index_01.size(1),
             )
 
-        o = pool_x if self.main_decoder_type == "node" else pool_e
+        z_g = pool_x if self.main_decoder_type == "node" else pool_e
         if self.args.use_pergraph_attr:
-            o = torch.cat([o, self.pergraph_fc(pergraph_attr)], dim=0)
-        logits_g = self.graph_fc(o).view(1, -1)
-        return logits_g, dec_x, dec_e
+            z_g = torch.cat([z_g, self.pergraph_fc(pergraph_attr)], dim=0)
+        logits_g = self.graph_fc(z_g).view(1, -1)
+        return z_g, logits_g, dec_x, dec_e
 
     def decode_and_pool(self, obs_x_k, x_q, x_v, edge_index, decoder_type, use_pool, idx_to_pool=None):
         # x_q, x_v: [N, F]
@@ -199,10 +199,11 @@ if __name__ == '__main__':
     _obs_x_idx = torch.arange(3).long()
     _pga = torch.arange(_args.pergraph_channels) * 0.1
 
-    _g, _dx, _de = dec(_x, _obs_x_idx, _ei, _ei2, _pga)
+    _z, _logits, _dx, _de = dec(_x, _obs_x_idx, _ei, _ei2, _pga)
 
-    print(f"__g: {_g.size()}")
+    print(f"__z: {_z.size()}")  # __z: torch.Size([128])
+    print(f"__logits: {_logits.size()}")  # __logits: torch.Size([1, 4])
     if _dx is not None:
-        print(f"_dx: {_dx.size()}")
+        print(f"_dx: {_dx.size()}")  # _dx: torch.Size([7, 2])
     if _de is not None:
-        print(f"_de: {_de.size()}")
+        print(f"_de: {_de.size()}")  # _de: torch.Size([30, 3])

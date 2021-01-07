@@ -47,13 +47,13 @@ class Readout(nn.Module):
             o_list.append(torch.mean(x, dim=0))
         if "sum" in self.name:
             o_list.append(torch.sum(x, dim=0))
-        o = torch.cat(o_list, dim=0)
+        z_g = torch.cat(o_list, dim=0)
         if self.with_linear:
             if self.args.use_pergraph_attr:
-                o = torch.cat([o, self.pergraph_fc(pergraph_attr)], dim=0)
-            return self.fc(o).view(1, -1)
+                z_g = torch.cat([z_g, self.pergraph_fc(pergraph_attr)], dim=0)
+            return z_g, self.fc(z_g).view(1, -1)
         else:
-            return o.view(1, -1)
+            return z_g.view(1, -1)
 
     def __repr__(self):
         return "{}(name={}, with_linear={}, use_pergraph_attr={})".format(
@@ -69,9 +69,13 @@ if __name__ == '__main__':
     _args = get_args("DNS", "FNTN", "TEST+MEMO")
     _args.readout_name = "mean-max"
     _args.use_pergraph_attr = True
+
+    # Readout(name=mean-max, with_linear=192->4, use_pergraph_attr=True)
     _ro = Readout(_args)
     print(_ro)
 
     _x = torch.ones(10 * 64).view(10, 64)
     _pga = torch.arange(_args.pergraph_channels) * 0.1
-    print(_ro(_x, _pga).size())
+    _z, _logits = _ro(_x, _pga)
+    print(_z.size())  # [192]
+    print(_logits.size())  # [1, 4]
