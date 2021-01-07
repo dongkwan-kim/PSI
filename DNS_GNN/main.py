@@ -95,17 +95,33 @@ class MainModel(LightningModule):
             total_loss = out["total_loss"]
         else:
             out = {}
-            logits_g = self(batch.x, batch.obs_x_idx, batch.edge_index_01, pergraph_attr=batch.pergraph_attr)
+            logits_g, _, _, loss_isi = self(
+                batch.x, batch.obs_x_idx, batch.edge_index_01, pergraph_attr=batch.pergraph_attr,
+                x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi, ptr_isi=batch.ptr_isi,
+            )
             total_loss = F.cross_entropy(logits_g, batch.y)
+            if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
+                total_loss += self.hparams.lambda_aux_isi * loss_isi
+                out["loss_isi"] = loss_isi
         return logits_g, total_loss, {k: v for k, v in out.items() if k not in ["logits_g", "total_loss"]}
 
     def _forward_with_dec(self, batch, batch_idx):
-        # batch example:
-        # Data(edge_index_01=[2, 686034], edge_index_2=[2, 262], labels_e=[786], labels_x=[526], mask_e=[686296],
-        #      mask_x=[25868], obs_x_idx=[9], x=[25868], y=[1])
-        # forward(x_idx, obs_x_idx, edge_index_01, edge_index_2)
-        logits_g, dec_x, dec_e = self(
+        """
+        :param batch:
+            example (isi False)
+                Data(edge_index_01=[2, 686034], edge_index_2=[2, 262], labels_e=[786], labels_x=[526], mask_e=[686296],
+                     mask_x=[25868], obs_x_idx=[9], x=[25868], y=[1])
+            example (isi True)
+                Data(edge_index_01=[2, 2099097], edge_index_isi=[2, 1019], labels_x=[250], mask_x=[250], obs_x_idx=[7],
+                     ptr_isi=[1], x=[82468], x_isi=[1016], y=[1])
+
+        :param batch_idx:
+        :return:
+        """
+        # forward args: x_idx, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr, x_idx_isi, edge_index_isi, ptr_isi
+        logits_g, dec_x, dec_e, loss_isi = self(
             batch.x, batch.obs_x_idx, batch.edge_index_01, batch.edge_index_2, batch.pergraph_attr,
+            batch.x_isi, batch.edge_index_isi, batch.ptr_isi,
         )
         if batch.mask_x is not None:
             dec_x = dec_x[batch.mask_x]
@@ -115,7 +131,7 @@ class MainModel(LightningModule):
         total_loss = 0
         loss_g = F.cross_entropy(logits_g, batch.y)
         total_loss += loss_g
-        o = {"total_loss": total_loss, "logits_g": logits_g, "loss_g": loss_g}
+        o = {"logits_g": logits_g, "loss_g": loss_g}
         if self.hparams.lambda_aux_x > 0 and batch.labels_x is not None:
             loss_x = F.cross_entropy(dec_x, batch.labels_x)
             total_loss += self.hparams.lambda_aux_x * loss_x
@@ -124,6 +140,10 @@ class MainModel(LightningModule):
             loss_e = F.cross_entropy(dec_e, batch.labels_e)
             total_loss += self.hparams.lambda_aux_e * loss_e
             o["loss_e"] = loss_e
+        if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
+            total_loss += self.hparams.lambda_aux_isi * loss_isi
+            o["loss_isi"] = loss_isi
+        o["total_loss"] = total_loss
         return o
 
 
@@ -230,7 +250,7 @@ if __name__ == '__main__':
     main_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="SMALL-E",
+        custom_key="BIE2D2F64-ISI-X",
     )
     pprint_args(main_args)
 
