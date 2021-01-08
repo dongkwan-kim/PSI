@@ -123,6 +123,14 @@ class MultiLinear(nn.Module):
                 self.activation, self.use_bn, self.dropout,
             )
 
+    def layer_repr(self):
+        """
+        :return: e.g., '64->64'
+        """
+        hidden_layers = [self.num_hidden] * (self.num_layers - 1) if self.num_layers >= 2 else []
+        layers = [self.num_input] + hidden_layers + [self.num_out]
+        return "->".join(str(l) for l in layers)
+
 
 class Act(nn.Module):
 
