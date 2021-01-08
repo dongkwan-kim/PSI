@@ -13,6 +13,8 @@ DEFAULT: &DEFAULT
 
   lr: 0.001
   num_encoder_layers: 2  # todo
+  num_decoder_body_layers: 2  # todo
+
   epochs: 50
   use_skip: True
   precision: 16  # todo
@@ -50,7 +52,7 @@ DNS-FNTN-Linear-SHORT: &DNS-FNTN-Linear-SHORT
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-DNS-FNTN-Linear-BIE2D2F64: &DNS-FNTN-Linear-BIE2D2F64
+DNS-FNTN-Linear-MEDIUM: &DNS-FNTN-Linear-MEDIUM
   <<: *DNS-FNTN-Linear
   dataset_slice_range_1: 50
   dataset_slice_range_2: 55
@@ -78,7 +80,7 @@ DNS-FNTN-BISAGE-SHORT: &DNS-FNTN-BISAGE-SHORT
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-DNS-FNTN-BISAGE-BIE2D2F64: &DNS-FNTN-BISAGE-BIE2D2F64
+DNS-FNTN-BISAGE-MEDIUM: &DNS-FNTN-BISAGE-MEDIUM
   <<: *DNS-FNTN-BISAGE
   dataset_slice_range_1: 50
   dataset_slice_range_2: 55
@@ -99,6 +101,10 @@ DNS-FNTN-BISAGE-SHORT-0SG:
 
 DNS-FNTN-BISAGE-LONG-0SG:
   <<: *DNS-FNTN-BISAGE-LONG
+  data_use_obs_edge_only: False
+
+DNS-FNTN-BISAGE-XLONG-0SG:
+  <<: *DNS-FNTN-BISAGE-XLONG
   data_use_obs_edge_only: False
 
 DNS-FNTN-BISAGE-SHORT-1SG:
