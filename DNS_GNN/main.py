@@ -224,11 +224,26 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     return ret
 
 
-def run_train_multiple(num_runs, args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
-    ret_list = defaultdict(list)
+def run_train_multiple(num_runs, args,
+                       trainer_given_kwargs=None, run_test=True, clean_ckpt=False,
+                       change_model_seed=True, change_dataset_seed=True) -> Dict[str, List[float]]:
+    """
+    return example:
+        defaultdict(<class 'list'>,
+            {'test_acc': [0.0, 0.0, 0.0],
+             'test_loss': [1.4073759317398071,
+                           1.3666242361068726,
+                           1.360438585281372]})
+    """
+    assert change_model_seed or change_dataset_seed
+
+    test_list = defaultdict(list)
     for r in range(num_runs):
         _args = deepcopy(args)
-        _args.model_seed += r
+        if change_model_seed:
+            _args.model_seed += r
+        if change_dataset_seed:
+            _args.dataset_seed += r
 
         single_results = run_train(
             _args,
@@ -237,28 +252,40 @@ def run_train_multiple(num_runs, args, trainer_given_kwargs=None, run_test=True,
             clean_ckpt=clean_ckpt,
         )
         for k, v in single_results["test_results"].items():
-            ret_list[k].append(v)
+            test_list[k].append(v)
 
         # Make GPU empty.
         for k in single_results:
             single_results[k] = None
         garbage_collection_cuda()
 
-    return ret_list
+    return test_list
 
 
 if __name__ == '__main__':
+
+    MODE = "RUN_MULTIPLE"  # RUN_ONCE, RUN_MULTIPLE
+
     main_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",
-        custom_key="BIE2D2F64-ISI-X",
+        custom_key="BISAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
     )
     pprint_args(main_args)
 
-    main_results = run_train(
-        main_args,
-        run_test=True,
-        clean_ckpt=True,
-    )
-    main_trainer = main_results["trainer"]
-    main_model = main_results["model"]
+    if MODE == "RUN_ONCE":
+        main_results = run_train(
+            main_args,
+            run_test=True,
+            clean_ckpt=True,
+        )
+        main_trainer = main_results["trainer"]
+        main_model = main_results["model"]
+    elif MODE == "RUN_MULTIPLE":
+        main_results = run_train_multiple(
+            num_runs=5,
+            args=main_args,
+            trainer_given_kwargs=None, run_test=True, clean_ckpt=True,
+            change_model_seed=True, change_dataset_seed=False,
+        )
+        pprint(main_results)
