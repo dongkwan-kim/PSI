@@ -39,6 +39,21 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
+class EPSILON(object):
+
+    def __init__(self):
+        super().__init__()
+
+    def __add__(self, other):
+        if other.dtype == torch.float16:
+            return other + 1e-7
+        else:
+            return other + 1e-15
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+
 # Others
 
 def create_hash(o: dict):

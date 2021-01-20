@@ -8,8 +8,9 @@ from torch_geometric.nn import DeepGraphInfomax
 from torch_geometric.nn.inits import glorot
 
 from model_utils import MultiLinear
+from utils import EPSILON
 
-EPS = 1e-15
+EPS = EPSILON()
 
 
 class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
@@ -51,12 +52,16 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
             z_neg = self.encoder(x_neg)
         else:
             z_pos, z_neg = x_pos, x_neg
-        loss = self.bce_loss(summarized, z_pos, z_neg)
+        loss = self.loss(pos_z=z_pos, neg_z=z_neg, summary=summarized)
         return loss
 
-    def bce_loss(self, summarized, z_pos, z_neg):
-        n = z_pos.size(0) + z_neg.size(0)
-        return self.loss(pos_z=z_pos, neg_z=z_neg, summary=summarized) / n
+    def loss(self, pos_z, neg_z, summary):
+        r"""Computes the mutual information maximization objective."""
+        pos_loss = -torch.log(
+            self.discriminate(pos_z, summary, sigmoid=True) + EPS).mean()
+        neg_loss = -torch.log(
+            1 - self.discriminate(neg_z, summary, sigmoid=True) + EPS).mean()
+        return pos_loss + neg_loss
 
     def __repr__(self):
         return '{}({}, {}, encoder={})'.format(
