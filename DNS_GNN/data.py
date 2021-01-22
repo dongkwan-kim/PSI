@@ -6,6 +6,7 @@ from torch_geometric.data import InMemoryDataset, Data
 
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
+from data_transform import CompleteSubgraph
 
 
 class DNSDataModule(pl.LightningDataModule):
@@ -48,7 +49,7 @@ class DNSDataModule(pl.LightningDataModule):
                 debug=self.hparams.dataset_debug,
                 seed=self.hparams.dataset_seed,
                 transform=None,
-                pre_transform=None,
+                pre_transform=CompleteSubgraph(),
             )
         else:
             raise ValueError(f"Wrong dataset: {self.dataset_name}")
@@ -69,6 +70,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
+            inter_subgraph_infomax_edge_type=self.hparams.inter_subgraph_infomax_edge_type,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler
@@ -129,7 +131,7 @@ def random_input_generator(n_p=49, n_n=50, F_f=10, e_p=11, e_n=13, batch_size=1,
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
+    _args = get_args("DNS", "FNTN", "BIE2D2F64-ISI-X-SG")
 
     dm = DNSDataModule(_args, prepare_data_and_setup=True)
     print(dm)

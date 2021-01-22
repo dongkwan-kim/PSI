@@ -65,7 +65,7 @@ class DatasetBase(InMemoryDataset):
         return len(self.vocab)
 
     def _get_important_elements(self):
-        return {
+        ie = {
             "name": self.name,
             "slice_type": self.slice_type,
             "slice_criteria_range": self.slice_range,
@@ -73,6 +73,9 @@ class DatasetBase(InMemoryDataset):
             "seed": self.seed,
             "debug": self.debug,
         }
+        if self.pre_transform is not None:
+            ie["pre_transform"] = str(self.pre_transform)
+        return ie
 
     def _logging_args(self):
         with open(osp.join(self.processed_dir, "args.txt"), "w") as f:

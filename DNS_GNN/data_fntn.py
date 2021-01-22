@@ -15,6 +15,7 @@ from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
 from data_base import DatasetBase
+from data_transform import CompleteSubgraph
 
 
 def preprocess_text(text_list: List[str], repr_type="tfidf", **kwargs) -> (torch.Tensor, Dict[int, str]):
@@ -150,6 +151,12 @@ class FNTN(DatasetBase):
         data_train, data_val, data_test = self.process_with_slice_data_train_val_test(data_list)
 
         data_total = data_train + data_val + data_test
+        if self.pre_transform is not None:
+            if isinstance(self.pre_transform, CompleteSubgraph):
+                self.pre_transform.global_edge_index = global_data.edge_index[[1, 0]]
+            data_total = [self.pre_transform(d) for d in tqdm(data_total)]
+            cprint("Pre-transformed: {}".format(self.pre_transform), "green")
+
         torch.save(self.collate(data_total), self.processed_paths[0])
 
         self.num_train = len(data_train)
@@ -165,20 +172,34 @@ class FNTN(DatasetBase):
 if __name__ == '__main__':
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DEBUG = True
+    DEBUG = False
 
-    fntn = FNTN(
+    fntn_kwargs = dict(
         root=PATH,
         name="0.0",  # 0.0 0.001 0.002 0.003 0.004
         slice_type="num_edges",
         slice_range=(5, 10),
-        num_slices=5,
+        num_slices=1,
         val_ratio=0.15,
         test_ratio=0.15,
         debug=DEBUG,
+        seed=42,
     )
 
-    train_fntn, val_fntn, test_fntn = fntn.get_train_val_test()
+    fntn = FNTN(**fntn_kwargs)
+    fntn_cs = FNTN(pre_transform=CompleteSubgraph(), **fntn_kwargs)
 
-    for b in train_fntn:
+    train_fntn, val_fntn, test_fntn = fntn.get_train_val_test()
+    train_fntn_cs, val_fntn_cs, test_fntn_cs = fntn_cs.get_train_val_test()
+
+    print("Train")
+    for b, b_cs in zip(train_fntn, train_fntn_cs):
         print(b, b.num_obs_x)
+        print(b_cs, b_cs.num_obs_x)
+        print("------")
+
+    print("Test")
+    for b, b_cs in zip(test_fntn, test_fntn_cs):
+        print(b, b.num_obs_x)
+        print(b_cs, b_cs.num_obs_x)
+        exit()
