@@ -12,6 +12,8 @@ from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj
 import numpy as np
 import numpy_indexed as npi
 
+from data_transform import CompleteSubgraph
+
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
     edge_attr_wo_zero = edge_attr.clone()
@@ -30,8 +32,10 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
     def __init__(self, global_data, subdata_list, num_hops,
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
-                 obs_x_range=None, use_obs_edge_only=False, use_pergraph_attr=False,
-                 balanced_sampling=True, use_inter_subgraph_infomax=False,
+                 obs_x_range=None, use_obs_edge_only=False,
+                 use_pergraph_attr=False, balanced_sampling=True,
+                 use_inter_subgraph_infomax=False,
+                 inter_subgraph_infomax_edge_type="global",
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -47,6 +51,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
+        self.inter_subgraph_infomax_edge_type = inter_subgraph_infomax_edge_type
         self.N = global_data.edge_index.max() + 1
 
         self.verbose = verbose
@@ -179,8 +184,21 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         if self.use_inter_subgraph_infomax:
             d_neg = self.sample_uni_data_neg(uni_data_pos=d)
-            x_isi = torch.cat([d.x, d_neg.x], dim=0).squeeze()  # [N_pos + N_neg]
-            edge_index_isi = torch.cat([d.edge_index, d_neg.edge_index], dim=1)
+
+            if self.inter_subgraph_infomax_edge_type == "global":
+                assert d.edge_index_cs is not None
+                x_pos_isi, edge_index_pos_isi = d.x_cs, d.edge_index_cs
+                x_neg_isi, edge_index_neg_isi = d_neg.x_cs, d_neg.edge_index_cs
+
+            elif self.inter_subgraph_infomax_edge_type == "subgraph":
+                x_pos_isi, edge_index_pos_isi = d.x, d.edge_index
+                x_neg_isi, edge_index_neg_isi = d_neg.x, d_neg.edge_index
+
+            else:
+                raise ValueError
+
+            x_isi = torch.cat([x_pos_isi, x_neg_isi], dim=0).squeeze()  # [N_pos + N_neg]
+            edge_index_isi = torch.cat([edge_index_pos_isi, edge_index_neg_isi], dim=1)
 
             # Relabeling
             _node_idx = observed_nodes.new_full((self.N,), -1)
@@ -223,6 +241,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
 if __name__ == '__main__':
     from data_fntn import FNTN
+    from pytorch_lightning import seed_everything
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = True
@@ -235,6 +254,7 @@ if __name__ == '__main__':
         num_slices=1,
         val_ratio=0.15,
         test_ratio=0.15,
+        pre_transform=CompleteSubgraph(),
         debug=DEBUG,
     )
 
@@ -246,9 +266,27 @@ if __name__ == '__main__':
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
         use_inter_subgraph_infomax=True,  # todo
+        inter_subgraph_infomax_edge_type="global",  # todo
         shuffle=True,
     )
-    print("Train w/ ISI")
+    seed_everything(42)
+    cprint("Train w/ ISI: Global", "green")
+    for i, b in enumerate(sampler):
+        print(i, b)
+        if i == 2:
+            break
+
+    sampler = KHopWithLabelsXESampler(
+        fntn.global_data, train_fntn,
+        num_hops=1, use_labels_x=True, use_labels_e=False,
+        neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
+        obs_x_range=(5, 10),
+        use_inter_subgraph_infomax=True,  # todo
+        inter_subgraph_infomax_edge_type="subgraph",  # todo
+        shuffle=True,
+    )
+    seed_everything(42)
+    cprint("Train w/ ISI: Subgraph", "green")
     for i, b in enumerate(sampler):
         print(i, b)
         if i == 2:
@@ -261,7 +299,7 @@ if __name__ == '__main__':
         obs_x_range=(5, 10),
         shuffle=True,
     )
-    print("Train first")
+    cprint("Train first", "green")
     for i, b in enumerate(sampler):
         # Data(edge_index_01=[2, 97688], edge_index_2=[2, 147], labels_e=[440], labels_x=[298],
         #      mask_e=[97835], mask_x=[7261], obs_x_idx=[9], x=[7261], y=[1])
@@ -269,7 +307,7 @@ if __name__ == '__main__':
         if i == 2:
             break
 
-    print("Train second")
+    cprint("Train second", "green")
     for b in sampler:  # shuffling test
         print(b)
         break
@@ -280,7 +318,7 @@ if __name__ == '__main__':
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
         shuffle=False,
     )
-    print("Val")
+    cprint("Val", "green")
     for b in sampler:
         # Data(edge_index_01=[2, 31539], obs_x_idx=[8], x=[3029], y=[1])
         print(b)
@@ -293,7 +331,7 @@ if __name__ == '__main__':
         use_obs_edge_only=True,  # this.
         shuffle=True,
     )
-    print("WO Sampler")
+    cprint("WO Sampler", "green")
     for b in sampler:
         # Data(edge_index_01=[2, 15], x=[10], y=[1])
         print(b)
