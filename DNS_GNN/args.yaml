@@ -264,11 +264,23 @@ DNS-FNTN-BIE2D2F64-ISI: &DNS-FNTN-BIE2D2F64-ISI
   use_inter_subgraph_infomax: True
   data_sampler_dropout_edges: 0.3
 
-DNS-FNTN-BIE2D2F64-ISI-X:
+DNS-FNTN-BIE2D2F64-ISI-X: &DNS-FNTN-BIE2D2F64-ISI-X
   <<: *DNS-FNTN-BIE2D2F64-ISI
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
+
+DNS-FNTN-BIE2D2F64-ISI-X-GB:
+  <<: *DNS-FNTN-BIE2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  lambda_l2: 1e-3
+  lambda_aux_x: 0.1
+  lambda_aux_isi: 0.1
+  pool_ratio: 0.1
+
+DNS-FNTN-BIE2D2F64-ISI-X-SG:
+  <<: *DNS-FNTN-BIE2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: subgraph
   lambda_l2: 1e-3
   lambda_aux_x: 0.1
   lambda_aux_isi: 0.1
