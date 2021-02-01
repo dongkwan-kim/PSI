@@ -121,15 +121,15 @@ class DatasetBase(InMemoryDataset):
             data_test = data_test[:3]
             cprint("USING DEBUG MODE", "red")
 
-        data_train = self.slice_edge_attr(data_train, is_eval=False)
+        data_train = self.slice_edges(data_train, is_eval=False)
         cprint("Sliced edge_attr for data_train by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_train)), "green")
 
-        data_val = self.slice_edge_attr(data_val, is_eval=True)
+        data_val = self.slice_edges(data_val, is_eval=True)
         cprint("Sliced edge_attr for data_val by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_val)), "green")
 
-        data_test = self.slice_edge_attr(data_test, is_eval=True)
+        data_test = self.slice_edges(data_test, is_eval=True)
         cprint("Sliced edge_attr for data_test by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_test)), "green")
 
@@ -151,7 +151,7 @@ class DatasetBase(InMemoryDataset):
         )
         return data_train, data_val, data_test
 
-    def slice_edge_attr(self, data_list: List[Data], is_eval=False):
+    def slice_edges(self, data_list: List[Data], is_eval=False):
         """Randomly slice edge_attr by time or number of nodes.
             There can be duplicates.
             e.g.,
@@ -160,45 +160,52 @@ class DatasetBase(InMemoryDataset):
                 slice_range = (2., 3.),
                 num_slices = 3,
 
-                Then, one of the possible new_edge_attr is
-                    [0., 1., 2.] and [0., 1., 2.] and [0., 1., 2., 3.]
-
         :param data_list: List of Data
+            e.g., [..., Data(edge_index=[2, 250], x=[17, 1], y=[1]), ...]
         :param is_eval: default False
-        :return: data_list with sliced edge_attr
-                Data(edge_attr=[new_E, 1], edge_index=[2, E], pergraph_attr=[D], num_obs_x=[1], x=[N, 1], y=[1])
-                where new_E is num_edges after slicing
+        :return: data_list with num_obs_x or obs_edge  # todo: rename num_obs_x to num_obs_edge
+            e.g., Data(edge_attr=[E, 1], edge_index=[2, E], pergraph_attr=[D], num_obs_x=[1], x=[N, 1], y=[1])
         """
         new_data_list = []
-        slice_list = []
-        if self.slice_type == 'time':
-            for data in tqdm(data_list):
-                time_range_mask = (self.slice_range[0] <= data.edge_attr) & (data.edge_attr < self.slice_range[1])
-                targets = time_range_mask.squeeze().nonzero().squeeze().tolist()
-                if not is_eval:
-                    random_slices = np.random.choice(targets, self.num_slices, replace=True)
-                else:
-                    random_slices = [targets[len(targets) // 2]]
-                slice_list.append(random_slices)
 
-        elif self.slice_type == "num_edges":
-            for _ in range(len(data_list)):
-                targets = range(self.slice_range[0], self.slice_range[1])
+        if self.slice_type == "time" or self.slice_type == "num_edges":
+
+            for data in data_list:
+
+                if self.slice_type == "time":
+                    time_range_mask = (self.slice_range[0] <= data.edge_attr) & (data.edge_attr < self.slice_range[1])
+                    targets = time_range_mask.squeeze().nonzero().squeeze().tolist()
+                elif self.slice_type == "num_edges":
+                    targets = range(self.slice_range[0], self.slice_range[1])
+
                 if not is_eval:
                     random_slices = np.random.choice(targets, self.num_slices, replace=True)
                 else:
                     random_slices = [targets[len(targets) // 2]]
-                slice_list.append(random_slices)
+
+                for one_slice in random_slices:  # int-iterators
+                    new_data = data.clone()
+                    new_data.num_obs_x = torch.Tensor([one_slice]).long()
+                    new_data_list.append(new_data)
+
         elif self.slice_type == "random":
-            raise NotImplementedError
+            for data in data_list:
+                # e.g., Data(edge_index=[2, 250], x=[17, 1], y=[1])
+                E = data.edge_index.size(1)
+                targets = range(self.slice_range[0], self.slice_range[1])
+
+                if not is_eval:
+                    random_slices = np.random.choice(targets, self.num_slices, replace=True)
+                else:
+                    random_slices = [targets[len(targets) // 2]]
+
+                for one_slice in random_slices:  # int-iterators
+                    new_data = data.clone()
+                    new_data.obs_edge = torch.randperm(E)[:one_slice]
+                    new_data_list.append(new_data)
+
         else:
             raise ValueError("{} is not appropriate slice_type".format(self.slice_type))
-
-        for data, random_slices in tqdm(zip(data_list, slice_list), total=len(data_list)):
-            for idx in random_slices:  # int-iterators
-                data = data.clone()
-                data.num_obs_x = torch.Tensor([idx]).long()
-                new_data_list.append(data)
 
         return new_data_list
 
