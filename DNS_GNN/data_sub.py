@@ -233,7 +233,7 @@ if __name__ == '__main__':
     TYPE = "HPOMetab"
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DEBUG = True
+    DEBUG = False
 
     if TYPE == "HPONeuro":  # multi-label
         dts = HPONeuro(
@@ -241,7 +241,7 @@ if __name__ == '__main__':
             name="HPO",
             slice_type="random",
             slice_range=(5, 10),
-            num_slices=5,
+            num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
             debug=DEBUG,
@@ -252,7 +252,7 @@ if __name__ == '__main__':
             name="HPO",
             slice_type="random",
             slice_range=(5, 10),
-            num_slices=5,
+            num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
             debug=DEBUG,
@@ -262,5 +262,10 @@ if __name__ == '__main__':
 
     train_dts, val_dts, test_dts = dts.get_train_val_test()
 
+    cprint("Train samples", "yellow")
     for b in train_dts:
+        print(b)
+
+    cprint("Validation samples", "yellow")
+    for b in val_dts:
         print(b)
