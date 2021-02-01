@@ -1,4 +1,6 @@
 import pickle
+from collections import OrderedDict
+from itertools import chain
 from pprint import pprint
 from typing import List, Dict, Tuple
 
@@ -82,6 +84,34 @@ class DatasetBase(InMemoryDataset):
             f.writelines(["{}: {}\n".format(k, v) for k, v in self._get_important_elements().items()])
         cprint("Args logged: ")
         pprint(self._get_important_elements())
+
+    def _get_stats(self, stat_names=None, stat_functions=None):
+        if stat_names is None:
+            stat_names = ['x', 'edge_index']
+        if stat_functions is None:
+            stat_functions = [
+                torch.mean, torch.std,
+                torch.min, torch.max, torch.median,
+            ]
+        stat_dict = OrderedDict()
+        for name in stat_names:
+            if name in self.slices:
+                s_vec = (self.slices[name][1:] - self.slices[name][:-1])
+                s_vec = s_vec.float()
+                for func in stat_functions:
+                    printing_name = "{}/#{}".format(func.__name__, name)
+                    printing_value = func(s_vec)
+                    stat_dict[printing_name] = printing_value
+        s = {
+            "num_graphs": len(self),
+            "num_train": self.num_train, "num_val": self.num_val,
+            "num_test": len(self) - self.num_train - self.num_val,
+            "num_classes": self.num_classes,
+            "num_global_nodes": self.global_data.edge_index.max() + 1,
+            "num_global_edges": self.global_data.edge_index.size(1),
+            **stat_dict,
+        }
+        return s
 
     @property
     def raw_dir(self):
@@ -219,6 +249,17 @@ class DatasetBase(InMemoryDataset):
         data_val = data_list[self.num_train:num_train_and_val]
         data_test = data_list[num_train_and_val:]
         return data_train, data_val, data_test
+
+    def print_summary(self):
+
+        def out(v):
+            return str(float(v)) if isinstance(v, torch.Tensor) else str(v)
+
+        print("---------------------------------------------")
+        for k, v in chain(self._get_important_elements().items(),
+                          self._get_stats().items()):
+            print("{:>20}{:>25}".format(k, out(v)))
+        print("---------------------------------------------")
 
     def __repr__(self):
         return '{}(\n{}\n)'.format(
