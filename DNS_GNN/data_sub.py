@@ -65,7 +65,7 @@ def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], 
         if len(y.size()) == 0:
             y = torch.Tensor([y]).long()
         else:
-            y = y.long()
+            y = y.view(1, -1).long()
         edge_index, _ = subgraph(x_index, global_edge_index, relabel_nodes=False)
         data = Data(x=x_index, edge_index=edge_index, y=y)
         data_list.append(data)
