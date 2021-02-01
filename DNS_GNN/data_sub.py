@@ -228,9 +228,27 @@ class HPOMetab(DatasetSubGNN):
         super().process()
 
 
+class EMUser(DatasetSubGNN):
+
+    def __init__(self, root, name,
+                 slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
+                 val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
+                 transform=None, pre_transform=None, **kwargs):
+        super(EMUser, self).__init__(
+            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
+            transform, pre_transform, **kwargs,
+        )
+
+    def download(self):
+        super().download()
+
+    def process(self):
+        super().process()
+
+
 if __name__ == '__main__':
 
-    TYPE = "HPOMetab"
+    TYPE = "EMUser"
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = False
@@ -257,15 +275,32 @@ if __name__ == '__main__':
             test_ratio=0.15,
             debug=DEBUG,
         )
+    elif TYPE == "EMUser":
+        dts = EMUser(
+            root=PATH,
+            name="EMUser",
+            slice_type="random",
+            slice_range=(5, 10),
+            num_slices=1,
+            val_ratio=0.15,
+            test_ratio=0.15,
+            debug=DEBUG,
+        )
     else:
         raise ValueError
 
     train_dts, val_dts, test_dts = dts.get_train_val_test()
 
     cprint("Train samples", "yellow")
-    for b in train_dts:
+    for i, b in enumerate(train_dts):
         print(b)
+        if i >= 5:
+            break
 
     cprint("Validation samples", "yellow")
-    for b in val_dts:
+    for i, b in enumerate(val_dts):
         print(b)
+        if i >= 5:
+            break
+
+    dts.print_summary()
