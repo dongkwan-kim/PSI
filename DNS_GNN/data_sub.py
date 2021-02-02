@@ -15,6 +15,7 @@ import os.path as osp
 from tqdm import tqdm
 
 from data_base import DatasetBase
+from utils import from_networkx_customized_ordering
 
 
 def read_subgnn_data(edge_list_path, subgraph_path, embedding_path):
@@ -45,7 +46,7 @@ def read_subgnn_data(edge_list_path, subgraph_path, embedding_path):
     # read networkx graph from edge list
     global_nxg: nx.Graph = nx.read_edgelist(edge_list_path)
     cprint("Loaded global_graph at {}".format(edge_list_path), "green")
-    global_data = from_networkx(global_nxg)
+    global_data = from_networkx_customized_ordering(global_nxg, ordering="keep")
     cprint("Converted global_graph to PyG format", "green")
     global_data.x = xs
 

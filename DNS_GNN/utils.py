@@ -1,14 +1,63 @@
 import hashlib
 from collections import Counter
 
+import networkx as nx
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
+import torch_geometric
 from termcolor import cprint
 
 
-# Torch related
+# PyTorch/PyTorch Geometric related
+
+
+def convert_node_labels_to_integers_customized_ordering(
+    G, first_label=0, ordering="default", label_attribute=None
+):
+    if ordering == "keep":
+        mapping = dict(zip(G.nodes(), [int(v) for v in G.nodes()]))
+        H = nx.relabel_nodes(G, mapping)
+        if label_attribute is not None:
+            nx.set_node_attributes(H, {v: k for k, v in mapping.items()}, label_attribute)
+        return H
+    else:
+        return nx.convert_node_labels_to_integers(G, first_label, ordering, label_attribute)
+
+
+def from_networkx_customized_ordering(G, ordering="default"):
+    r"""Converts a :obj:`networkx.Graph` or :obj:`networkx.DiGraph` to a
+    :class:`torch_geometric.data.Data` instance.
+
+    Args:
+        G (networkx.Graph or networkx.DiGraph): A networkx graph.
+    """
+    G = convert_node_labels_to_integers_customized_ordering(G, ordering=ordering)
+    G = G.to_directed() if not nx.is_directed(G) else G
+    edge_index = torch.tensor(list(G.edges)).t().contiguous()
+
+    data = {}
+
+    for i, (_, feat_dict) in enumerate(G.nodes(data=True)):
+        for key, value in feat_dict.items():
+            data[key] = [value] if i == 0 else data[key] + [value]
+
+    for i, (_, _, feat_dict) in enumerate(G.edges(data=True)):
+        for key, value in feat_dict.items():
+            data[key] = [value] if i == 0 else data[key] + [value]
+
+    for key, item in data.items():
+        try:
+            data[key] = torch.tensor(item)
+        except ValueError:
+            pass
+
+    data['edge_index'] = edge_index.view(2, -1)
+    data = torch_geometric.data.Data.from_dict(data)
+    data.num_nodes = G.number_of_nodes()
+    return data
+
 
 def to_one_hot(labels_integer_tensor: torch.Tensor, n_classes: int) -> np.ndarray:
     labels = labels_integer_tensor.cpu().numpy()
@@ -94,3 +143,13 @@ def merge_or_update(old_dict: dict, new_dict: dict):
             else:
                 old_dict[k] = v_new
     return old_dict
+
+
+if __name__ == '__main__':
+    nxg = nx.Graph()
+    nxg.add_edges_from([(0, 1), (0, 2), (0, 5)])
+    print(nxg.edges)
+    pgg = from_networkx_customized_ordering(nxg, ordering="keep")
+    print(pgg.edge_index)
+    pgg = from_networkx_customized_ordering(nxg, ordering="default")
+    print(pgg.edge_index)
