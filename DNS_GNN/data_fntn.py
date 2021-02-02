@@ -202,4 +202,6 @@ if __name__ == '__main__':
     for b, b_cs in zip(test_fntn, test_fntn_cs):
         print(b, b.num_obs_x)
         print(b_cs, b_cs.num_obs_x)
-        exit()
+        break
+
+    fntn.print_summary()
