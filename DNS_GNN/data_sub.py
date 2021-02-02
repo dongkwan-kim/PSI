@@ -68,6 +68,10 @@ def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], 
         else:
             y = y.view(1, -1).long()
         edge_index, _ = subgraph(x_index, global_edge_index, relabel_nodes=False)
+        if edge_index.size(1) <= 0:
+            cprint("No edge graph: size of X is {}".format(x_index.size()), "red")
+        if x_index.size(0) <= 1:
+            cprint("Single node graph: size of E is {}".format(edge_index.size()), "yellow")
         data = Data(x=x_index, edge_index=edge_index, y=y)
         data_list.append(data)
     return data_list
@@ -249,7 +253,7 @@ class EMUser(DatasetSubGNN):
 
 if __name__ == '__main__':
 
-    TYPE = "EMUser"
+    TYPE = "HPONeuro"
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = False
@@ -257,9 +261,9 @@ if __name__ == '__main__':
     if TYPE == "HPONeuro":  # multi-label
         dts = HPONeuro(
             root=PATH,
-            name="HPO",
+            name="HPONeuro",
             slice_type="random",
-            slice_range=(5, 10),
+            slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
@@ -268,9 +272,9 @@ if __name__ == '__main__':
     elif TYPE == "HPOMetab":
         dts = HPOMetab(
             root=PATH,
-            name="HPO",
+            name="HPOMetab",
             slice_type="random",
-            slice_range=(5, 10),
+            slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
