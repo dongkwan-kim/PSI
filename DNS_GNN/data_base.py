@@ -151,15 +151,15 @@ class DatasetBase(InMemoryDataset):
             data_test = data_test[:3]
             cprint("USING DEBUG MODE", "red")
 
-        data_train = self.slice_edges(data_train, is_eval=False)
+        data_train = self.corrupt_data(data_train, is_eval=False)
         cprint("Sliced edge_attr for data_train by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_train)), "green")
 
-        data_val = self.slice_edges(data_val, is_eval=True)
+        data_val = self.corrupt_data(data_val, is_eval=True)
         cprint("Sliced edge_attr for data_val by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_val)), "green")
 
-        data_test = self.slice_edges(data_test, is_eval=True)
+        data_test = self.corrupt_data(data_test, is_eval=True)
         cprint("Sliced edge_attr for data_test by [{}, {}], counts: {}".format(
             self.slice_type, self.slice_range, len(data_test)), "green")
 
@@ -181,8 +181,8 @@ class DatasetBase(InMemoryDataset):
         )
         return data_train, data_val, data_test
 
-    def slice_edges(self, data_list: List[Data], is_eval=False):
-        """Randomly slice edge_attr by time or number of nodes.
+    def corrupt_data(self, data_list: List[Data], is_eval=False):
+        """Randomly slice nodes or edges by time, number of nodes, or just random sampling.
             There can be duplicates.
             e.g.,
                 edge_attr = [0., 1., 2., 3., 4.],
@@ -193,7 +193,7 @@ class DatasetBase(InMemoryDataset):
         :param data_list: List of Data
             e.g., [..., Data(edge_index=[2, 250], x=[17, 1], y=[1]), ...]
         :param is_eval: default False
-        :return: data_list with num_obs_x or obs_edge  # todo: rename num_obs_x to num_obs_edge
+        :return: data_list with num_obs_x or obs_x
             e.g., Data(edge_attr=[E, 1], edge_index=[2, E], pergraph_attr=[D], num_obs_x=[1], x=[N, 1], y=[1])
         """
         new_data_list = []
@@ -221,7 +221,7 @@ class DatasetBase(InMemoryDataset):
         elif self.slice_type == "random":
             for data in data_list:
                 # e.g., Data(edge_index=[2, 250], x=[17, 1], y=[1])
-                E = data.edge_index.size(1)
+                N = data.x.size(0)
                 targets = range(self.slice_range[0], self.slice_range[1])
 
                 if not is_eval:
@@ -231,7 +231,7 @@ class DatasetBase(InMemoryDataset):
 
                 for one_slice in random_slices:  # int-iterators
                     new_data = data.clone()
-                    new_data.obs_edge = torch.randperm(E)[:one_slice]
+                    new_data.obs_x = torch.randperm(N)[:one_slice]
                     new_data_list.append(new_data)
 
         else:
