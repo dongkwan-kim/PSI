@@ -195,6 +195,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
         logger=logger,
         checkpoint_callback=checkpoint_callback,  # can be changed in HP-search
         callbacks=callbacks if len(callbacks) > 0 else None,
+        accumulate_grad_batches=args.accumulate_grad_batches,
         num_sanity_val_steps=0,
         fast_dev_run=args.model_debug,
         precision=precision,

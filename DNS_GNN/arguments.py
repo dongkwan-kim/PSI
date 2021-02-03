@@ -50,6 +50,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--dataset-seed", default=42)
     parser.add_argument("--model-seed", default=42)
     parser.add_argument("--model-debug", default=False)
+    parser.add_argument("--accumulate-grad-batches", default=64)
     parser.add_argument("--use-tensorboard", default=True)
     parser.add_argument("--precision", default=32)
     parser.add_argument("--version", default="1.0")
@@ -158,6 +159,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "data_sampler_shuffle", "data_use_obs_edge_only",
         "model_sampler_name", "model_sampler_kwargs",
         "model_name", "dataset_name", "custom_key", "dataset_seed", "model_seed", "model_debug",
+        "accumulate_grad_batches",
         "lr", "batch_size", "lambda_l2", "lambda_aux_x", "lambda_aux_e", "lambda_aux_isi",
         "use_early_stop", "early_stop_patience", "early_stop_min_delta",
         "global_channel_type",
