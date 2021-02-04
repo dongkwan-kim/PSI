@@ -6,7 +6,7 @@ import time
 import torch
 import torch.utils.data.dataloader
 from termcolor import cprint
-from torch_geometric.data import Data
+from torch_geometric.data import Data, Batch
 from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj
 
 import numpy as np
@@ -36,6 +36,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False, balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
                  inter_subgraph_infomax_edge_type="global",
+                 batch_size=1,
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -60,13 +61,18 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 self.__class__.__name__, len(subdata_list), global_data), "blue")
 
         super(KHopWithLabelsXESampler, self).__init__(
-            subdata_list, batch_size=1, collate_fn=self.__collate__,
+            subdata_list, batch_size=batch_size, collate_fn=self.__collate__,
             shuffle=shuffle, **kwargs,
         )
 
-    def __collate__(self, uni_data):
+    def __collate__(self, data_list):
+        collated = []
+        for d in data_list:
+            collated.append(self.__collate_one__(d))
+        return Batch.from_data_list(collated)
+
+    def __collate_one__(self, d):
         # Data(edge_attr=[219, 1], edge_index=[2, 219], global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
-        d = uni_data[0]
         assert hasattr(d, "edge_index")
         assert hasattr(d, "edge_attr")
 
