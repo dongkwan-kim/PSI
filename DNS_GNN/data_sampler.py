@@ -66,6 +66,10 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         )
 
     def __collate__(self, data_list):
+
+        if len(data_list) == 1:
+            return self.__collate_one__(data_list[0])
+
         collated = []
         for d in data_list:
             collated.append(self.__collate_one__(d))
