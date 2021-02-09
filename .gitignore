@@ -2,7 +2,7 @@
 # Edit at https://www.gitignore.io/?templates=vim,code,macos,python,virtualenv,pycharm+all
 
 _*
-*_logs*
+*log*
 
 ### Code ###
 .vscode/*
