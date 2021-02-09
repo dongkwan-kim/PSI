@@ -37,7 +37,10 @@ class DNSDataModule(pl.LightningDataModule):
         return self.dataset.num_classes
 
     def prepare_data(self):
+        pre_transform = None
         if self.dataset_name == "FNTN":
+            if self.hparams.inter_subgraph_infomax_edge_type == "global":
+                pre_transform = CompleteSubgraph()
             self.dataset = FNTN(
                 root=self.hparams.dataset_path,
                 name=self.hparams.dataset_id,
@@ -49,7 +52,7 @@ class DNSDataModule(pl.LightningDataModule):
                 debug=self.hparams.dataset_debug,
                 seed=self.hparams.dataset_seed,
                 transform=None,
-                pre_transform=CompleteSubgraph(),
+                pre_transform=pre_transform,
             )
         else:
             raise ValueError(f"Wrong dataset: {self.dataset_name}")
@@ -70,7 +73,6 @@ class DNSDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
-            inter_subgraph_infomax_edge_type=self.hparams.inter_subgraph_infomax_edge_type,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler
