@@ -7,7 +7,8 @@ import torch
 import torch.utils.data.dataloader
 from termcolor import cprint
 from torch_geometric.data import Data, Batch
-from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj
+from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj, subgraph
+from torch_geometric.utils.num_nodes import maybe_num_nodes
 
 import numpy as np
 import numpy_indexed as npi
@@ -35,7 +36,6 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  obs_x_range=None, use_obs_edge_only=False,
                  use_pergraph_attr=False, balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
-                 inter_subgraph_infomax_edge_type="global",
                  batch_size=1,
                  shuffle=False, verbose=0, **kwargs):
 
@@ -52,7 +52,6 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
-        self.inter_subgraph_infomax_edge_type = inter_subgraph_infomax_edge_type
         self.N = global_data.edge_index.max() + 1
 
         self.verbose = verbose
@@ -76,27 +75,40 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         return Batch.from_data_list(collated)
 
     def __collate_one__(self, d):
-        # Data(edge_attr=[219, 1], edge_index=[2, 219], global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
         assert hasattr(d, "edge_index")
-        assert hasattr(d, "edge_attr")
+        edge_index = d.edge_index
+        edge_attr = getattr(d, "edge_attr", None)
 
-        edge_index, edge_attr = d.edge_index, d.edge_attr
-
-        if self.obs_x_range is not None:
-            num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
+        # Training stage: obs_x_range is not None -> sampling
+        # Evaluation stage: obs_x_range is None -> use it from Data
+        if hasattr(d, "num_obs_x"):
+            # Data(edge_attr=[219, 1], edge_index=[2, 219],
+            #      global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
+            if self.obs_x_range is not None:
+                num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
+            else:
+                num_obs_x = int(d.num_obs_x)
+            observed_edge_index = edge_index[:, :num_obs_x]
+            observed_nodes = observed_edge_index.flatten().unique()
+        elif hasattr(d, "obs_x"):
+            # Data(edge_index=[2, 402], obs_x=[7], x=[23, 1], y=[1])
+            if self.obs_x_range is not None:
+                num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
+                obs_x = torch.randperm(d.x.size(0))[:num_obs_x]
+            else:
+                obs_x = d.obs_x
+            observed_nodes = d.x[obs_x].flatten().unique()
+            observed_edge_index = None  # temporarily
         else:
-            num_obs_x = int(d.num_obs_x)
+            raise AttributeError
 
-        observed_edge_index = edge_index[:, :num_obs_x]
-        observed_nodes = observed_edge_index.flatten().unique()
-
-        """
-        It returns (1) the nodes involved in the subgraph, (2) the filtered
-        :obj:`edge_index` connectivity, (3) the mapping from node indices in
-        :obj:`node_idx` to their new location, and (4) the edge mask indicating
-        which edges were preserved.
-        """
         if not self.use_obs_edge_only:
+            """
+            It returns (1) the nodes involved in the subgraph, (2) the filtered
+            :obj:`edge_index` connectivity, (3) the mapping from node indices in
+            :obj:`node_idx` to their new location, and (4) the edge mask indicating
+            which edges were preserved.
+            """
             khop_nodes, khop_edge_index, mapping, _ = k_hop_subgraph(
                 node_idx=observed_nodes,
                 num_hops=self.num_hops,
@@ -106,19 +118,34 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 flow="target_to_source",  # Important.
             )
         else:
-            khop_nodes, khop_edge_index, mapping = observed_nodes, observed_edge_index, None
+            khop_nodes, mapping = observed_nodes, None
+            if observed_edge_index is not None:
+                khop_edge_index = observed_edge_index
+            else:
+                # The latter is necessary, since there can be isolated nodes.
+                num_nodes = max(maybe_num_nodes(edge_index),
+                                observed_nodes.max().item() + 1)
+                khop_edge_index, _ = subgraph(
+                    subset=observed_nodes,
+                    edge_index=edge_index,
+                    edge_attr=None, relabel_nodes=False,
+                    num_nodes=num_nodes,
+                )
 
         khp_edge_idx_npy = (khop_edge_index[0] * self.N + khop_edge_index[1]).numpy()
         sub_edge_idx_npy = (edge_index[0] * self.N + edge_index[1]).numpy()
 
-        # Bottle neck for large k-hop.
+        # Bottleneck for large k-hop.
         indices_of_sub_in_khp = npi.indices(sub_edge_idx_npy, khp_edge_idx_npy, missing=-1)  # [E_khp]
         is_khp_in_sub_edge = (indices_of_sub_in_khp >= 0)  # [E_khp]
         indices_of_sub_in_khp = indices_of_sub_in_khp[is_khp_in_sub_edge]  # [E_khp_and_in_sub_edge]
 
         # Construct edge_attr of khop_edges
         khop_edge_attr = np.zeros(khp_edge_idx_npy.shape[0])  # [E_khp]
-        khop_edge_attr[is_khp_in_sub_edge] = edge_attr.numpy()[indices_of_sub_in_khp, :].squeeze()
+        if edge_attr is not None:
+            khop_edge_attr[is_khp_in_sub_edge] = edge_attr.numpy()[indices_of_sub_in_khp, :].squeeze()
+        else:
+            khop_edge_attr[is_khp_in_sub_edge] = 1.0
         khop_edge_attr = torch.from_numpy(khop_edge_attr).float().unsqueeze(1)  # [E_khp, 1]
 
         # Relabeling nodes
@@ -128,7 +155,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         # Negative sampling of edges
         neg_edge_index = None
-        num_neg_samples = int(self.neg_sample_ratio * torch.sum(khop_edge_attr > 0))
+        num_pos_samples = np.sum(is_khp_in_sub_edge)
+        num_neg_samples = int(self.neg_sample_ratio * num_pos_samples)
         if self.use_labels_e and self.neg_sample_ratio > 0:
             neg_edge_index = negative_sampling(
                 edge_index=khop_edge_index,
@@ -142,6 +170,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 khop_edge_index, khop_edge_attr, p=self.dropout_edges,
             )
 
+        KE = khop_edge_index.size(1)
         khop_edge_attr, khop_edge_index = sort_by_edge_attr(khop_edge_attr, khop_edge_index)
 
         # 0: in-subgraph, 1: in-graph, 2: not-in-graph
@@ -149,7 +178,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         if self.use_labels_e:
             labels_e_2 = torch.full((neg_edge_index.size(1),), 2.).float()  # [E_khop_2]
             if self.balanced_sampling:
-                full_labels_e_01 = torch.full((khop_edge_attr.size(0),), -1.).float()
+                full_labels_e_01 = torch.full((KE,), -1.).float()
                 full_labels_e_01[khop_edge_attr.squeeze() > 0] = 0.
                 idx_of_1 = torch.nonzero(full_labels_e_01, as_tuple=False)
                 perm = torch.randperm(idx_of_1.size(0))
@@ -159,7 +188,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 mask_e = torch.nonzero(full_labels_e >= 0., as_tuple=False).squeeze()
                 labels_e = full_labels_e[mask_e]  # [nearly 3 * E_khop_2]
             else:
-                labels_e_01 = torch.zeros(khop_edge_attr.size(0)).float()  # [E_khop_01]
+                labels_e_01 = torch.zeros(KE).float()  # [E_khop_01]
                 labels_e_01[khop_edge_attr.squeeze() <= 0] = 1.
                 labels_e = torch.cat([labels_e_01, labels_e_2])
             labels_e = labels_e.long()
@@ -195,17 +224,12 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         if self.use_inter_subgraph_infomax:
             d_neg = self.sample_uni_data_neg(uni_data_pos=d)
 
-            if self.inter_subgraph_infomax_edge_type == "global":
-                assert d.edge_index_cs is not None
+            try:
                 x_pos_isi, edge_index_pos_isi = d.x_cs, d.edge_index_cs
                 x_neg_isi, edge_index_neg_isi = d_neg.x_cs, d_neg.edge_index_cs
-
-            elif self.inter_subgraph_infomax_edge_type == "subgraph":
+            except AttributeError:
                 x_pos_isi, edge_index_pos_isi = d.x, d.edge_index
                 x_neg_isi, edge_index_neg_isi = d_neg.x, d_neg.edge_index
-
-            else:
-                raise ValueError
 
             x_isi = torch.cat([x_pos_isi, x_neg_isi], dim=0).squeeze()  # [N_pos + N_neg]
             edge_index_isi = torch.cat([edge_index_pos_isi, edge_index_neg_isi], dim=1)
@@ -251,59 +275,59 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
 if __name__ == '__main__':
     from data_fntn import FNTN
+    from data_sub import HPOMetab
     from pytorch_lightning import seed_everything
 
     PATH = "/mnt/nas2/GNN-DATA"
+    DATASET = "HPOMetab"
     DEBUG = True
 
-    fntn = FNTN(
-        root=PATH,
-        name="0.0",  # 0.0 0.001 0.002 0.003 0.004
-        slice_type="num_edges",
-        slice_range=(5, 10),
-        num_slices=1,
-        val_ratio=0.15,
-        test_ratio=0.15,
-        pre_transform=CompleteSubgraph(),
-        debug=DEBUG,
-    )
+    if DATASET == "FNTN":
+        dataset_instance = FNTN(
+            root=PATH,
+            name="0.0",  # 0.0 0.001 0.002 0.003 0.004
+            slice_type="num_edges",
+            slice_range=(5, 10),
+            num_slices=1,
+            val_ratio=0.15,
+            test_ratio=0.15,
+            pre_transform=CompleteSubgraph(),
+            debug=DEBUG,
+        )
+    elif DATASET == "HPOMetab":
+        dataset_instance = HPOMetab(
+            root=PATH,
+            name="HPOMetab",
+            slice_type="random",
+            slice_range=(3, 8),
+            num_slices=1,
+            val_ratio=0.15,
+            test_ratio=0.15,
+            pre_transform=None,  # not CompleteSubgraph
+            debug=DEBUG,
+        )
+    else:
+        raise ValueError
 
-    train_fntn, val_fntn, test_fntn = fntn.get_train_val_test()
+    train_fntn, val_fntn, test_fntn = dataset_instance.get_train_val_test()
 
     sampler = KHopWithLabelsXESampler(
-        fntn.global_data, train_fntn,
+        dataset_instance.global_data, train_fntn,
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
         use_inter_subgraph_infomax=True,  # todo
-        inter_subgraph_infomax_edge_type="global",  # todo
         shuffle=True,
     )
     seed_everything(42)
-    cprint("Train w/ ISI: Global", "green")
+    cprint("Train w/ ISI", "green")
     for i, b in enumerate(sampler):
         print(i, b)
         if i == 2:
             break
 
     sampler = KHopWithLabelsXESampler(
-        fntn.global_data, train_fntn,
-        num_hops=1, use_labels_x=True, use_labels_e=False,
-        neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
-        obs_x_range=(5, 10),
-        use_inter_subgraph_infomax=True,  # todo
-        inter_subgraph_infomax_edge_type="subgraph",  # todo
-        shuffle=True,
-    )
-    seed_everything(42)
-    cprint("Train w/ ISI: Subgraph", "green")
-    for i, b in enumerate(sampler):
-        print(i, b)
-        if i == 2:
-            break
-
-    sampler = KHopWithLabelsXESampler(
-        fntn.global_data, train_fntn,
+        dataset_instance.global_data, train_fntn,
         num_hops=1, use_labels_x=True, use_labels_e=True,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
@@ -320,10 +344,9 @@ if __name__ == '__main__':
     cprint("Train second", "green")
     for b in sampler:  # shuffling test
         print(b)
-        break
 
     sampler = KHopWithLabelsXESampler(
-        fntn.global_data, val_fntn,
+        dataset_instance.global_data, val_fntn,
         num_hops=1, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
         shuffle=False,
@@ -332,10 +355,9 @@ if __name__ == '__main__':
     for b in sampler:
         # Data(edge_index_01=[2, 31539], obs_x_idx=[8], x=[3029], y=[1])
         print(b)
-        break
 
     sampler = KHopWithLabelsXESampler(
-        fntn.global_data, train_fntn,
+        dataset_instance.global_data, train_fntn,
         num_hops=0, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0,
         use_obs_edge_only=True,  # this.
@@ -345,4 +367,3 @@ if __name__ == '__main__':
     for b in sampler:
         # Data(edge_index_01=[2, 15], x=[10], y=[1])
         print(b)
-        break
