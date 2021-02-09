@@ -15,14 +15,17 @@ DEFAULT: &DEFAULT
   num_encoder_layers: 2  # todo
   num_decoder_body_layers: 2  # todo
 
-  epochs: 50
+  epochs: 75
   use_skip: True
   precision: 16  # todo
+  accumulate_grad_batches: 16  # todo
   use_pruner: False
 
 
 DNS-FNTN-TEST:
   <<: *DEFAULT
+  dataset_id: "1.0"
+  dataset_slice_type: num_edges
   save_model: True
   model_debug: False
   dataset_debug: True
@@ -33,6 +36,8 @@ DNS-FNTN-TEST:
 
 DNS-FNTN-BASE: &DNS-FNTN-BASE
   <<: *DEFAULT
+  dataset_id: "1.0"
+  dataset_slice_type: num_edges
   use_node_decoder: False
   use_edge_decoder: False
   data_sampler_num_hops: 0
@@ -99,6 +104,10 @@ DNS-FNTN-BISAGE-SHORT-0SG:
   <<: *DNS-FNTN-BISAGE-SHORT
   data_use_obs_edge_only: False
 
+DNS-FNTN-BISAGE-MEDIUM-0SG:
+  <<: *DNS-FNTN-BISAGE-MEDIUM
+  data_use_obs_edge_only: False
+
 DNS-FNTN-BISAGE-LONG-0SG:
   <<: *DNS-FNTN-BISAGE-LONG
   data_use_obs_edge_only: False
@@ -111,54 +120,6 @@ DNS-FNTN-BISAGE-SHORT-1SG:
   <<: *DNS-FNTN-BISAGE-SHORT
   data_use_obs_edge_only: False
   data_sampler_num_hops: 1
-
-
-DNS-FNTN-SMALL: &DNS-FNTN-SMALL
-  <<: *DEFAULT
-  gnn_name: SAGEConv
-  use_decoder: True
-  is_bidirectional: False
-  data_sampler_num_hops: 1
-  data_sampler_neg_sample_ratio: 1.0
-  data_sampler_dropout_edges: 0.5
-
-DNS-FNTN-SMALL-X:
-  <<: *DNS-FNTN-SMALL
-  main_decoder_type: node
-  use_node_decoder: True
-  use_edge_decoder: False
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  pool_ratio: 0.1
-
-DNS-FNTN-SMALL-E:
-  <<: *DNS-FNTN-SMALL
-  main_decoder_type: edge
-  use_node_decoder: False
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_e: 0.5
-  pool_ratio: 0.2
-
-DNS-FNTN-SMALL-XE:
-  <<: *DNS-FNTN-SMALL
-  main_decoder_type: node
-  use_node_decoder: True
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.05
-  lambda_aux_e: 0.1
-  pool_ratio: 0.1
-
-DNS-FNTN-SMALL-EX:
-  <<: *DNS-FNTN-SMALL
-  main_decoder_type: edge
-  use_node_decoder: True
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  lambda_aux_e: 0.25
-  pool_ratio: 0.1
 
 
 DNS-FNTN-BISMALL: &DNS-FNTN-BISMALL
