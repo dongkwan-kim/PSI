@@ -15,6 +15,7 @@ import os.path as osp
 from tqdm import tqdm
 
 from data_base import DatasetBase
+from data_transform import CompleteSubgraph
 from utils import from_networkx_customized_ordering
 
 
@@ -185,6 +186,12 @@ class DatasetSubGNN(DatasetBase):
         )
 
         data_total = data_train + data_val + data_test
+        if self.pre_transform is not None:
+            if isinstance(self.pre_transform, CompleteSubgraph):
+                self.pre_transform.global_edge_index = global_data.edge_index
+            data_total = [self.pre_transform(d) for d in tqdm(data_total)]
+            cprint("Pre-transformed: {}".format(self.pre_transform), "green")
+
         torch.save(self.collate(data_total), self.processed_paths[0])
         cprint("Saved data at {}".format(self.processed_paths[0]), "green")
         torch.save(global_data, self.processed_paths[1])
