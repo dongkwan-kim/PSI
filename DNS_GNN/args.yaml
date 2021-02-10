@@ -24,7 +24,7 @@ DEFAULT: &DEFAULT
 
 DNS-FNTN-TEST:
   <<: *DEFAULT
-  dataset_id: "1.0"
+  dataset_id: "0.0"
   dataset_slice_type: num_edges
   save_model: True
   model_debug: False
@@ -36,7 +36,7 @@ DNS-FNTN-TEST:
 
 DNS-FNTN-BASE: &DNS-FNTN-BASE
   <<: *DEFAULT
-  dataset_id: "1.0"
+  dataset_id: "0.0"
   dataset_slice_type: num_edges
   use_node_decoder: False
   use_edge_decoder: False
@@ -124,7 +124,7 @@ DNS-FNTN-BISAGE-SHORT-1SG:
 
 DNS-FNTN-BISMALL: &DNS-FNTN-BISMALL
   <<: *DEFAULT
-  dataset_id: "1.0"
+  dataset_id: "0.0"
   dataset_slice_type: num_edges
   gnn_name: SAGEConv
   use_decoder: True
@@ -174,7 +174,7 @@ DNS-FNTN-BISMALL-EX:
 
 DNS-FNTN-BIE2D2F64: &DNS-FNTN-BIE2D2F64
   <<: *DEFAULT
-  dataset_id: "1.0"
+  dataset_id: "0.0"
   dataset_slice_type: num_edges
   gnn_name: SAGEConv
   use_decoder: True
