@@ -16,10 +16,10 @@ from model_readout import Readout
 
 class DNSNet(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, args, embedding=None):
         super().__init__()
         self.args = args
-        self.emb = DNSEmbedding(args)
+        self.emb = DNSEmbedding(args, embedding)
 
         if not self.args.is_bidirectional:
             self.enc = DNSEncoder(args, activate_last=True)

@@ -40,6 +40,10 @@ class DNSDataModule(pl.LightningDataModule):
         return self.dataset.num_classes
 
     @property
+    def embedding(self):
+        return self.dataset.global_data.x
+
+    @property
     def data_kwargs(self):
         return dict(
             root=self.hparams.dataset_path,
@@ -154,5 +158,6 @@ if __name__ == '__main__':
 
     dm = DNSDataModule(_args, prepare_data_and_setup=True)
     print(dm)
-    print(dm.num_classes)
-    print(dm.num_nodes_global)
+    print("num_classes", dm.num_classes)
+    print("num_nodes_global", dm.num_nodes_global)
+    print("embedding", dm.embedding)

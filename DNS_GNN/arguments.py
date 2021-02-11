@@ -77,7 +77,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--num-nodes-global", default=-1, type=int)
     parser.add_argument("--global-channels", default=32, type=int)
     parser.add_argument("--global-channel-type", default="Embedding", type=str,
-                        choices=["Embedding", "Random", "Feature"])
+                        choices=["Embedding", "Random", "Feature," "Pretrained"])
 
     # Data Sampler
     parser.add_argument("--data-sampler-num-hops", default=1, type=int)

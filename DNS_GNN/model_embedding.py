@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class DNSEmbedding(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, args, pretrained_embedding=None):
         super().__init__()
         self.args = args
 
@@ -19,6 +19,12 @@ class DNSEmbedding(nn.Module):
             self.embedding.weight.requires_grad = False
         elif self.args.global_channel_type == "Feature":
             self.embedding = None
+        elif self.args.global_channel_type == "Pretrained":
+            assert pretrained_embedding is not None
+            N, C = pretrained_embedding.size()
+            assert self.args.num_nodes_global == N
+            assert self.args.global_channels == C
+            self.embedding = nn.Embedding.from_pretrained(pretrained_embedding)
         else:
             raise ValueError(f"Wrong global_channel_type: {self.args.global_channel_type}")
 
@@ -42,9 +48,21 @@ if __name__ == '__main__':
     from arguments import get_args
     _args = get_args("DNS", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 11
-    _args.global_channel_type = "Random"
-    de = DNSEmbedding(_args)
+    _args.global_channels = 32
+
+    _args.global_channel_type = "Pretrained"
+
+    if _args.global_channel_type == "Pretrained":
+        _pte = torch.arange(11 * 32).view(11, 32).float()
+    else:
+        _pte = None
+
+    de = DNSEmbedding(_args, _pte)
     print(de)
+    print("Embedding: {} +- {}".format(
+        de.embedding.weight.mean().item(),
+        de.embedding.weight.std().item(),
+    ))
 
     _x = torch.arange(11)
     print(de(_x).size())

@@ -44,7 +44,7 @@ class MainModel(LightningModule):
         self.hparams.num_nodes_global = self.dataset.num_nodes_global
         self.hparams.num_classes = self.dataset.num_classes
         if self.hparams.model_name == "DNS" and self.hparams.version == "1.0":
-            self.model = DNSNet(self.hparams)
+            self.model = DNSNet(self.hparams, self.dataset.embedding)
         else:
             raise ValueError(f"Wrong model ({self.hparams.model_name}) or version ({self.hparams.version})")
         pprint(next(self.model.modules()))
