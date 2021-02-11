@@ -239,7 +239,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             _node_idx[x_isi] = torch.arange(x_isi.size(0))
             edge_index_isi = _node_idx[edge_index_isi]
 
-            ptr_isi = torch.Tensor([d.x.size(0)]).long()
+            ptr_isi = torch.Tensor([x_pos_isi.size(0)]).long()
         else:
             x_isi, edge_index_isi, ptr_isi = None, None, None
 
