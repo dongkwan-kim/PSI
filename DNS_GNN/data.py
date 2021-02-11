@@ -1,11 +1,14 @@
 from typing import Type, Any
+from pprint import pprint
 
 import pytorch_lightning as pl
 import torch
+from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
 
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
+from data_sub import HPONeuro, HPOMetab, EMUser
 from data_transform import CompleteSubgraph
 
 
@@ -36,24 +39,37 @@ class DNSDataModule(pl.LightningDataModule):
     def num_classes(self):
         return self.dataset.num_classes
 
+    @property
+    def data_kwargs(self):
+        return dict(
+            root=self.hparams.dataset_path,
+            name=self.hparams.dataset_id,
+            slice_type=self.hparams.dataset_slice_type,
+            slice_range=(self.hparams.dataset_slice_range_1,
+                         self.hparams.dataset_slice_range_2),
+            num_slices=self.hparams.dataset_num_slices,
+            val_ratio=self.hparams.dataset_val_ratio,
+            test_ratio=self.hparams.dataset_test_ratio,
+            debug=self.hparams.dataset_debug,
+            seed=self.hparams.dataset_seed,
+            transform=None,
+        )
+
     def prepare_data(self):
         pre_transform = None
+        cprint("Dataset prepared", "yellow")
+        for k, v in self.data_kwargs.items():
+            print("\t- {}: {}".format(k, v))
         if self.dataset_name == "FNTN":
             if self.hparams.inter_subgraph_infomax_edge_type == "global":
                 pre_transform = CompleteSubgraph()
-            self.dataset = FNTN(
-                root=self.hparams.dataset_path,
-                name=self.hparams.dataset_id,
-                slice_type=self.hparams.dataset_slice_type,
-                slice_range=(self.hparams.dataset_slice_range_1, self.hparams.dataset_slice_range_2),
-                num_slices=self.hparams.dataset_num_slices,
-                val_ratio=self.hparams.dataset_val_ratio,
-                test_ratio=self.hparams.dataset_test_ratio,
-                debug=self.hparams.dataset_debug,
-                seed=self.hparams.dataset_seed,
-                transform=None,
-                pre_transform=pre_transform,
-            )
+            self.dataset = FNTN(**self.data_kwargs, pre_transform=pre_transform)
+        elif self.dataset_name == "HPONeuro":
+            self.dataset = HPONeuro(**self.data_kwargs, pre_transform=pre_transform)
+        elif self.dataset_name == "HPOMetab":
+            self.dataset = HPOMetab(**self.data_kwargs, pre_transform=pre_transform)
+        elif self.dataset_name == "EMUser":
+            self.dataset = EMUser(**self.data_kwargs, pre_transform=pre_transform)
         else:
             raise ValueError(f"Wrong dataset: {self.dataset_name}")
 
@@ -133,7 +149,8 @@ def random_input_generator(n_p=49, n_n=50, F_f=10, e_p=11, e_n=13, batch_size=1,
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("DNS", "FNTN", "BIE2D2F64-ISI-X-SG")
+    _args = get_args("DNS", "HPOMetab", "BIE2D2F64-ISI-X-GB")
+    pprint(_args)
 
     dm = DNSDataModule(_args, prepare_data_and_setup=True)
     print(dm)
