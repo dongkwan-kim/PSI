@@ -128,6 +128,21 @@ def debug_with_exit(func):  # Decorator
     return wrapped
 
 
+def cprint_arg_conditionally(condition_func=lambda args: True,
+                             filter_func=lambda arg: True,
+                             out_func=lambda arg: arg,
+                             color="red"):
+    def decorator(func):
+        def wrapped(*args):
+            if condition_func(args):
+                for arg in args:
+                    if filter_func(arg):
+                        cprint(out_func(arg), color)
+            return func(*args)
+        return wrapped
+    return decorator
+
+
 def cprint_multi_lines(prefix, color, is_sorted=True, **kwargs):
     kwargs_items = sorted(kwargs.items()) if is_sorted else kwargs.items()
     for k, v in kwargs_items:

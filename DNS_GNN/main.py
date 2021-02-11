@@ -15,11 +15,20 @@ from torch.nn import functional as F
 from torch import nn
 from torch import optim
 from pytorch_lightning.core.lightning import LightningModule
+from torch_geometric.data import Data
 
 from arguments import get_args_key, get_args, pprint_args, get_args_hash
 from data import DNSDataModule
 from model import DNSNet
-from utils import merge_or_update
+from utils import merge_or_update, cprint_arg_conditionally
+
+
+def _cac_kw():
+    return dict(
+        condition_func=lambda args: args[0].hparams.model_debug,
+        filter_func=lambda arg: isinstance(arg, Data),
+        out_func=lambda arg: "\nBatch on model_debug=True: {}".format(arg),
+    )
 
 
 class MainModel(LightningModule):
@@ -46,6 +55,7 @@ class MainModel(LightningModule):
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)
 
+    @cprint_arg_conditionally(**_cac_kw())
     def training_step(self, batch, batch_idx):
         logits_g, train_loss, loss_part = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
@@ -60,6 +70,7 @@ class MainModel(LightningModule):
         self.log("train_loss", torch.stack([output["loss"] for output in outputs]).mean())
         self.log("train_acc", torch.stack([output["train_acc_step"] for output in outputs]).mean())
 
+    @cprint_arg_conditionally(**_cac_kw())
     def validation_step(self, batch, batch_idx):
         logits_g, val_loss, _ = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
@@ -71,6 +82,7 @@ class MainModel(LightningModule):
         self.log("val_loss", torch.stack([output["val_loss"] for output in outputs]).mean())
         self.log("val_acc", torch.stack([output["val_acc_step"] for output in outputs]).mean())
 
+    @cprint_arg_conditionally(**_cac_kw())
     def test_step(self, batch, batch_idx):
         logits_g, test_loss, _ = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
@@ -265,12 +277,12 @@ def run_train_multiple(num_runs, args,
 
 if __name__ == '__main__':
 
-    MODE = "RUN_MULTIPLE"  # RUN_ONCE, RUN_MULTIPLE
+    MODE = "RUN_ONCE"  # RUN_ONCE, RUN_MULTIPLE
 
     main_args = get_args(
         model_name="DNS",
-        dataset_name="FNTN",
-        custom_key="BISAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
+        dataset_name="HPOMetab",  # FNTN, HPOMetab
+        custom_key="BIE2D2F64-ISI-X",  # BISAGE-SHORT, BIE2D2F64-ISI-X
     )
     pprint_args(main_args)
 
