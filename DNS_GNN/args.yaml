@@ -22,10 +22,17 @@ DEFAULT: &DEFAULT
   use_pruner: False
 
 
-DNS-FNTN-TEST:
+FNTN: &FNTN
   <<: *DEFAULT
   dataset_id: "0.0"
   dataset_slice_type: num_edges
+  num_classes: 4
+  global_channels: 32
+  global_channel_type: Embedding
+  obs_max_len: 20
+
+DNS-FNTN-TEST:
+  <<: *FNTN
   save_model: True
   model_debug: False
   dataset_debug: True
@@ -33,11 +40,8 @@ DNS-FNTN-TEST:
   lambda_aux_e: 1.0
   epochs: 2
 
-
 DNS-FNTN-BASE: &DNS-FNTN-BASE
-  <<: *DEFAULT
-  dataset_id: "0.0"
-  dataset_slice_type: num_edges
+  <<: *FNTN
   use_node_decoder: False
   use_edge_decoder: False
   data_sampler_num_hops: 0
@@ -123,9 +127,7 @@ DNS-FNTN-BISAGE-SHORT-1SG:
 
 
 DNS-FNTN-BISMALL: &DNS-FNTN-BISMALL
-  <<: *DEFAULT
-  dataset_id: "0.0"
-  dataset_slice_type: num_edges
+  <<: *FNTN
   gnn_name: SAGEConv
   use_decoder: True
   is_bidirectional: True
@@ -173,9 +175,7 @@ DNS-FNTN-BISMALL-EX:
 
 
 DNS-FNTN-BIE2D2F64: &DNS-FNTN-BIE2D2F64
-  <<: *DEFAULT
-  dataset_id: "0.0"
-  dataset_slice_type: num_edges
+  <<: *FNTN
   gnn_name: SAGEConv
   use_decoder: True
   is_bidirectional: True
