@@ -159,6 +159,11 @@ class DatasetSubGNN(DatasetBase):
         )
 
     def load(self):
+        """
+        DatasetSubGNN attributes example
+            - data: Data(edge_index=[2, 435110], obs_x=[11754], x=[34646, 1], y=[2400])
+            - global_data: Data(edge_index=[2, 6476348], x=[14587, 64])
+        """
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.global_data = torch.load(self.processed_paths[1])
         meta = torch.load(self.processed_paths[2])
@@ -260,7 +265,7 @@ class EMUser(DatasetSubGNN):
 
 if __name__ == '__main__':
 
-    TYPE = "HPONeuro"
+    TYPE = "HPOMetab"
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = False
