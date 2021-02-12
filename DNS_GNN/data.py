@@ -103,7 +103,10 @@ class DNSDataModule(pl.LightningDataModule):
             use_labels_x=False, use_labels_e=False,
             neg_sample_ratio=0.0, dropout_edges=0.0, obs_x_range=None,
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
-            balanced_sampling=False, shuffle=False,
+            use_pergraph_attr=self.hparams.use_pergraph_attr,
+            balanced_sampling=False,
+            use_inter_subgraph_infomax=False,
+            shuffle=False,
         )
         kw.update(kwargs)
         return KHopWithLabelsXESampler(

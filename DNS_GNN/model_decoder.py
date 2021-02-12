@@ -147,8 +147,11 @@ class DNSDecoder(nn.Module):
 
         z_g = pool_x if self.main_decoder_type == "node" else pool_e
         if self.args.use_pergraph_attr:
-            z_g = torch.cat([z_g, self.pergraph_fc(pergraph_attr)], dim=0)
-        logits_g = self.graph_fc(z_g).view(1, -1)
+            p_g = self.pergraph_fc(pergraph_attr)
+            z_with_p_g = torch.cat([z_g, p_g], dim=0)
+        else:
+            z_with_p_g = z_g
+        logits_g = self.graph_fc(z_with_p_g).view(1, -1)
         return z_g, logits_g, dec_x, dec_e
 
     def decode_and_pool(self, obs_x_k, x_q, x_v, edge_index, decoder_type, use_pool, idx_to_pool=None):

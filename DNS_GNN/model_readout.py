@@ -70,8 +70,11 @@ class Readout(nn.Module):
         z_g = torch.cat(o_list, dim=0)
         if self.use_out_linear:
             if self.args.use_pergraph_attr:
-                z_g = torch.cat([z_g, self.pergraph_fc(pergraph_attr)], dim=0)
-            return z_g, self.fc_out(z_g).view(1, -1)
+                p_g = self.pergraph_fc(pergraph_attr)
+                z_with_p_g = torch.cat([z_g, p_g], dim=0)
+            else:
+                z_with_p_g = z_g
+            return z_g, self.fc_out(z_with_p_g).view(1, -1)
         else:
             return z_g.view(1, -1)
 
