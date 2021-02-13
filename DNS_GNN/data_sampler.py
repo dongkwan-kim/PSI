@@ -283,11 +283,11 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
 if __name__ == '__main__':
     from data_fntn import FNTN
-    from data_sub import HPOMetab
+    from data_sub import HPOMetab, HPONeuro
     from pytorch_lightning import seed_everything
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DATASET = "HPOMetab"
+    DATASET = "HPONeuro"
     DEBUG = True
 
     if DATASET == "FNTN":
@@ -306,6 +306,18 @@ if __name__ == '__main__':
         dataset_instance = HPOMetab(
             root=PATH,
             name="HPOMetab",
+            slice_type="random",
+            slice_range=(3, 8),
+            num_slices=1,
+            val_ratio=0.15,
+            test_ratio=0.15,
+            pre_transform=None,  # not CompleteSubgraph
+            debug=DEBUG,
+        )
+    elif DATASET == "HPONeuro":
+        dataset_instance = HPONeuro(
+            root=PATH,
+            name="HPONeuro",
             slice_type="random",
             slice_range=(3, 8),
             num_slices=1,
