@@ -37,10 +37,15 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False, balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
                  batch_size=1,
+                 subdata_filter_func=None,
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
-        self.subdata_list: List[Data] = subdata_list
+        if subdata_filter_func is None:
+            self.subdata_list: List[Data] = subdata_list
+        else:
+            self.subdata_list: List[Data] = [d for d in subdata_list
+                                             if subdata_filter_func(d)]
         self.num_hops = num_hops
         self.use_labels_x = use_labels_x
         self.use_labels_e = use_labels_e
@@ -60,7 +65,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 self.__class__.__name__, len(subdata_list), global_data), "blue")
 
         super(KHopWithLabelsXESampler, self).__init__(
-            subdata_list, batch_size=batch_size, collate_fn=self.__collate__,
+            self.subdata_list, batch_size=batch_size, collate_fn=self.__collate__,
             shuffle=shuffle, **kwargs,
         )
 
@@ -123,8 +128,11 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 khop_edge_index = observed_edge_index
             else:
                 # The latter is necessary, since there can be isolated nodes.
-                num_nodes = max(maybe_num_nodes(edge_index),
-                                observed_nodes.max().item() + 1)
+                if edge_index.size(1) > 0:
+                    num_nodes = max(maybe_num_nodes(edge_index),
+                                    observed_nodes.max().item() + 1)
+                else:
+                    num_nodes = observed_nodes.max().item() + 1
                 khop_edge_index, _ = subgraph(
                     subset=observed_nodes,
                     edge_index=edge_index,

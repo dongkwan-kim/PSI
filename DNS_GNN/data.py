@@ -12,6 +12,13 @@ from data_sub import HPONeuro, HPOMetab, EMUser
 from data_transform import CompleteSubgraph
 
 
+def _subdata_filter_func(data: Data):
+    if data.edge_index.size(1) <= 0:
+        cprint("Data filtered: {}".format(data), "red")
+        return False
+    return True
+
+
 class DNSDataModule(pl.LightningDataModule):
 
     def __init__(self, hparams, prepare_data_and_setup):
@@ -93,6 +100,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
+            subdata_filter_func=_subdata_filter_func,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler
@@ -106,6 +114,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=False,
             use_inter_subgraph_infomax=False,
+            subdata_filter_func=_subdata_filter_func,
             shuffle=False,
         )
         kw.update(kwargs)
