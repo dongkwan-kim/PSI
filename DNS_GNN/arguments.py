@@ -53,6 +53,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--accumulate-grad-batches", default=64)
     parser.add_argument("--use-tensorboard", default=True)
     parser.add_argument("--precision", default=32)
+    parser.add_argument("--metric", default="accuracy", choices=["accuracy", "micro-f1"])
     parser.add_argument("--version", default="1.0")
 
     # Training

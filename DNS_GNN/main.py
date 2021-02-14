@@ -2,7 +2,7 @@ from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from pprint import pprint
 import os
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Tuple
 
 import torch
 from pytorch_lightning import seed_everything, Trainer
@@ -12,10 +12,11 @@ from pytorch_lightning.metrics.functional import accuracy
 from pytorch_lightning.utilities.memory import garbage_collection_cuda
 from termcolor import cprint
 from torch.nn import functional as F
-from torch import nn
+from torch import nn, Tensor
 from torch import optim
 from pytorch_lightning.core.lightning import LightningModule
 from torch_geometric.data import Data
+from sklearn.metrics import f1_score
 
 from arguments import get_args_key, get_args, pprint_args, get_args_hash
 from data import DNSDataModule
@@ -55,49 +56,78 @@ class MainModel(LightningModule):
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)
 
+    def loss_with_logits(self, logits, y) -> Tensor:
+        if y.size(-1) == 1:
+            return F.cross_entropy(logits, y)
+        else:  # multi-label
+            return F.binary_cross_entropy_with_logits(logits, y)
+
+    def perf_ingredients_step(self, logits, y, prefix) -> Dict[str, Tensor]:
+        if self.hparams.metric == "accuracy":
+            return {f"{prefix}_acc_step": accuracy(logits, y)}
+        elif self.hparams.metric == "micro-f1":
+            return {f"{prefix}_logits": logits, f"{prefix}_y": y}
+        else:
+            raise ValueError(f"Wrong metric: {self.hparams.metric}")
+
+    def perf_aggr(self, outputs: List, prefix) -> Tuple[str, Tensor]:
+        if self.hparams.metric == "accuracy":
+            acc_list = [output[f"{prefix}_acc_step"] for output in outputs]
+            return f"{prefix}_acc", torch.stack(acc_list).mean()
+        elif self.hparams.metric == "micro-f1":
+            logits = torch.stack([output[f"{prefix}_logits"] for output in outputs]).squeeze()
+            ys = torch.stack([output[f"{prefix}_y"] for output in outputs]).squeeze()
+            pred, ys = (logits > 0.0).float().cpu().numpy(), ys.cpu().numpy()
+            micro_f1 = f1_score(pred, ys, average="micro") if pred.sum() > 0 else 0
+            return f"{prefix}_f1", micro_f1
+        else:
+            raise ValueError(f"Wrong metric: {self.hparams.metric}")
+
     @cprint_arg_conditionally(**_cac_kw())
     def training_step(self, batch, batch_idx):
         logits_g, train_loss, loss_part = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
             "loss": train_loss,
-            "train_acc_step": accuracy(logits_g, batch.y),
             "loss_part": loss_part,
+            **self.perf_ingredients_step(logits_g, batch.y, prefix="train"),
         }
 
     def training_epoch_end(self, outputs) -> None:
         for k in outputs[0]["loss_part"]:
             self.log(f"train_{k}", torch.stack([output["loss_part"][k] for output in outputs]).mean())
         self.log("train_loss", torch.stack([output["loss"] for output in outputs]).mean())
-        self.log("train_acc", torch.stack([output["train_acc_step"] for output in outputs]).mean())
+        # Below is the same as
+        # self.log("train_acc", torch.stack([output["train_acc_step"] for output in outputs]).mean())
+        self.log(*self.perf_aggr(outputs, prefix="train"))
 
     @cprint_arg_conditionally(**_cac_kw())
     def validation_step(self, batch, batch_idx):
         logits_g, val_loss, _ = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
             "val_loss": val_loss,
-            "val_acc_step": accuracy(logits_g, batch.y),
+            **self.perf_ingredients_step(logits_g, batch.y, prefix="val"),
         }
 
     def validation_epoch_end(self, outputs):
         self.log("val_loss", torch.stack([output["val_loss"] for output in outputs]).mean())
-        self.log("val_acc", torch.stack([output["val_acc_step"] for output in outputs]).mean())
+        self.log(*self.perf_aggr(outputs, prefix="val"))
 
     @cprint_arg_conditionally(**_cac_kw())
     def test_step(self, batch, batch_idx):
         logits_g, test_loss, _ = self._get_logits_and_loss_and_parts(batch, batch_idx)
         return {
             "test_loss": test_loss,
-            "test_acc_step": accuracy(logits_g, batch.y),
+            **self.perf_ingredients_step(logits_g, batch.y, prefix="test"),
         }
 
     def test_epoch_end(self, outputs):
-        test_acc = torch.stack([output["test_acc_step"] for output in outputs]).mean()
+        perf_name, test_perf = self.perf_aggr(outputs, prefix="test")
         test_loss = torch.stack([output["test_loss"] for output in outputs]).mean()
         self.log("test_loss", test_loss)
-        self.logger.log_metrics({"hp_metric": float(test_acc)})
+        self.logger.log_metrics({"hp_metric": float(test_perf)})
         return {
             "test_loss": test_loss,
-            "test_acc": test_acc,
+            perf_name: test_perf,
         }
 
     def _get_logits_and_loss_and_parts(self, batch, batch_idx):
@@ -111,7 +141,8 @@ class MainModel(LightningModule):
                 batch.x, batch.obs_x_idx, batch.edge_index_01, pergraph_attr=batch.pergraph_attr,
                 x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi, ptr_isi=batch.ptr_isi,
             )
-            total_loss = F.cross_entropy(logits_g, batch.y)
+            # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
+            total_loss = self.loss_with_logits(logits_g, batch.y)
             if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
                 total_loss += self.hparams.lambda_aux_isi * loss_isi
                 out["loss_isi"] = loss_isi
@@ -141,7 +172,7 @@ class MainModel(LightningModule):
             dec_e = dec_e[batch.mask_e]
 
         total_loss = 0
-        loss_g = F.cross_entropy(logits_g, batch.y)
+        loss_g = self.loss_with_logits(logits_g, batch.y)
         total_loss += loss_g
         o = {"logits_g": logits_g, "loss_g": loss_g}
         if self.hparams.lambda_aux_x > 0 and batch.labels_x is not None:
@@ -167,15 +198,17 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     model = MainModel(args, dm)
     callbacks = []
     args_key = get_args_key(args)
+    val_perf_name = "val_acc" if args.metric == "accuracy" else "val_f1"
 
     if args.save_model:
         args_hash = get_args_hash(args)
-        filepath = os.path.join(args.checkpoint_dir, args_key, "{epoch:03d}-{val_loss:.5f}-{val_acc:.2f}")
+        filepath = os.path.join(args.checkpoint_dir, args_key,
+                                "{epoch:03d}-{val_loss:.5f}-{" + val_perf_name + ":.2f}")
         checkpoint_callback = ModelCheckpoint(
             filepath=filepath,
             save_top_k=1,
             verbose=True if args.verbose > 0 else False,
-            monitor='val_acc',
+            monitor=val_perf_name,
             mode='max',
             prefix=f"{args_hash}",
         )
@@ -184,7 +217,7 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
 
     if args.use_early_stop:
         early_stop_callback = EarlyStopping(
-            monitor='val_acc',
+            monitor=val_perf_name,
             min_delta=args.early_stop_min_delta,  # TODO: How to set this value.
             patience=args.early_stop_patience,
             verbose=True if args.verbose > 0 else False,
@@ -281,8 +314,8 @@ if __name__ == '__main__':
 
     main_args = get_args(
         model_name="DNS",
-        dataset_name="HPOMetab",  # FNTN, HPOMetab
-        custom_key="BIE2D2F64-ISI-X",  # BISAGE-SHORT, BIE2D2F64-ISI-X
+        dataset_name="HPONeuro",  # FNTN, HPOMetab
+        custom_key="SAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
     )
     pprint_args(main_args)
 
