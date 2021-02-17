@@ -1,5 +1,6 @@
 import hashlib
 from collections import Counter
+import time
 
 import networkx as nx
 import numpy as np
@@ -126,6 +127,17 @@ def debug_with_exit(func):  # Decorator
         exit()
 
     return wrapped
+
+
+def print_time(method):
+    """From https://medium.com/pythonhive/python-decorator-to-measure-the-execution-time-of-methods-fa04cb6bb36d"""
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        cprint('%r  %2.2f s' % (method.__name__, (te - ts)), "red")
+        return result
+    return timed
 
 
 def cprint_arg_conditionally(condition_func=lambda args: True,
