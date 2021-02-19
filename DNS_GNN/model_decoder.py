@@ -154,7 +154,8 @@ class DNSDecoder(nn.Module):
         logits_g = self.graph_fc(z_with_p_g).view(1, -1)
         return z_g, logits_g, dec_x, dec_e
 
-    def decode_and_pool(self, obs_x_k, x_q, x_v, edge_index, decoder_type, use_pool, idx_to_pool=None):
+    def decode_and_pool(self, obs_x_k, x_q, x_v, edge_index, decoder_type, use_pool,
+                        idx_to_pool=None, batch=None):
         # x_q, x_v: [N, F]
         # obs_x: [1, F]
         # edge_index: [2, E] or [2, \sum E]
@@ -171,7 +172,7 @@ class DNSDecoder(nn.Module):
 
         if use_pool:
             score = decoded[:, 0] if idx_to_pool is None else decoded[:idx_to_pool, 0]
-            batch = edge_index.new_zeros(score.size(0))
+            batch = edge_index.new_zeros(score.size(0)) if batch is None else batch
             perm = topk(score, self.pool_ratio, batch, self.pool_min_score)
             pooled = torch.einsum("nf,n->f", o_v[perm], torch.softmax(score[perm], dim=0))
             return decoded, pooled
