@@ -13,8 +13,6 @@ from torch_geometric.utils.num_nodes import maybe_num_nodes
 import numpy as np
 import numpy_indexed as npi
 
-from data_transform import CompleteSubgraph
-
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
     edge_attr_wo_zero = edge_attr.clone()
@@ -26,6 +24,51 @@ def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
         ret.append(edge_labels[perm])
 
     return tuple(ret)
+
+
+def get_observed_nodes_and_edges(data, obs_x_range):
+    # Training stage: obs_x_range is not None -> sampling
+    # Evaluation stage: obs_x_range is None -> use it from Data
+    if hasattr(data, "num_obs_x"):
+        # Data(edge_attr=[219, 1], edge_index=[2, 219],
+        #      global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
+        if obs_x_range is not None:
+            num_obs_x = int(torch.randint(obs_x_range[0], obs_x_range[1], (1,)))
+        else:
+            num_obs_x = int(data.num_obs_x)
+        observed_edge_index = data.edge_index[:, :num_obs_x]
+        observed_nodes = observed_edge_index.flatten().unique()
+    elif hasattr(data, "obs_x"):
+        # Data(edge_index=[2, 402], obs_x=[7], x=[23, 1], y=[1])
+        if obs_x_range is not None:
+            num_obs_x = int(torch.randint(obs_x_range[0], obs_x_range[1], (1,)))
+            obs_x = torch.randperm(data.x.size(0))[:num_obs_x]
+        else:
+            obs_x = data.obs_x
+        observed_nodes = data.x[obs_x].flatten().unique()
+        observed_edge_index = None  # temporarily
+    else:
+        raise AttributeError
+    return observed_nodes, observed_edge_index
+
+
+def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N):
+    khp_edge_idx_npy = (khop_edge_index[0] * N + khop_edge_index[1]).numpy()
+    sub_edge_idx_npy = (edge_index[0] * N + edge_index[1]).numpy()
+
+    # Bottleneck for large k-hop.
+    indices_of_sub_in_khp = npi.indices(sub_edge_idx_npy, khp_edge_idx_npy, missing=-1)  # [E_khp]
+    is_khp_in_sub_edge = (indices_of_sub_in_khp >= 0)  # [E_khp]
+    indices_of_sub_in_khp = indices_of_sub_in_khp[is_khp_in_sub_edge]  # [E_khp_and_in_sub_edge]
+
+    # Construct edge_attr of khop_edges
+    khop_edge_attr = np.zeros(khp_edge_idx_npy.shape[0])  # [E_khp]
+    if edge_attr is not None:
+        khop_edge_attr[is_khp_in_sub_edge] = edge_attr.numpy()[indices_of_sub_in_khp, :].squeeze()
+    else:
+        khop_edge_attr[is_khp_in_sub_edge] = 1.0
+    khop_edge_attr = torch.from_numpy(khop_edge_attr).float().unsqueeze(1)  # [E_khp, 1]
+    return khop_edge_attr, is_khp_in_sub_edge
 
 
 class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
@@ -84,28 +127,9 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         edge_index = d.edge_index
         edge_attr = getattr(d, "edge_attr", None)
 
-        # Training stage: obs_x_range is not None -> sampling
-        # Evaluation stage: obs_x_range is None -> use it from Data
-        if hasattr(d, "num_obs_x"):
-            # Data(edge_attr=[219, 1], edge_index=[2, 219],
-            #      global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
-            if self.obs_x_range is not None:
-                num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
-            else:
-                num_obs_x = int(d.num_obs_x)
-            observed_edge_index = edge_index[:, :num_obs_x]
-            observed_nodes = observed_edge_index.flatten().unique()
-        elif hasattr(d, "obs_x"):
-            # Data(edge_index=[2, 402], obs_x=[7], x=[23, 1], y=[1])
-            if self.obs_x_range is not None:
-                num_obs_x = int(torch.randint(self.obs_x_range[0], self.obs_x_range[1], (1,)))
-                obs_x = torch.randperm(d.x.size(0))[:num_obs_x]
-            else:
-                obs_x = d.obs_x
-            observed_nodes = d.x[obs_x].flatten().unique()
-            observed_edge_index = None  # temporarily
-        else:
-            raise AttributeError
+        observed_nodes, observed_edge_index = get_observed_nodes_and_edges(
+            data=d, obs_x_range=self.obs_x_range,
+        )
 
         if not self.use_obs_edge_only:
             """
@@ -140,21 +164,10 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                     num_nodes=num_nodes,
                 )
 
-        khp_edge_idx_npy = (khop_edge_index[0] * self.N + khop_edge_index[1]).numpy()
-        sub_edge_idx_npy = (edge_index[0] * self.N + edge_index[1]).numpy()
-
-        # Bottleneck for large k-hop.
-        indices_of_sub_in_khp = npi.indices(sub_edge_idx_npy, khp_edge_idx_npy, missing=-1)  # [E_khp]
-        is_khp_in_sub_edge = (indices_of_sub_in_khp >= 0)  # [E_khp]
-        indices_of_sub_in_khp = indices_of_sub_in_khp[is_khp_in_sub_edge]  # [E_khp_and_in_sub_edge]
-
-        # Construct edge_attr of khop_edges
-        khop_edge_attr = np.zeros(khp_edge_idx_npy.shape[0])  # [E_khp]
-        if edge_attr is not None:
-            khop_edge_attr[is_khp_in_sub_edge] = edge_attr.numpy()[indices_of_sub_in_khp, :].squeeze()
-        else:
-            khop_edge_attr[is_khp_in_sub_edge] = 1.0
-        khop_edge_attr = torch.from_numpy(khop_edge_attr).float().unsqueeze(1)  # [E_khp, 1]
+        khop_edge_attr, is_khp_in_sub_edge = create_khop_edge_attr(
+            khop_edge_index=khop_edge_index, edge_index=edge_index,
+            edge_attr=edge_attr, N=self.N,
+        )
 
         # Relabeling nodes
         _node_idx = observed_nodes.new_full((self.N,), -1)
@@ -286,6 +299,7 @@ if __name__ == '__main__':
     from data_fntn import FNTN
     from data_sub import HPOMetab, HPONeuro
     from pytorch_lightning import seed_everything
+    from data_transform import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
     DATASET = "HPONeuro"
