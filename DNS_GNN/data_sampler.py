@@ -179,7 +179,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             )
 
         KE = khop_edge_index.size(1)
-        khop_edge_attr, khop_edge_index = sort_by_edge_attr(khop_edge_attr, khop_edge_index)
+        if edge_attr is not None:
+            khop_edge_attr, khop_edge_index = sort_by_edge_attr(khop_edge_attr, khop_edge_index)
 
         # 0: in-subgraph, 1: in-graph, 2: not-in-graph
         labels_e, mask_e = None, None
