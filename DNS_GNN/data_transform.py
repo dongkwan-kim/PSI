@@ -7,8 +7,14 @@ from torch import Tensor
 from data_sampler import get_observed_nodes_and_edges, create_khop_edge_attr
 
 
-def decode_cke(khop_edge_idx, sparse_khop_edge_attr) -> Tuple[Tensor, Tensor]:
+def decode_cke(khop_edge_idx: torch.Tensor,
+               sparse_khop_edge_attr: torch.sparse.FloatTensor,
+               num_nodes: int) -> Tuple[Tensor, Tensor]:
     """:return: khop_edge_index, khop_edge_attr"""
+    N = num_nodes
+    khop_edge_index = torch.stack([khop_edge_idx // N, khop_edge_idx % N], dim=0)
+    khop_edge_attr = sparse_khop_edge_attr.to_dense()
+    return khop_edge_index, khop_edge_attr
 
 
 class CompressedKhopEdge(object):
@@ -64,15 +70,11 @@ class CompressedKhopEdge(object):
         khop_edge_idx = khop_edge_index[0] * self.N + khop_edge_index[1]
 
         # khop_edge_attr -> sparse_khop_edge_attr
-        kea_non_zero_idx = torch.nonzero(khop_edge_attr, as_tuple=False).t()  # [2, *]
-        kea_non_zero_val = khop_edge_attr.flatten()[kea_non_zero_idx[0]]
-        sparse_khop_edge_attr = torch.sparse.FloatTensor(
-            kea_non_zero_idx[0].unsqueeze(0),  # [1, *]
-            kea_non_zero_val,
-            torch.Size([khop_edge_attr.size(0)]),
-        )
         # to make it a dense vector: sparse_khop_edge_attr.to_dense()
-        return khop_edge_idx, sparse_khop_edge_attr
+        sparse_khop_edge_attr = khop_edge_attr.flatten().to_sparse()
+        data.khop_edge_idx = khop_edge_idx
+        data.sparse_khop_edge_attr = sparse_khop_edge_attr
+        return data
 
     def __repr__(self):
         return '{}(k={})'.format(self.__class__.__name__, self.num_hops)
@@ -141,4 +143,7 @@ if __name__ == '__main__':
     print("--------------")
 
     print(cke)
-    pprint(cke(_d))
+    _new_d = cke(_d)
+    print(_new_d)
+    print(_new_d.khop_edge_idx)
+    print(_new_d.sparse_khop_edge_attr)
