@@ -60,8 +60,19 @@ class CompressedKhopEdge(object):
         _node_idx[khop_nodes] = torch.arange(khop_nodes.size(0))
         khop_edge_index = _node_idx[khop_edge_index]
 
-        # todo khop_edge_index -> khop_edge_idx
-        # todo khop_edge_attr -> sparse_khop_edge_attr
+        # khop_edge_index -> khop_edge_idx (x2 compression)
+        khop_edge_idx = khop_edge_index[0] * self.N + khop_edge_index[1]
+
+        # khop_edge_attr -> sparse_khop_edge_attr
+        kea_non_zero_idx = torch.nonzero(khop_edge_attr, as_tuple=False).t()  # [2, *]
+        kea_non_zero_val = khop_edge_attr.flatten()[kea_non_zero_idx[0]]
+        sparse_khop_edge_attr = torch.sparse.FloatTensor(
+            kea_non_zero_idx[0].unsqueeze(0),  # [1, *]
+            kea_non_zero_val,
+            torch.Size([khop_edge_attr.size(0)]),
+        )
+        # to make it a dense vector: sparse_khop_edge_attr.to_dense()
+        return khop_edge_idx, sparse_khop_edge_attr
 
     def __repr__(self):
         return '{}(k={})'.format(self.__class__.__name__, self.num_hops)
@@ -100,32 +111,34 @@ class CompleteSubgraph(object):
 if __name__ == '__main__':
     from torch_geometric.utils import add_self_loops
     from torch_geometric.data import Data
-    from pytorch_lightning import  seed_everything
+    from pytorch_lightning import seed_everything
+    from pprint import pprint
 
     seed_everything(23)
 
     _n = 7
     cke = CompressedKhopEdge(num_hops=1)
     _ge = torch.randint(_n, (2, 15))
+    _ge_idx = torch.unique(_ge[0] * _n + _ge[1])
+    _ge = torch.stack([_ge_idx // _n, _ge_idx % _n], dim=0)
+
     _ge, _ = add_self_loops(_ge)
     cke.global_edge_index = _ge
+    print("---- GE ----")
+    print(_ge)
 
     # Data(edge_index=[2, 402], obs_x=[7], x=[23, 1], y=[1])
-    _e_in_g = _ge[:, 5:10]
-    _x = torch.unique(_e_in_g.flatten())
+    _e = _ge[:, 5:10]
+    _x = torch.unique(_e.flatten())
     _obs_x = torch.randperm(_x.size(0))[:3]
 
-    _ni = torch.full((_n,), -1, dtype=torch.long)
-    _ni[_x] = torch.arange(_x.size(0))
-    _e = _ni[_e_in_g]
     _d = Data(edge_index=_e, obs_x=_obs_x, x=_x)
     print("---- Data ----")
     print(_d)
     print("x", _x)
-    print("eg", _e_in_g)
     print("e", _e)
     print("obs_x", _obs_x)
     print("--------------")
 
     print(cke)
-    cke(_d)
+    pprint(cke(_d))
