@@ -310,14 +310,16 @@ def run_train_multiple(num_runs, args,
 
 if __name__ == '__main__':
 
-    MODE = "RUN_ONCE"  # RUN_ONCE, RUN_MULTIPLE
+    MODE = "RUN_MULTIPLE"  # RUN_ONCE, RUN_MULTIPLE
+    NUM_RUNS = 5
 
     main_args = get_args(
         model_name="DNS",
-        dataset_name="HPONeuro",  # FNTN, HPOMetab
-        custom_key="SAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
+        dataset_name="FNTN",  # FNTN, HPOMetab
+        custom_key="BISAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
     )
     pprint_args(main_args)
+    cprint("MODE: {} (#={})".format(MODE, NUM_RUNS), "red")
 
     if MODE == "RUN_ONCE":
         main_results = run_train(
@@ -329,7 +331,7 @@ if __name__ == '__main__':
         main_model = main_results["model"]
     elif MODE == "RUN_MULTIPLE":
         main_results = run_train_multiple(
-            num_runs=5,
+            num_runs=NUM_RUNS,
             args=main_args,
             trainer_given_kwargs=None, run_test=True, clean_ckpt=True,
             change_model_seed=True, change_dataset_seed=False,
