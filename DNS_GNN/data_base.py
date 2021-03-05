@@ -1,4 +1,5 @@
 import pickle
+import re
 from collections import OrderedDict
 from itertools import chain
 from pprint import pprint
@@ -76,7 +77,8 @@ class DatasetBase(InMemoryDataset):
             "debug": self.debug,
         }
         if self.pre_transform is not None:
-            ie["pre_transform"] = str(self.pre_transform)
+            # Remove all blanks.
+            ie["pre_transform"] = "".join(str(self.pre_transform).split())
         return ie
 
     def _logging_args(self):
