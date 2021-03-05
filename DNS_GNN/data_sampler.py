@@ -29,13 +29,13 @@ def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
     return tuple(ret)
 
 
-def get_observed_nodes_and_edges(data, obs_x_range):
+def get_observed_nodes_and_edges(data, obs_x_range, deterministic=True):
     # Training stage: obs_x_range is not None -> sampling
     # Evaluation stage: obs_x_range is None -> use it from Data
     if hasattr(data, "num_obs_x"):
         # Data(edge_attr=[219, 1], edge_index=[2, 219],
         #      global_attr=[5183], num_obs_x=[1], x=[220, 1], y=[1])
-        if obs_x_range is not None:
+        if not deterministic and obs_x_range is not None:
             num_obs_x = int(torch.randint(obs_x_range[0], obs_x_range[1], (1,)))
         else:
             num_obs_x = int(data.num_obs_x)
@@ -43,7 +43,7 @@ def get_observed_nodes_and_edges(data, obs_x_range):
         observed_nodes = observed_edge_index.flatten().unique()
     elif hasattr(data, "obs_x"):
         # Data(edge_index=[2, 402], obs_x=[7], x=[23, 1], y=[1])
-        if obs_x_range is not None:
+        if not deterministic and obs_x_range is not None:
             num_obs_x = int(torch.randint(obs_x_range[0], obs_x_range[1], (1,)))
             obs_x = torch.randperm(data.x.size(0))[:num_obs_x]
         else:
@@ -107,6 +107,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_inter_subgraph_infomax=False,
                  batch_size=1,
                  subdata_filter_func=None,
+                 obs_deterministic=True,
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -118,6 +119,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.num_hops = num_hops
         self.use_labels_x = use_labels_x
         self.use_labels_e = use_labels_e
+        self.obs_deterministic = obs_deterministic
 
         self.neg_sample_ratio = neg_sample_ratio * (1 - dropout_edges)
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
@@ -161,7 +163,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             num_khop_nodes = khop_nodes.size(0)
         else:
             observed_nodes, observed_edge_index = get_observed_nodes_and_edges(
-                data=d, obs_x_range=self.obs_x_range,
+                data=d, obs_x_range=self.obs_x_range, deterministic=self.obs_deterministic,
             )
 
             if not self.use_obs_edge_only:

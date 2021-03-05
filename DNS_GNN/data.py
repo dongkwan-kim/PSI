@@ -5,11 +5,12 @@ import pytorch_lightning as pl
 import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
+from torch_geometric.transforms import Compose
 
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
 from data_sub import HPONeuro, HPOMetab, EMUser
-from data_transform import CompleteSubgraph
+from data_transform import CompleteSubgraph, CompressedKhopEdge
 
 
 def _subdata_filter_func(data: Data):
@@ -67,13 +68,27 @@ class DNSDataModule(pl.LightningDataModule):
         )
 
     def prepare_data(self):
-        pre_transform = None
+        use_isi_global = (self.hparams.use_inter_subgraph_infomax and
+                          self.hparams.inter_subgraph_infomax_edge_type == "global")
+        need_complete_subgraph = self.dataset_name in ["FNTN"]
+
+        pt_list = []
+        if use_isi_global:
+            pt_list.append(CompressedKhopEdge(num_hops=self.hparams.data_sampler_num_hops))
+        if need_complete_subgraph:
+            pt_list.append(CompleteSubgraph())
+
+        if len(pt_list) > 1:
+            pre_transform = Compose(pt_list)
+        elif len(pt_list) == 1:
+            pre_transform = pt_list[0]
+        else:
+            pre_transform = None
+
         cprint("Dataset prepared", "yellow")
         for k, v in self.data_kwargs.items():
             print("\t- {}: {}".format(k, v))
         if self.dataset_name == "FNTN":
-            if self.hparams.inter_subgraph_infomax_edge_type == "global":
-                pre_transform = CompleteSubgraph()
             self.dataset = FNTN(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "HPONeuro":
             self.dataset = HPONeuro(**self.data_kwargs, pre_transform=pre_transform)
@@ -102,6 +117,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
             subdata_filter_func=_subdata_filter_func,
             shuffle=self.hparams.data_sampler_shuffle,
+            obs_deterministic=self.hparams.obs_deterministic,
         )
         return sampler
 
@@ -116,6 +132,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_inter_subgraph_infomax=False,
             subdata_filter_func=_subdata_filter_func,
             shuffle=False,
+            obs_deterministic=True,
         )
         kw.update(kwargs)
         return KHopWithLabelsXESampler(
