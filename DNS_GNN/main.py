@@ -316,7 +316,7 @@ if __name__ == '__main__':
     main_args = get_args(
         model_name="DNS",
         dataset_name="FNTN",  # FNTN, HPOMetab
-        custom_key="SAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
+        custom_key="BISAGE-SHORT",  # BISAGE-SHORT, BIE2D2F64-ISI-X
     )
     pprint_args(main_args)
     cprint("MODE: {} (#={})".format(MODE, NUM_RUNS), "red")

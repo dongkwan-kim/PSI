@@ -186,11 +186,13 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 if observed_edge_index is not None:
                     khop_edge_index = observed_edge_index
                 else:
-                    # The latter is necessary, since there can be isolated nodes.
+                    # Case of hasattr(data, "obs_x"),
+                    #   that is, observed_edge_index is None,
+                    #   find khop_edge_index from edge_index with observed_nodes.
                     if edge_index.size(1) > 0:
                         num_nodes = max(maybe_num_nodes(edge_index),
                                         observed_nodes.max().item() + 1)
-                    else:
+                    else:  # necessary, since there can be isolated nodes.
                         num_nodes = observed_nodes.max().item() + 1
                     khop_edge_index, _ = subgraph(
                         subset=observed_nodes,
