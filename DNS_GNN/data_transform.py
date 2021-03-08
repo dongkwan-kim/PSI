@@ -1,6 +1,6 @@
 import torch
 from torch_geometric.transforms import Compose
-from torch_geometric.utils import k_hop_subgraph
+from torch_geometric.utils import k_hop_subgraph, dropout_adj
 
 from data_sampler import get_observed_nodes_and_edges, create_khop_edge_attr
 
@@ -42,8 +42,11 @@ class TransformForDNS(object):
 
 class CompressedKhopEdge(TransformForDNS):
 
-    def __init__(self, num_hops, global_edge_index=None):
+    def __init__(self, num_hops,
+                 dropout_neg_khop_edges=0.5,
+                 global_edge_index=None):
         self.num_hops = num_hops
+        self.dropout_neg_khop_edges = dropout_neg_khop_edges
         super(CompressedKhopEdge, self).__init__(global_edge_index=global_edge_index)
 
     def __call__(self, data):
@@ -80,19 +83,43 @@ class CompressedKhopEdge(TransformForDNS):
             edge_attr=edge_attr, N=self.N,
         )
 
+        if self.dropout_neg_khop_edges > 0.0:
+            is_khp_in_sub_edge = torch.as_tensor(is_khp_in_sub_edge)
+            is_not_khp_in_sub_edge = torch.as_tensor(~is_khp_in_sub_edge)
+            pos_khop_edge_index = khop_edge_index[:, is_khp_in_sub_edge]
+            pos_khop_edge_attr = khop_edge_attr[is_khp_in_sub_edge, :]
+            neg_khop_edge_index = khop_edge_index[:, is_not_khp_in_sub_edge]
+            neg_khop_edge_attr = khop_edge_attr[is_not_khp_in_sub_edge, :]
+            neg_khop_edge_index, neg_khop_edge_attr = dropout_adj(
+                neg_khop_edge_index, neg_khop_edge_attr, p=self.dropout_neg_khop_edges,
+            )
+            khop_edge_index = torch.cat([pos_khop_edge_index,
+                                         neg_khop_edge_index], dim=1)
+            khop_edge_attr = torch.cat([pos_khop_edge_attr,
+                                        neg_khop_edge_attr], dim=0)
+
+            # Update khop_nodes and obs_node_index
+            new_khop_nodes = torch.unique(khop_edge_index.flatten())
+            _khop_node_idx = torch.full((khop_nodes.max() + 1,), fill_value=-1, dtype=torch.long)
+            _khop_node_idx[new_khop_nodes] = torch.arange(new_khop_nodes.size(0))
+            obs_node_index = _khop_node_idx[observed_nodes]  # might contain -1
+            obs_node_index = obs_node_index[obs_node_index >= 0.0]
+            khop_nodes = new_khop_nodes
+
         # Relabeling nodes
         _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
-        _node_idx[khop_nodes] = torch.arange(khop_nodes.size(0))
+        num_khop_nodes = khop_nodes.size(0)
+        _node_idx[khop_nodes] = torch.arange(num_khop_nodes)
         khop_edge_index = _node_idx[khop_edge_index]
 
         # khop_edge_index -> khop_edge_idx (x2 compression)
-        data.khop_edge_idx = khop_edge_index[0] * self.N + khop_edge_index[1]
+        data.khop_edge_idx = khop_edge_index[0] * num_khop_nodes + khop_edge_index[1]
 
         # khop_edge_attr -> sparse_khop_edge_attr
         #   Since pyg does not support sparse_tensor attribute,
         #   we instead save indices, values, size of sparse_tensor separately.
         sparse_khop_edge_attr = khop_edge_attr.flatten().to_sparse()
-        data.sparse_khop_edge_attr_indices = sparse_khop_edge_attr.indices().squeeze()  # [1, *] -> [*]
+        data.sparse_khop_edge_attr_indices = sparse_khop_edge_attr.indices().view(-1)  # [1, *] -> [*]
         data.sparse_khop_edge_attr_values = sparse_khop_edge_attr.values()
         data.sparse_khop_edge_attr_size = sparse_khop_edge_attr.size()
         data.khop_nodes = khop_nodes
@@ -100,7 +127,7 @@ class CompressedKhopEdge(TransformForDNS):
         return data
 
     def __repr__(self):
-        return '{}(k={})'.format(self.__class__.__name__, self.num_hops)
+        return '{}(k={}, dnk={})'.format(self.__class__.__name__, self.num_hops, self.dropout_neg_khop_edges)
 
 
 class CompleteSubgraph(TransformForDNS):
@@ -138,7 +165,7 @@ if __name__ == '__main__':
 
     _n = 7
     cke = CompressedKhopEdge(num_hops=1)
-    _ge = torch.randint(_n, (2, 15))
+    _ge = torch.randint(_n, (2, 20))
     _ge_idx = torch.unique(_ge[0] * _n + _ge[1])
     _ge = torch.stack([_ge_idx // _n, _ge_idx % _n], dim=0)
 

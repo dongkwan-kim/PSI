@@ -74,12 +74,12 @@ def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N):
     return khop_edge_attr, is_khp_in_sub_edge
 
 
-def decompress_khop_edges(data: Data, num_nodes: int, clean_up=True) -> Data:
+def decompress_khop_edges(data: Data, clean_up=True) -> Data:
     """:return: khop_edge_index, khop_edge_attr"""
-    N = num_nodes
+    NK = data.khop_nodes.size(0)
 
     khop_edge_idx = data.khop_edge_idx
-    data.khop_edge_index = torch.stack([khop_edge_idx // N, khop_edge_idx % N], dim=0)
+    data.khop_edge_index = torch.stack([khop_edge_idx // NK, khop_edge_idx % NK], dim=0)
 
     skea_indices = data.sparse_khop_edge_attr_indices.unsqueeze(0)  # [*] -> [1, *]
     skea_values = data.sparse_khop_edge_attr_values
@@ -155,7 +155,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         edge_index = d.edge_index
         edge_attr = getattr(d, "edge_attr", None)
         if hasattr(d, "khop_edge_idx"):
-            d = decompress_khop_edges(d, self.N)
+            d = decompress_khop_edges(d)
             khop_edge_index = d.khop_edge_index
             khop_edge_attr = d.khop_edge_attr.unsqueeze(1)
             khop_nodes = d.khop_nodes
@@ -402,6 +402,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
+        use_pergraph_attr=True,
         use_inter_subgraph_infomax=True,  # todo
         shuffle=True,
     )
@@ -417,6 +418,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=True,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
+        use_pergraph_attr=True,
         shuffle=True,
     )
     cprint("Train first", "green")
@@ -435,6 +437,7 @@ if __name__ == '__main__':
         dataset_instance.global_data, val_fntn,
         num_hops=1, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
+        use_pergraph_attr=True,
         shuffle=False,
     )
     cprint("Val", "green")
@@ -447,6 +450,7 @@ if __name__ == '__main__':
         num_hops=0, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0,
         use_obs_edge_only=True,  # this.
+        use_pergraph_attr=True,
         shuffle=True,
     )
     cprint("WO Sampler", "green")

@@ -74,7 +74,10 @@ class DNSDataModule(pl.LightningDataModule):
 
         pt_list = []
         if use_isi_global:
-            pt_list.append(CompressedKhopEdge(num_hops=self.hparams.data_sampler_num_hops))
+            pt_list.append(CompressedKhopEdge(
+                num_hops=self.hparams.data_sampler_num_hops,
+                dropout_neg_khop_edges=self.hparams.dropout_neg_khop_edges,
+            ))
         if need_complete_subgraph:
             pt_list.append(CompleteSubgraph())
 

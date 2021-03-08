@@ -88,6 +88,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--data-sampler-balanced-sampling", default=True, type=bool)
     parser.add_argument("--data-sampler-shuffle", default=True, type=bool)
     parser.add_argument("--prefetch-khop", default=True, type=bool)
+    parser.add_argument("--dropout-neg-khop-edges", default=0.5, float=bool)
     parser.add_argument("--obs-deterministic", default=True, type=bool)
 
     # Model Sampler
