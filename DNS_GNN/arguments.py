@@ -87,6 +87,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--data-use-obs-edge-only", default=False, type=bool)
     parser.add_argument("--data-sampler-balanced-sampling", default=True, type=bool)
     parser.add_argument("--data-sampler-shuffle", default=True, type=bool)
+    parser.add_argument("--data-sampler-cache-hop-computation", default=False, type=bool)
 
     # Model Sampler
     parser.add_argument("--model-sampler-name", default=None, type=str)
@@ -157,7 +158,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "dataset_num_slices", "dataset_val_ratio", "dataset_test_ratio", "dataset_debug",
         "data_sampler_num_hops", "data_sampler_neg_sample_ratio",
         "data_sampler_dropout_edges", "data_sampler_balanced_sampling",
-        "data_sampler_shuffle", "data_use_obs_edge_only",
+        "data_sampler_shuffle", "data_use_obs_edge_only", "data_sampler_cache_hop_computation",
         "model_sampler_name", "model_sampler_kwargs",
         "model_name", "dataset_name", "custom_key", "dataset_seed", "model_seed", "model_debug",
         "accumulate_grad_batches",

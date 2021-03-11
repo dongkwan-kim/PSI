@@ -52,6 +52,48 @@ def get_observed_nodes_and_edges(data, obs_x_range):
     return observed_nodes, observed_edge_index
 
 
+def get_khop_attributes(
+        global_edge_index,
+        num_global_nodes,
+        observed_nodes,
+        observed_edge_index,
+        edge_index,
+        num_hops,
+        use_obs_edge_only,
+):
+    if not use_obs_edge_only:
+        # Get neighbor nodes from k-hop sampling.
+        khop_nodes, khop_edge_index, obs_x_idx, _ = k_hop_subgraph(
+            node_idx=observed_nodes,
+            num_hops=num_hops,
+            edge_index=global_edge_index,
+            relabel_nodes=False,  # Relabel later.
+            num_nodes=num_global_nodes,
+            flow="target_to_source",  # Important.
+        )
+    else:
+        # use_obs_edge_only == True, i.e., observed_nodes are all you need.
+        khop_nodes, obs_x_idx = observed_nodes, None
+        if observed_edge_index is not None:
+            khop_edge_index = observed_edge_index
+        else:
+            # Case of hasattr(data, "obs_x"),
+            #   that is, observed_edge_index is None,
+            #   find khop_edge_index from edge_index with observed_nodes.
+            if edge_index.size(1) > 0:
+                num_nodes = max(maybe_num_nodes(edge_index),
+                                observed_nodes.max().item() + 1)
+            else:  # necessary, since there can be isolated nodes.
+                num_nodes = observed_nodes.max().item() + 1
+            khop_edge_index, _ = subgraph(
+                subset=observed_nodes,
+                edge_index=edge_index,
+                edge_attr=None, relabel_nodes=False,
+                num_nodes=num_nodes,
+            )
+    return khop_nodes, khop_edge_index, obs_x_idx
+
+
 def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N):
     khp_edge_idx_npy = (khop_edge_index[0] * N + khop_edge_index[1]).numpy()
     sub_edge_idx_npy = (edge_index[0] * N + edge_index[1]).numpy()
@@ -81,6 +123,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_inter_subgraph_infomax=False,
                  batch_size=1,
                  subdata_filter_func=None,
+                 cache_hop_computation=False,
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -92,6 +135,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.num_hops = num_hops
         self.use_labels_x = use_labels_x
         self.use_labels_e = use_labels_e
+        self.cache_hop_computation = cache_hop_computation
 
         self.neg_sample_ratio = neg_sample_ratio * (1 - dropout_edges)
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
@@ -122,61 +166,56 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             collated.append(self.__collate_one__(d))
         return Batch.from_data_list(collated)
 
-    def __collate_one__(self, d):
+    def __collate_one__(self, d: Data):
         assert hasattr(d, "edge_index")
         edge_index = d.edge_index
         edge_attr = getattr(d, "edge_attr", None)
 
-        observed_nodes, observed_edge_index = get_observed_nodes_and_edges(
-            data=d, obs_x_range=self.obs_x_range,
-        )
-
-        if not self.use_obs_edge_only:
+        if self.cache_hop_computation and hasattr(d, "khop_edge_index"):
+            # Use cached version.
+            khop_nodes = d.khop_nodes
+            khop_edge_index = d.khop_edge_index
+            obs_x_idx = d.obs_x_idx
+            khop_edge_attr = d.khop_edge_attr
+        else:
+            observed_nodes, observed_edge_index = get_observed_nodes_and_edges(
+                data=d, obs_x_range=self.obs_x_range,
+            )
             """
             It returns (1) the nodes involved in the subgraph, (2) the filtered
-            :obj:`edge_index` connectivity, (3) the mapping from node indices in
-            :obj:`node_idx` to their new location, and (4) the edge mask indicating
-            which edges were preserved.
+            :obj:`edge_index` connectivity, (3) the mapping (obs_x_idx) from node
+            indices in :obj:`node_idx` to their new location.
             """
-            khop_nodes, khop_edge_index, mapping, _ = k_hop_subgraph(
-                node_idx=observed_nodes,
+            khop_nodes, khop_edge_index, obs_x_idx = get_khop_attributes(
+                global_edge_index=self.G.edge_index,
+                num_global_nodes=self.N,
+                observed_nodes=observed_nodes,
+                observed_edge_index=observed_edge_index,
+                edge_index=edge_index,
                 num_hops=self.num_hops,
-                edge_index=self.G.edge_index,
-                relabel_nodes=False,  # Relabel later.
-                num_nodes=self.N,
-                flow="target_to_source",  # Important.
+                use_obs_edge_only=self.use_obs_edge_only,
             )
-        else:
-            khop_nodes, mapping = observed_nodes, None
-            if observed_edge_index is not None:
-                khop_edge_index = observed_edge_index
-            else:
-                # The latter is necessary, since there can be isolated nodes.
-                if edge_index.size(1) > 0:
-                    num_nodes = max(maybe_num_nodes(edge_index),
-                                    observed_nodes.max().item() + 1)
-                else:
-                    num_nodes = observed_nodes.max().item() + 1
-                khop_edge_index, _ = subgraph(
-                    subset=observed_nodes,
-                    edge_index=edge_index,
-                    edge_attr=None, relabel_nodes=False,
-                    num_nodes=num_nodes,
-                )
+            khop_edge_attr, is_khp_in_sub_edge = create_khop_edge_attr(
+                khop_edge_index=khop_edge_index, edge_index=edge_index,
+                edge_attr=edge_attr, N=self.N,
+            )
 
-        khop_edge_attr, is_khp_in_sub_edge = create_khop_edge_attr(
-            khop_edge_index=khop_edge_index, edge_index=edge_index,
-            edge_attr=edge_attr, N=self.N,
-        )
+            # Relabeling nodes
+            _node_idx = observed_nodes.new_full((self.N,), -1)
+            _node_idx[khop_nodes] = torch.arange(khop_nodes.size(0))
+            khop_edge_index = _node_idx[khop_edge_index]
 
-        # Relabeling nodes
-        _node_idx = observed_nodes.new_full((self.N,), -1)
-        _node_idx[khop_nodes] = torch.arange(khop_nodes.size(0))
-        khop_edge_index = _node_idx[khop_edge_index]
+            if self.cache_hop_computation:
+                # Update the cache.
+                d.khop_nodes = khop_nodes
+                d.khop_edge_index = khop_edge_index
+                d.obs_x_idx = obs_x_idx
+                d.khop_edge_attr = khop_edge_attr
+                d.cached = True
 
         # Negative sampling of edges
         neg_edge_index = None
-        num_pos_samples = np.sum(is_khp_in_sub_edge)
+        num_pos_samples = torch.sum(khop_edge_attr > 0).item()
         num_neg_samples = int(self.neg_sample_ratio * num_pos_samples)
         if self.use_labels_e and self.neg_sample_ratio > 0:
             neg_edge_index = negative_sampling(
@@ -233,9 +272,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 labels_x[x_0] = 0.
             labels_x = labels_x.long()
 
-        if mapping is not None and mapping.size(0) != khop_nodes.size(0):
-            obs_x_idx = mapping
-        else:
+        if obs_x_idx is None or obs_x_idx.size(0) == khop_nodes.size(0):
             obs_x_idx = None
 
         if self.use_pergraph_attr:
@@ -257,7 +294,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             edge_index_isi = torch.cat([edge_index_pos_isi, edge_index_neg_isi], dim=1)
 
             # Relabeling
-            _node_idx = observed_nodes.new_full((self.N,), -1)
+            _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
             _node_idx[x_isi] = torch.arange(x_isi.size(0))
             edge_index_isi = _node_idx[edge_index_isi]
 
@@ -302,7 +339,7 @@ if __name__ == '__main__':
     from data_transform import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DATASET = "HPONeuro"
+    DATASET = "FNTN"
     DEBUG = True
 
     if DATASET == "FNTN":
@@ -352,6 +389,7 @@ if __name__ == '__main__':
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
         use_inter_subgraph_infomax=True,  # todo
+        cache_hop_computation=True,
         shuffle=True,
     )
     seed_everything(42)
@@ -366,6 +404,8 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=True,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=(5, 10),
+        use_inter_subgraph_infomax=False,  # todo
+        cache_hop_computation=True,
         shuffle=True,
     )
     cprint("Train first", "green")
@@ -384,6 +424,7 @@ if __name__ == '__main__':
         dataset_instance.global_data, val_fntn,
         num_hops=1, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
+        cache_hop_computation=False,
         shuffle=False,
     )
     cprint("Val", "green")
@@ -396,6 +437,7 @@ if __name__ == '__main__':
         num_hops=0, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0,
         use_obs_edge_only=True,  # this.
+        cache_hop_computation=False,
         shuffle=True,
     )
     cprint("WO Sampler", "green")

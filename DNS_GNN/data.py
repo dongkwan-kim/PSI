@@ -101,6 +101,7 @@ class DNSDataModule(pl.LightningDataModule):
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
             subdata_filter_func=_subdata_filter_func,
+            cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler
@@ -115,6 +116,7 @@ class DNSDataModule(pl.LightningDataModule):
             balanced_sampling=False,
             use_inter_subgraph_infomax=False,
             subdata_filter_func=_subdata_filter_func,
+            cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
             shuffle=False,
         )
         kw.update(kwargs)
