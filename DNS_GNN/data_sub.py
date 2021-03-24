@@ -15,7 +15,7 @@ import os.path as osp
 from tqdm import tqdm
 
 from data_base import DatasetBase
-from data_transform import CompleteSubgraph
+from data_utils import CompleteSubgraph
 from utils import from_networkx_customized_ordering
 
 

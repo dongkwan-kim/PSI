@@ -13,7 +13,7 @@ from torch_geometric.utils.num_nodes import maybe_num_nodes
 import numpy as np
 import numpy_indexed as npi
 
-from data_transform import random_walk_indices_from_data
+from data_utils import random_walk_indices_from_data
 
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
@@ -346,7 +346,7 @@ if __name__ == '__main__':
     from data_fntn import FNTN
     from data_sub import HPOMetab, HPONeuro
     from pytorch_lightning import seed_everything
-    from data_transform import CompleteSubgraph
+    from data_utils import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
     DATASET = "HPONeuro"

@@ -18,7 +18,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
-from data_transform import random_walk_indices_from_data
+from data_utils import random_walk_indices_from_data
 
 
 class DatasetBase(InMemoryDataset):

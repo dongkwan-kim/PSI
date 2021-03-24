@@ -15,7 +15,7 @@ from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
 from data_base import DatasetBase
-from data_transform import CompleteSubgraph
+from data_utils import CompleteSubgraph
 
 
 def preprocess_text(text_list: List[str], repr_type="tfidf", **kwargs) -> (torch.Tensor, Dict[int, str]):

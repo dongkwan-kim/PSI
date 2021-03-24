@@ -9,7 +9,7 @@ from torch_geometric.data import InMemoryDataset, Data
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
 from data_sub import HPONeuro, HPOMetab, EMUser
-from data_transform import CompleteSubgraph
+from data_utils import CompleteSubgraph
 
 
 def _subdata_filter_func(data: Data):
