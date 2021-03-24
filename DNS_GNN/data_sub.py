@@ -19,7 +19,7 @@ from data_transform import CompleteSubgraph
 from utils import from_networkx_customized_ordering
 
 
-def read_subgnn_data(edge_list_path, subgraph_path, embedding_path):
+def read_subgnn_data(edge_list_path, subgraph_path, embedding_path, debug=False):
     """
     Read in the subgraphs & their associated labels
     Reference: https://github.com/mims-harvard/SubGNN/blob/main/SubGNN/SubGNN.py#L519
@@ -51,18 +51,18 @@ def read_subgnn_data(edge_list_path, subgraph_path, embedding_path):
     cprint("Converted global_graph to PyG format", "green")
     global_data.x = xs
 
-    train_data_list = get_data_list_from_subgraphs(global_data.edge_index, train_nodes, train_sub_ys)
+    train_data_list = get_data_list_from_subgraphs(global_data.edge_index, train_nodes, train_sub_ys, debug=debug)
     cprint("Converted train_subgraph to PyG format", "green")
-    val_data_list = get_data_list_from_subgraphs(global_data.edge_index, val_nodes, val_sub_ys)
+    val_data_list = get_data_list_from_subgraphs(global_data.edge_index, val_nodes, val_sub_ys, debug=debug)
     cprint("Converted val_subgraph to PyG format", "green")
-    test_data_list = get_data_list_from_subgraphs(global_data.edge_index, test_nodes, test_sub_ys)
+    test_data_list = get_data_list_from_subgraphs(global_data.edge_index, test_nodes, test_sub_ys, debug=debug)
     cprint("Converted test_subgraph to PyG format", "green")
     return global_data, train_data_list, val_data_list, test_data_list
 
 
-def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], sub_ys):
+def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], sub_ys, debug=False):
     data_list = []
-    for x_index, y in zip(sub_nodes, tqdm(sub_ys)):
+    for idx, (x_index, y) in enumerate(zip(sub_nodes, tqdm(sub_ys))):
         x_index = torch.Tensor(x_index).long().view(-1, 1)
         if len(y.size()) == 0:
             y = torch.Tensor([y]).long()
@@ -75,6 +75,10 @@ def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], 
             cprint("Single node graph: size of E is {}".format(edge_index.size()), "yellow")
         data = Data(x=x_index, edge_index=edge_index, y=y)
         data_list.append(data)
+
+        if debug and idx >= 5:
+            break
+
     return data_list
 
 
@@ -152,7 +156,7 @@ class DatasetSubGNN(DatasetBase):
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
                  val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
-        assert slice_type in ["random"]
+        assert slice_type in ["random", "random_walk"]
         super(DatasetSubGNN, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
             transform, pre_transform, **kwargs,
@@ -184,7 +188,7 @@ class DatasetSubGNN(DatasetBase):
         ))
 
     def process(self):
-        global_data, data_train, data_val, data_test = read_subgnn_data(*self.raw_paths)
+        global_data, data_train, data_val, data_test = read_subgnn_data(*self.raw_paths, debug=self.debug)
 
         data_train, data_val, data_test = self.process_with_slice_data_train_val_test(
             (data_train, data_val, data_test),
@@ -274,7 +278,7 @@ if __name__ == '__main__':
         dts = HPONeuro(
             root=PATH,
             name="HPONeuro",
-            slice_type="random",
+            slice_type="random_walk",
             slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
@@ -285,7 +289,7 @@ if __name__ == '__main__':
         dts = HPOMetab(
             root=PATH,
             name="HPOMetab",
-            slice_type="random",
+            slice_type="random_walk",
             slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
@@ -296,7 +300,7 @@ if __name__ == '__main__':
         dts = EMUser(
             root=PATH,
             name="EMUser",
-            slice_type="random",
+            slice_type="random_walk",
             slice_range=(5, 10),
             num_slices=1,
             val_ratio=0.15,

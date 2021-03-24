@@ -13,6 +13,8 @@ from torch_geometric.utils.num_nodes import maybe_num_nodes
 import numpy as np
 import numpy_indexed as npi
 
+from data_transform import random_walk_indices_from_data
+
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
     edge_attr_wo_zero = edge_attr.clone()
@@ -46,7 +48,15 @@ def get_observed_nodes_and_edges(data, obs_x_range):
         else:
             obs_x = data.obs_x
         observed_nodes = data.x[obs_x].flatten().unique()
-        observed_edge_index = None  # temporarily
+        observed_edge_index = None  # temporarily, will be assigned in the main loop.
+    elif hasattr(data, "obs_rw_x"):
+        if obs_x_range is not None:
+            num_obs_x = int(torch.randint(obs_x_range[0], obs_x_range[1], (1,)))
+            obs_x = random_walk_indices_from_data(data, num_obs_x)
+        else:
+            obs_x = data.obs_rw_x
+        observed_nodes = data.x[obs_x].flatten().unique()
+        observed_edge_index = None  # temporarily, will be assigned in the main loop.
     else:
         raise AttributeError
     return observed_nodes, observed_edge_index
@@ -339,15 +349,16 @@ if __name__ == '__main__':
     from data_transform import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DATASET = "FNTN"
-    DEBUG = True
+    DATASET = "HPONeuro"
+    DEBUG = False
 
     if DATASET == "FNTN":
+        SLICE_RANGE = (5, 10)
         dataset_instance = FNTN(
             root=PATH,
             name="0.0",  # 0.0 0.001 0.002 0.003 0.004
             slice_type="num_edges",
-            slice_range=(5, 10),
+            slice_range=SLICE_RANGE,
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
@@ -355,11 +366,12 @@ if __name__ == '__main__':
             debug=DEBUG,
         )
     elif DATASET == "HPOMetab":
+        SLICE_RANGE = (3, 8)
         dataset_instance = HPOMetab(
             root=PATH,
             name="HPOMetab",
-            slice_type="random",
-            slice_range=(3, 8),
+            slice_type="random_walk",
+            slice_range=SLICE_RANGE,
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
@@ -367,11 +379,12 @@ if __name__ == '__main__':
             debug=DEBUG,
         )
     elif DATASET == "HPONeuro":
+        SLICE_RANGE = (3, 8)
         dataset_instance = HPONeuro(
             root=PATH,
             name="HPONeuro",
             slice_type="random",
-            slice_range=(3, 8),
+            slice_range=SLICE_RANGE,
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
@@ -387,7 +400,7 @@ if __name__ == '__main__':
         dataset_instance.global_data, train_fntn,
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
-        obs_x_range=(5, 10),
+        obs_x_range=SLICE_RANGE,
         use_inter_subgraph_infomax=True,  # todo
         cache_hop_computation=True,
         shuffle=True,
@@ -396,14 +409,14 @@ if __name__ == '__main__':
     cprint("Train w/ ISI", "green")
     for i, b in enumerate(sampler):
         print(i, b)
-        if i == 2:
+        if i >= 4:
             break
 
     sampler = KHopWithLabelsXESampler(
         dataset_instance.global_data, train_fntn,
         num_hops=1, use_labels_x=True, use_labels_e=True,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
-        obs_x_range=(5, 10),
+        obs_x_range=SLICE_RANGE,
         use_inter_subgraph_infomax=False,  # todo
         cache_hop_computation=True,
         shuffle=True,
@@ -413,12 +426,14 @@ if __name__ == '__main__':
         # Data(edge_index_01=[2, 97688], edge_index_2=[2, 147], labels_e=[440], labels_x=[298],
         #      mask_e=[97835], mask_x=[7261], obs_x_idx=[9], x=[7261], y=[1])
         print(i, b)
-        if i == 2:
+        if i >= 4:
             break
 
     cprint("Train second", "green")
-    for b in sampler:  # shuffling test
+    for i, b in enumerate(sampler):  # shuffling test
         print(b)
+        if i >= 4:
+            break
 
     sampler = KHopWithLabelsXESampler(
         dataset_instance.global_data, val_fntn,
@@ -428,9 +443,11 @@ if __name__ == '__main__':
         shuffle=False,
     )
     cprint("Val", "green")
-    for b in sampler:
+    for i, b in enumerate(sampler):
         # Data(edge_index_01=[2, 31539], obs_x_idx=[8], x=[3029], y=[1])
         print(b)
+        if i >= 4:
+            break
 
     sampler = KHopWithLabelsXESampler(
         dataset_instance.global_data, train_fntn,
@@ -441,6 +458,8 @@ if __name__ == '__main__':
         shuffle=True,
     )
     cprint("WO Sampler", "green")
-    for b in sampler:
+    for i, b in enumerate(sampler):
         # Data(edge_index_01=[2, 15], x=[10], y=[1])
         print(b)
+        if i >= 4:
+            break

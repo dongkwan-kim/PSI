@@ -1,4 +1,23 @@
+import torch
+from torch_geometric.data import Data
 from torch_geometric.utils import k_hop_subgraph
+from torch_cluster import random_walk
+
+
+def random_walk_indices_from_data(data: Data, walk_length: int):
+    conn_x = torch.unique(data.edge_index)
+    a_x = conn_x[torch.randperm(conn_x.size(0))][:1]
+    row, col = data.edge_index
+    a_walk = random_walk(row, col, start=a_x, walk_length=walk_length - 1)
+    a_walk = torch.unique(a_walk).squeeze()  # Remove duplicated nodes.
+
+    # Node to idx
+    max_x = max(conn_x.max().item(), data.x.max().item())
+    _idx = torch.full((max_x + 1,), fill_value=-1.0, dtype=torch.long)
+    _idx[data.x.squeeze()] = torch.arange(data.x.size(0))
+    a_walk = _idx[a_walk]
+    del _idx
+    return a_walk
 
 
 class CompleteSubgraph(object):

@@ -24,7 +24,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     # Dataset
     parser.add_argument("--dataset-path", default="/mnt/nas2/GNN-DATA", type=str)
     parser.add_argument("--dataset-id", default="0.0", type=str)
-    parser.add_argument("--dataset-slice-type", default="num_edges", type=str)
+    parser.add_argument("--dataset-slice-type", default="num_edges", type=str,
+                        choices=["num_edges", "random", "random_walk"])
     parser.add_argument("--dataset-slice-range-1", default=5)
     parser.add_argument("--dataset-slice-range-2", default=10)
     parser.add_argument("--dataset-num-slices", default=1, type=int)

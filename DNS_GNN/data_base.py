@@ -13,9 +13,12 @@ import numpy as np
 import networkx as nx
 import os.path as osp
 
+from torch_cluster import random_walk
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
+
+from data_transform import random_walk_indices_from_data
 
 
 class DatasetBase(InMemoryDataset):
@@ -51,10 +54,13 @@ class DatasetBase(InMemoryDataset):
         cprint(
             "Initialized: {} (debug={}) \n"
             "/ num_nodes: {}, num_edges: {} \n"
-            "/ num_train: {}, num_val: {}, num_test: {}".format(
+            "/ num_train: {}, num_val: {}, num_test: {} \n".format(
                 self.__class__.__name__, self.debug,
                 self.global_data.edge_index.max() + 1, self.global_data.edge_index.size(),
-                self.num_train, self.num_val, len(self) - self.num_train - self.num_val),
+                self.num_train, self.num_val, len(self) - self.num_train - self.num_val)
+            + "/ slice_type: {}, slice_range: {} \n".format(
+                self.slice_type, self.slice_range,
+            ),
             "blue",
         )
 
@@ -236,6 +242,24 @@ class DatasetBase(InMemoryDataset):
                     new_data.obs_x = torch.randperm(N)[:one_slice]
                     new_data_list.append(new_data)
 
+        elif self.slice_type == "random_walk":
+            for i, data in enumerate(data_list):
+
+                if data.edge_index.size(1) <= 0:
+                    cprint("random_walk slice cannot be applied to no-edge-graph", "red")
+                    continue
+
+                targets = range(self.slice_range[0], self.slice_range[1])
+
+                if not is_eval:
+                    random_slices = np.random.choice(targets, self.num_slices, replace=True)
+                else:
+                    random_slices = [targets[len(targets) // 2]]
+
+                for one_slice in random_slices:  # int-iterators
+                    new_data = data.clone()
+                    new_data.obs_rw_x = random_walk_indices_from_data(new_data, one_slice)
+                    new_data_list.append(new_data)
         else:
             raise ValueError("{} is not appropriate slice_type".format(self.slice_type))
 
