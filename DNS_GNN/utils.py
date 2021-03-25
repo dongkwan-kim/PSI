@@ -14,6 +14,16 @@ from termcolor import cprint
 # PyTorch/PyTorch Geometric related
 
 
+def to_directed(edge_index, edge_attr=None):
+    if edge_attr is not None:
+        raise NotImplementedError
+    N = edge_index.max().item() + 1
+    row, col = torch.sort(edge_index.t()).values.t()
+    sorted_idx = torch.unique(row * N + col)
+    row, col = sorted_idx // N, sorted_idx % N
+    return torch.stack([row, col], dim=0).long()
+
+
 def convert_node_labels_to_integers_customized_ordering(
     G, first_label=0, ordering="default", label_attribute=None
 ):
@@ -173,10 +183,22 @@ def merge_or_update(old_dict: dict, new_dict: dict):
 
 
 if __name__ == '__main__':
-    nxg = nx.Graph()
-    nxg.add_edges_from([(0, 1), (0, 2), (0, 5)])
-    print(nxg.edges)
-    pgg = from_networkx_customized_ordering(nxg, ordering="keep")
-    print(pgg.edge_index)
-    pgg = from_networkx_customized_ordering(nxg, ordering="default")
-    print(pgg.edge_index)
+
+    MODE = "TOD"
+
+    if MODE == "FNCO":
+        nxg = nx.Graph()
+        nxg.add_edges_from([(0, 1), (0, 2), (0, 5)])
+        print(nxg.edges)
+        pgg = from_networkx_customized_ordering(nxg, ordering="keep")
+        print(pgg.edge_index)
+        pgg = from_networkx_customized_ordering(nxg, ordering="default")
+        print(pgg.edge_index)
+
+    elif MODE == "TOD":
+        from torch_geometric.utils import to_undirected
+        _ei = torch.randint(0, 7, [2, 5])
+        print(_ei)
+        _uei = to_undirected(_ei)
+        print(_uei)
+        print(to_directed(_uei))
