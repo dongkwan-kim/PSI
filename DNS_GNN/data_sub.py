@@ -16,10 +16,10 @@ from tqdm import tqdm
 
 from data_base import DatasetBase
 from data_utils import CompleteSubgraph
-from utils import from_networkx_customized_ordering
+from utils import from_networkx_customized_ordering, to_directed
 
 
-def read_subgnn_data(edge_list_path, subgraph_path, embedding_path, debug=False):
+def read_subgnn_data(edge_list_path, subgraph_path, embedding_path, save_directed_edges, debug=False):
     """
     Read in the subgraphs & their associated labels
     Reference: https://github.com/mims-harvard/SubGNN/blob/main/SubGNN/SubGNN.py#L519
@@ -51,16 +51,20 @@ def read_subgnn_data(edge_list_path, subgraph_path, embedding_path, debug=False)
     cprint("Converted global_graph to PyG format", "green")
     global_data.x = xs
 
-    train_data_list = get_data_list_from_subgraphs(global_data.edge_index, train_nodes, train_sub_ys, debug=debug)
+    train_data_list = get_data_list_from_subgraphs(global_data.edge_index, train_nodes, train_sub_ys,
+                                                   save_directed_edges=save_directed_edges, debug=debug)
     cprint("Converted train_subgraph to PyG format", "green")
-    val_data_list = get_data_list_from_subgraphs(global_data.edge_index, val_nodes, val_sub_ys, debug=debug)
+    val_data_list = get_data_list_from_subgraphs(global_data.edge_index, val_nodes, val_sub_ys,
+                                                 save_directed_edges=save_directed_edges, debug=debug)
     cprint("Converted val_subgraph to PyG format", "green")
-    test_data_list = get_data_list_from_subgraphs(global_data.edge_index, test_nodes, test_sub_ys, debug=debug)
+    test_data_list = get_data_list_from_subgraphs(global_data.edge_index, test_nodes, test_sub_ys,
+                                                  save_directed_edges=save_directed_edges, debug=debug)
     cprint("Converted test_subgraph to PyG format", "green")
     return global_data, train_data_list, val_data_list, test_data_list
 
 
-def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], sub_ys, debug=False):
+def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], sub_ys,
+                                 save_directed_edges, debug=False):
     data_list = []
     for idx, (x_index, y) in enumerate(zip(sub_nodes, tqdm(sub_ys))):
         x_index = torch.Tensor(x_index).long().view(-1, 1)
@@ -73,6 +77,8 @@ def get_data_list_from_subgraphs(global_edge_index, sub_nodes: List[List[int]], 
             cprint("No edge graph: size of X is {}".format(x_index.size()), "red")
         if x_index.size(0) <= 1:
             cprint("Single node graph: size of E is {}".format(edge_index.size()), "yellow")
+        if save_directed_edges and edge_index.size(1) >= 2:
+            edge_index = to_directed(edge_index)
         data = Data(x=x_index, edge_index=edge_index, y=y)
         data_list.append(data)
 
@@ -154,13 +160,20 @@ class DatasetSubGNN(DatasetBase):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         assert slice_type in ["random", "random_walk"]
+        self.save_directed_edges = save_directed_edges
+        print(save_directed_edges, self.save_directed_edges)
         super(DatasetSubGNN, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
             transform, pre_transform, **kwargs,
         )
+
+    def _get_important_elements(self):
+        ie = super(DatasetSubGNN, self)._get_important_elements()
+        ie["save_directed_edges"] = "directed" if self.save_directed_edges else "undirected"
+        return ie
 
     def load(self):
         """
@@ -188,7 +201,9 @@ class DatasetSubGNN(DatasetBase):
         ))
 
     def process(self):
-        global_data, data_train, data_val, data_test = read_subgnn_data(*self.raw_paths, debug=self.debug)
+        global_data, data_train, data_val, data_test = read_subgnn_data(
+            *self.raw_paths, save_directed_edges=self.save_directed_edges, debug=self.debug,
+        )
 
         data_train, data_val, data_test = self.process_with_slice_data_train_val_test(
             (data_train, data_val, data_test),
@@ -217,11 +232,11 @@ class HPONeuro(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(HPONeuro, self).__init__(
-            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
-            transform, pre_transform, **kwargs,
+            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
+            save_directed_edges, debug, seed, transform, pre_transform, **kwargs,
         )
 
     def download(self):
@@ -235,11 +250,11 @@ class HPOMetab(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(HPOMetab, self).__init__(
-            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
-            transform, pre_transform, **kwargs,
+            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
+            save_directed_edges, debug, seed, transform, pre_transform, **kwargs,
         )
 
     def download(self):
@@ -253,11 +268,11 @@ class EMUser(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(EMUser, self).__init__(
-            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
-            transform, pre_transform, **kwargs,
+            root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
+            save_directed_edges, debug, seed, transform, pre_transform, **kwargs,
         )
 
     def download(self):
