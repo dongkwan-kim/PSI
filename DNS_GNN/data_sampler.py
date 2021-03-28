@@ -7,13 +7,14 @@ import torch
 import torch.utils.data.dataloader
 from termcolor import cprint
 from torch_geometric.data import Data, Batch
-from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj, subgraph
+from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj, subgraph, to_undirected
 from torch_geometric.utils.num_nodes import maybe_num_nodes
 
 import numpy as np
 import numpy_indexed as npi
 
 from data_utils import random_walk_indices_from_data
+from utils import print_time
 
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
@@ -104,23 +105,51 @@ def get_khop_attributes(
     return khop_nodes, khop_edge_index, obs_x_idx
 
 
-def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N):
+def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N, method):
+    if method == "edge":
+        is_khp_in_subgraph, indices_of_sub_in_khp = _create_khop_edge_attr_edge_ver(
+            khop_edge_index, edge_index, N)
+    elif method == "node":
+        assert edge_attr is None
+        nodes = torch.unique(edge_index)
+        is_khp_in_subgraph = _create_khop_edge_attr_node_ver(
+            khop_edge_index, nodes,
+        )
+        indices_of_sub_in_khp = None
+    else:
+        raise ValueError("Wrong method: {}".format(method))
+
+    # Construct edge_attr of khop_edges
+    khop_edge_attr = torch.zeros(is_khp_in_subgraph.shape[0])  # [E_khp]
+    if edge_attr is not None:
+        khop_edge_attr[is_khp_in_subgraph] = edge_attr[indices_of_sub_in_khp, :].squeeze()
+    else:
+        khop_edge_attr[is_khp_in_subgraph] = 1.0
+    khop_edge_attr = khop_edge_attr.unsqueeze(1)  # [E_khp, 1]
+    return khop_edge_attr, is_khp_in_subgraph
+
+
+def _create_khop_edge_attr_edge_ver(khop_edge_index, edge_index, N):
     khp_edge_idx_npy = (khop_edge_index[0] * N + khop_edge_index[1]).numpy()
     sub_edge_idx_npy = (edge_index[0] * N + edge_index[1]).numpy()
 
     # Bottleneck for large k-hop.
-    indices_of_sub_in_khp = npi.indices(sub_edge_idx_npy, khp_edge_idx_npy, missing=-1)  # [E_khp]
-    is_khp_in_sub_edge = (indices_of_sub_in_khp >= 0)  # [E_khp]
-    indices_of_sub_in_khp = indices_of_sub_in_khp[is_khp_in_sub_edge]  # [E_khp_and_in_sub_edge]
+    indices_of_sub_edge_in_khp = npi.indices(sub_edge_idx_npy, khp_edge_idx_npy, missing=-1)  # [E_khp]
+    is_khp_in_sub_edge = (indices_of_sub_edge_in_khp >= 0)  # [E_khp]
+    indices_of_sub_edge_in_khp = indices_of_sub_edge_in_khp[is_khp_in_sub_edge]  # [E_khp_and_in_sub_edge]
+    return is_khp_in_sub_edge, indices_of_sub_edge_in_khp
 
-    # Construct edge_attr of khop_edges
-    khop_edge_attr = np.zeros(khp_edge_idx_npy.shape[0])  # [E_khp]
-    if edge_attr is not None:
-        khop_edge_attr[is_khp_in_sub_edge] = edge_attr.numpy()[indices_of_sub_in_khp, :].squeeze()
-    else:
-        khop_edge_attr[is_khp_in_sub_edge] = 1.0
-    khop_edge_attr = torch.from_numpy(khop_edge_attr).float().unsqueeze(1)  # [E_khp, 1]
-    return khop_edge_attr, is_khp_in_sub_edge
+
+def _create_khop_edge_attr_node_ver(khop_edge_index, nodes):
+    nodes = nodes.numpy()
+    khp_row, khp_col = khop_edge_index.numpy()
+    is_khp_row_in_sub_nodes = npi.contains(nodes, khp_row)
+    is_khp_col_in_sub_nodes = npi.contains(nodes, khp_col[is_khp_row_in_sub_nodes])
+
+    subarray = is_khp_row_in_sub_nodes[is_khp_row_in_sub_nodes]
+    subarray[~is_khp_col_in_sub_nodes] = False
+    is_khp_row_in_sub_nodes[is_khp_row_in_sub_nodes] = subarray
+    return is_khp_row_in_sub_nodes
 
 
 class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
@@ -134,6 +163,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  batch_size=1,
                  subdata_filter_func=None,
                  cache_hop_computation=False,
+                 ke_method="node",
                  shuffle=False, verbose=0, **kwargs):
 
         self.G = global_data
@@ -146,6 +176,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_labels_x = use_labels_x
         self.use_labels_e = use_labels_e
         self.cache_hop_computation = cache_hop_computation
+        self.ke_method = ke_method
+        assert self.ke_method in ["node", "edge"]
 
         self.neg_sample_ratio = neg_sample_ratio * (1 - dropout_edges)
         self.dropout_edges = dropout_edges  # the bigger, the more sparse graph
@@ -207,7 +239,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             )
             khop_edge_attr, is_khp_in_sub_edge = create_khop_edge_attr(
                 khop_edge_index=khop_edge_index, edge_index=edge_index,
-                edge_attr=edge_attr, N=self.N,
+                edge_attr=edge_attr,  N=self.N, method=self.ke_method,
             )
 
             # Relabeling nodes
@@ -402,7 +434,8 @@ if __name__ == '__main__':
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
         use_inter_subgraph_infomax=True,  # todo
-        cache_hop_computation=True,
+        cache_hop_computation=False,
+        ke_method="node",
         shuffle=True,
     )
     seed_everything(42)
