@@ -160,11 +160,10 @@ class DatasetSubGNN(DatasetBase):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         assert slice_type in ["random", "random_walk"]
         self.save_directed_edges = save_directed_edges
-        print(save_directed_edges, self.save_directed_edges)
         super(DatasetSubGNN, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio, debug, seed,
             transform, pre_transform, **kwargs,
@@ -232,7 +231,7 @@ class HPONeuro(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(HPONeuro, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
@@ -250,7 +249,7 @@ class HPOMetab(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(HPOMetab, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
@@ -268,7 +267,7 @@ class EMUser(DatasetSubGNN):
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
-                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=True, debug=False, seed=42,
+                 val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
                  transform=None, pre_transform=None, **kwargs):
         super(EMUser, self).__init__(
             root, name, slice_type, slice_range, num_slices, val_ratio, test_ratio,
@@ -284,7 +283,7 @@ class EMUser(DatasetSubGNN):
 
 if __name__ == '__main__':
 
-    TYPE = "HPOMetab"
+    TYPE = "HPONeuro"
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = False
@@ -293,7 +292,7 @@ if __name__ == '__main__':
         dts = HPONeuro(
             root=PATH,
             name="HPONeuro",
-            slice_type="random_walk",
+            slice_type="random",
             slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
@@ -304,7 +303,7 @@ if __name__ == '__main__':
         dts = HPOMetab(
             root=PATH,
             name="HPOMetab",
-            slice_type="random_walk",
+            slice_type="random",
             slice_range=(3, 8),
             num_slices=1,
             val_ratio=0.15,
@@ -315,7 +314,7 @@ if __name__ == '__main__':
         dts = EMUser(
             root=PATH,
             name="EMUser",
-            slice_type="random_walk",
+            slice_type="random",
             slice_range=(5, 10),
             num_slices=1,
             val_ratio=0.15,
