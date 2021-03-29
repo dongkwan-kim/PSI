@@ -7,7 +7,7 @@ import torch.nn as nn
 from sklearn.preprocessing import MultiLabelBinarizer
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
-from torch_geometric.utils import from_networkx, subgraph
+from torch_geometric.utils import subgraph, sort_edge_index
 import numpy as np
 import networkx as nx
 import os.path as osp
@@ -49,6 +49,7 @@ def read_subgnn_data(edge_list_path, subgraph_path, embedding_path, save_directe
     cprint("Loaded global_graph at {}".format(edge_list_path), "green")
     global_data = from_networkx_customized_ordering(global_nxg, ordering="keep")
     cprint("Converted global_graph to PyG format", "green")
+    global_data.edge_index, _ = sort_edge_index(global_data.edge_index)
     global_data.x = xs
 
     train_data_list = get_data_list_from_subgraphs(global_data.edge_index, train_nodes, train_sub_ys,
