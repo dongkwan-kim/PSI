@@ -120,11 +120,12 @@ def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N, method):
         raise ValueError("Wrong method: {}".format(method))
 
     # Construct edge_attr of khop_edges
-    khop_edge_attr = torch.zeros(is_khp_in_subgraph.shape[0])  # [E_khp]
     if edge_attr is not None:
+        khop_edge_attr = torch.zeros(is_khp_in_subgraph.shape[0])  # [E_khp]
         khop_edge_attr[is_khp_in_subgraph] = edge_attr[indices_of_sub_in_khp, :].squeeze()
-    else:
         khop_edge_attr[is_khp_in_subgraph] = 1.0
+    else:
+        khop_edge_attr = torch.Tensor(is_khp_in_subgraph).float()
     khop_edge_attr = khop_edge_attr.unsqueeze(1)  # [E_khp, 1]
     return khop_edge_attr, is_khp_in_subgraph
 
@@ -239,7 +240,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             )
             khop_edge_attr, is_khp_in_sub_edge = create_khop_edge_attr(
                 khop_edge_index=khop_edge_index, edge_index=edge_index,
-                edge_attr=edge_attr,  N=self.N, method=self.ke_method,
+                edge_attr=edge_attr, N=self.N, method=self.ke_method,
             )
 
             # Relabeling nodes
@@ -269,7 +270,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         # Drop Edges in graph and subgraph
         if self.dropout_edges > 0.0:
             khop_edge_index, khop_edge_attr = dropout_adj(
-                khop_edge_index, khop_edge_attr, p=self.dropout_edges,
+                khop_edge_index, khop_edge_attr,
+                p=self.dropout_edges, num_nodes=self.N,
             )
 
         KE = khop_edge_index.size(1)
