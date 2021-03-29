@@ -66,6 +66,15 @@ class DNSDataModule(pl.LightningDataModule):
             transform=None,
         )
 
+    @property
+    def ke_method(self):
+        if self.dataset_name == "FNTN":
+            return "edge"
+        elif self.dataset_name in ["HPONeuro", "HPOMetab"]:
+            return "node"
+        else:
+            raise ValueError("Wrong dataset_name: {}".format(self.dataset_name))
+
     def prepare_data(self):
         pre_transform = None
         cprint("Dataset prepared", "yellow")
@@ -102,6 +111,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
             subdata_filter_func=_subdata_filter_func,
             cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
+            ke_method=self.ke_method,
             shuffle=self.hparams.data_sampler_shuffle,
         )
         return sampler
@@ -117,6 +127,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_inter_subgraph_infomax=False,
             subdata_filter_func=_subdata_filter_func,
             cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
+            ke_method=self.ke_method,
             shuffle=False,
         )
         kw.update(kwargs)
