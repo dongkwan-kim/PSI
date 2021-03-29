@@ -128,86 +128,47 @@ DNS-FNTN-BISAGE-SHORT-1SG: &DNS-FNTN-BISAGE-SHORT-1SG
 DNS-FNTN-BISAGE-SHORT-PGA:
   <<: *DNS-FNTN-BISAGE-SHORT
   use_pergraph_attr: True
+  lambda_l2: 0.00022681
 
 DNS-FNTN-BISAGE-LONG-PGA:
   <<: *DNS-FNTN-BISAGE-LONG
   use_pergraph_attr: True
+  lambda_l2: 0.00010766
 
 DNS-FNTN-BISAGE-XLONG-PGA:
   <<: *DNS-FNTN-BISAGE-XLONG
   use_pergraph_attr: True
+  lambda_l2: 0.000043635
 
 DNS-FNTN-BISAGE-MAX-PGA:
   <<: *DNS-FNTN-BISAGE-MAX
   use_pergraph_attr: True
+  lambda_l2: 0.00015872
 
 DNS-FNTN-BISAGE-SHORT-0SG-PGA:
   <<: *DNS-FNTN-BISAGE-SHORT-0SG
   use_pergraph_attr: True
+  lambda_l2: 0.000010522
 
 DNS-FNTN-BISAGE-LONG-0SG-PGA:
   <<: *DNS-FNTN-BISAGE-LONG-0SG
   use_pergraph_attr: True
+  lambda_l2: 0.000043985
 
 DNS-FNTN-BISAGE-XLONG-0SG-PGA:
   <<: *DNS-FNTN-BISAGE-XLONG-0SG
   use_pergraph_attr: True
+  lambda_l2: 0.000027055
 
 DNS-FNTN-BISAGE-MAX-0SG-PGA:
   <<: *DNS-FNTN-BISAGE-MAX-0SG
   use_pergraph_attr: True
+  lambda_l2: 0.000056615
 
 DNS-FNTN-BISAGE-SHORT-1SG-PGA:
   <<: *DNS-FNTN-BISAGE-SHORT-1SG
   use_pergraph_attr: True
-
-
-DNS-FNTN-BISMALL: &DNS-FNTN-BISMALL
-  <<: *FNTN
-  gnn_name: SAGEConv
-  use_decoder: True
-  is_bidirectional: True
-  data_sampler_num_hops: 1
-  data_sampler_neg_sample_ratio: 1.0
-  data_sampler_dropout_edges: 0.5
-
-DNS-FNTN-BISMALL-X:
-  <<: *DNS-FNTN-BISMALL
-  main_decoder_type: node
-  use_node_decoder: True
-  use_edge_decoder: False
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  pool_ratio: 0.1
-
-DNS-FNTN-BISMALL-E:
-  <<: *DNS-FNTN-BISMALL
-  main_decoder_type: edge
-  use_node_decoder: False
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_e: 0.5
-  pool_ratio: 0.2
-
-DNS-FNTN-BISMALL-XE:
-  <<: *DNS-FNTN-BISMALL
-  main_decoder_type: node
-  use_node_decoder: True
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.05
-  lambda_aux_e: 0.1
-  pool_ratio: 0.1
-
-DNS-FNTN-BISMALL-EX:
-  <<: *DNS-FNTN-BISMALL
-  main_decoder_type: edge
-  use_node_decoder: True
-  use_edge_decoder: True
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  lambda_aux_e: 0.25
-  pool_ratio: 0.1
+  lambda_l2: 0.000347723
 
 
 DNS-FNTN-BIE2D2F64: &DNS-FNTN-BIE2D2F64
@@ -221,7 +182,7 @@ DNS-FNTN-BIE2D2F64: &DNS-FNTN-BIE2D2F64
   num_encoder_layers: 2
   num_decoder_body_layers: 2
 
-DNS-FNTN-BIE2D2F64-X:
+DNS-FNTN-BIE2D2F64-X: &DNS-FNTN-BIE2D2F64-X  # not-used
   <<: *DNS-FNTN-BIE2D2F64
   main_decoder_type: node
   use_node_decoder: True
@@ -230,7 +191,16 @@ DNS-FNTN-BIE2D2F64-X:
   lambda_aux_x: 0.1
   pool_ratio: 0.1
 
-DNS-FNTN-BIE2D2F64-E:
+DNS-FNTN-BIE2D2F64-X-PGA:
+  <<: *DNS-FNTN-BIE2D2F64-X
+  use_pergraph_attr: True
+  lambda_l2: 0.0046803
+  lambda_aux_x: 0.06
+  lambda_aux_isi: 0.0
+  data_sampler_dropout_edges: 0.4
+  pool_ratio: 0.070401
+
+DNS-FNTN-BIE2D2F64-E:  # not-used
   <<: *DNS-FNTN-BIE2D2F64
   main_decoder_type: edge
   use_node_decoder: False
@@ -239,7 +209,7 @@ DNS-FNTN-BIE2D2F64-E:
   lambda_aux_e: 0.5
   pool_ratio: 0.2
 
-DNS-FNTN-BIE2D2F64-XE:
+DNS-FNTN-BIE2D2F64-XE:  # not-used
   <<: *DNS-FNTN-BIE2D2F64
   main_decoder_type: node
   use_node_decoder: True
@@ -249,7 +219,7 @@ DNS-FNTN-BIE2D2F64-XE:
   lambda_aux_e: 0.1
   pool_ratio: 0.1
 
-DNS-FNTN-BIE2D2F64-EX:
+DNS-FNTN-BIE2D2F64-EX:  # not-used
   <<: *DNS-FNTN-BIE2D2F64
   main_decoder_type: edge
   use_node_decoder: True
@@ -271,7 +241,7 @@ DNS-FNTN-BIE2D2F64-ISI-X: &DNS-FNTN-BIE2D2F64-ISI-X
   use_node_decoder: True
   use_edge_decoder: False
 
-DNS-FNTN-BIE2D2F64-ISI-X-GB:
+DNS-FNTN-BIE2D2F64-ISI-X-GB:  # not-used
   <<: *DNS-FNTN-BIE2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 1e-3
@@ -283,7 +253,8 @@ DNS-FNTN-BIE2D2F64-ISI-X-GB-PGA:
   <<: *DNS-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  lambda_aux_isi: 0.1
-  pool_ratio: 0.1
+  lambda_l2: 0.0018817
+  lambda_aux_x: 5.80
+  lambda_aux_isi: 1.85
+  data_sampler_dropout_edges: 0.60
+  pool_ratio: 0.010994
