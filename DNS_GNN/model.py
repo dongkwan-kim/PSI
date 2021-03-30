@@ -42,7 +42,7 @@ class DNSNet(nn.Module):
     def pprint(self):
         pprint(next(self.modules()))
 
-    def forward(self, x_idx, obs_x_idx, edge_index_01, edge_index_2=None, pergraph_attr=None,
+    def forward(self, x_idx, obs_x_index, edge_index_01, edge_index_2=None, pergraph_attr=None,
                 x_idx_isi=None, edge_index_isi=None, ptr_isi=None):
         x = self.emb(x_idx)
         x = self.enc(x, edge_index_01)
@@ -51,7 +51,7 @@ class DNSNet(nn.Module):
 
         if self.args.use_decoder:
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
-                x, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr,
+                x, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
             )
         else:
             z_g, logits_g = self.dec_or_readout(x, pergraph_attr)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     _xi = torch.arange(7)
     _ei = torch.randint(0, 7, [2, 17])
     _ei2 = torch.randint(0, 7, [2, 13])
-    _obs_x_idx = torch.arange(3).long()
+    _obs_x_index = torch.arange(3).long()
     _pga = torch.arange(_args.pergraph_channels) * 0.1
 
     _xi_isi = torch.arange(19)
@@ -108,9 +108,9 @@ if __name__ == '__main__':
                     print(_i, _oi.size())
 
     print("On 1st iter")
-    _rvs = net(_xi, _obs_x_idx, _ei, _ei2, _pga, _xi_isi, _ei_isi, _ptr_isi)
+    _rvs = net(_xi, _obs_x_index, _ei, _ei2, _pga, _xi_isi, _ei_isi, _ptr_isi)
     _print()
 
     print("On 2nd iter")
-    _rvs = net(_xi, _obs_x_idx, _ei, _ei2, _pga, _xi_isi, _ei_isi, _ptr_isi)
+    _rvs = net(_xi, _obs_x_index, _ei, _ei2, _pga, _xi_isi, _ei_isi, _ptr_isi)
     _print()

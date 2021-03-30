@@ -121,10 +121,10 @@ class DNSDecoder(nn.Module):
         return MultiLinear(**kw)
 
     def forward(
-            self, x, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr=None,
+            self, x, obs_x_index, edge_index_01, edge_index_2, pergraph_attr=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
 
-        obs_x_k = self.obs_summarizer_k(x[obs_x_idx])  # [1, F]
+        obs_x_k = self.obs_summarizer_k(x[obs_x_index])  # [1, F]
         x_q = self.body_fc_q(x)  # [N, F]
         x_v = self.body_fc_v(x)  # [N, F]
 
@@ -200,10 +200,10 @@ if __name__ == '__main__':
     _x = torch.arange(7 * 64).view(7, 64) * 0.1
     _ei = torch.randint(0, 7, [2, 17])
     _ei2 = torch.randint(0, 7, [2, 13])
-    _obs_x_idx = torch.arange(3).long()
+    _obs_x_index = torch.arange(3).long()
     _pga = torch.arange(_args.pergraph_channels) * 0.1
 
-    _z, _logits, _dx, _de = dec(_x, _obs_x_idx, _ei, _ei2, _pga)
+    _z, _logits, _dx, _de = dec(_x, _obs_x_index, _ei, _ei2, _pga)
 
     print(f"__z: {_z.size()}")  # __z: torch.Size([128])
     print(f"__logits: {_logits.size()}")  # __logits: torch.Size([1, 4])

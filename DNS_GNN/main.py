@@ -138,7 +138,7 @@ class MainModel(LightningModule):
         else:
             out = {}
             logits_g, _, _, loss_isi = self(
-                batch.x, batch.obs_x_idx, batch.edge_index_01, pergraph_attr=batch.pergraph_attr,
+                batch.x, batch.obs_x_index, batch.edge_index_01, pergraph_attr=batch.pergraph_attr,
                 x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi, ptr_isi=batch.ptr_isi,
             )
             # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
@@ -152,24 +152,26 @@ class MainModel(LightningModule):
         """
         :param batch:
             example (isi False)
-                Data(edge_index_01=[2, 686034], edge_index_2=[2, 262], labels_e=[786], labels_x=[526], mask_e=[686296],
-                     mask_x=[25868], obs_x_idx=[9], x=[25868], y=[1])
+                Data(edge_index_01=[2, 686034], edge_index_2=[2, 262], labels_e=[786], labels_x=[526],
+                     mask_e_index=[686296], mask_x_index=[25868], obs_x_index=[9], x=[25868], y=[1])
             example (isi True)
-                Data(edge_index_01=[2, 2099097], edge_index_isi=[2, 1019], labels_x=[250], mask_x=[250], obs_x_idx=[7],
-                     ptr_isi=[1], x=[82468], x_isi=[1016], y=[1])
+                Data(edge_index_01=[2, 2099097], edge_index_isi=[2, 1019], labels_x=[250], mask_x_index=[250],
+                     obs_x_index=[7], ptr_isi=[1], x=[82468], x_isi=[1016], y=[1])
 
         :param batch_idx:
         :return:
         """
-        # forward args: x_idx, obs_x_idx, edge_index_01, edge_index_2, pergraph_attr, x_idx_isi, edge_index_isi, ptr_isi
+        # forward args:
+        #   x_idx, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
+        #   x_idx_isi, edge_index_isi, ptr_isi
         logits_g, dec_x, dec_e, loss_isi = self(
-            batch.x, batch.obs_x_idx, batch.edge_index_01, batch.edge_index_2, batch.pergraph_attr,
+            batch.x, batch.obs_x_index, batch.edge_index_01, batch.edge_index_2, batch.pergraph_attr,
             batch.x_isi, batch.edge_index_isi, batch.ptr_isi,
         )
-        if batch.mask_x is not None:
-            dec_x = dec_x[batch.mask_x]
-        if batch.mask_e is not None:
-            dec_e = dec_e[batch.mask_e]
+        if batch.mask_x_index is not None:
+            dec_x = dec_x[batch.mask_x_index]
+        if batch.mask_e_index is not None:
+            dec_e = dec_e[batch.mask_e_index]
 
         total_loss = 0
         loss_g = self.loss_with_logits(logits_g, batch.y)
@@ -315,7 +317,7 @@ if __name__ == '__main__':
 
     main_args = get_args(
         model_name="DNS",
-        dataset_name="FNTN",  # FNTN, HPOMetab
+        dataset_name="HPOMetab",  # FNTN, HPOMetab
         custom_key="E2D2F64-ISI-X-GB",  # BISAGE-SHORT, BIE2D2F64-ISI-X-PGA, E2D2F64-ISI-X-GB
     )
     pprint_args(main_args)
