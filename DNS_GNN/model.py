@@ -42,8 +42,9 @@ class DNSNet(nn.Module):
     def pprint(self):
         pprint(next(self.modules()))
 
-    def forward(self, x_idx, obs_x_index, edge_index_01, edge_index_2=None, pergraph_attr=None,
-                x_idx_isi=None, edge_index_isi=None, ptr_isi=None):
+    def forward(self, x_idx, obs_x_index, edge_index_01,
+                edge_index_2=None, pergraph_attr=None, batch=None,
+                x_idx_isi=None, edge_index_isi=None, batch_isi=None, ptr_isi=None):
         x = self.emb(x_idx)
         x = self.enc(x, edge_index_01)
 
@@ -52,6 +53,7 @@ class DNSNet(nn.Module):
         if self.args.use_decoder:
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
                 x, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
+                # todo: batch support
             )
         else:
             z_g, logits_g = self.dec_or_readout(x, pergraph_attr)
@@ -60,8 +62,10 @@ class DNSNet(nn.Module):
             assert x_idx_isi is not None
             x_isi = self.emb(x_idx_isi)
             x_isi = self.enc(x_isi, edge_index_isi)
-            x_pos, x_neg = x_isi[:ptr_isi, :], x_isi[ptr_isi:, :]
-            loss_isi = self.isi_loss(summarized=z_g, x_pos=x_pos, x_neg=x_neg)
+            loss_isi = self.isi_loss(
+                summarized=z_g, x_pos_and_neg=x_isi,
+                batch_pos_and_neg=batch_isi, ptr_pos_and_neg=ptr_isi,
+            )
 
         # Returns which are not None:
         #   use_decoder & use_inter_subgraph_infomax: (logits_g, dec_x, dec_e, loss_isi)
