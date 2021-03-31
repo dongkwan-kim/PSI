@@ -53,8 +53,12 @@ class MainModel(LightningModule):
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.lambda_l2)
 
-    def forward(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
+    def forward(self, batch):
+        return self.model(
+            batch.x, batch.obs_x_index, batch.edge_index_01,
+            edge_index_2=batch.edge_index_2, pergraph_attr=batch.pergraph_attr,
+            x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi, ptr_isi=batch.ptr_isi,
+        )
 
     def loss_with_logits(self, logits, y) -> Tensor:
         if y.size(-1) == 1:
@@ -137,10 +141,7 @@ class MainModel(LightningModule):
             total_loss = out["total_loss"]
         else:
             out = {}
-            logits_g, _, _, loss_isi = self(
-                batch.x, batch.obs_x_index, batch.edge_index_01, pergraph_attr=batch.pergraph_attr,
-                x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi, ptr_isi=batch.ptr_isi,
-            )
+            logits_g, _, _, loss_isi = self(batch)
             # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
             total_loss = self.loss_with_logits(logits_g, batch.y)
             if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
@@ -164,10 +165,7 @@ class MainModel(LightningModule):
         # forward args:
         #   x_idx, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
         #   x_idx_isi, edge_index_isi, ptr_isi
-        logits_g, dec_x, dec_e, loss_isi = self(
-            batch.x, batch.obs_x_index, batch.edge_index_01, batch.edge_index_2, batch.pergraph_attr,
-            batch.x_isi, batch.edge_index_isi, batch.ptr_isi,
-        )
+        logits_g, dec_x, dec_e, loss_isi = self(batch)
         if batch.mask_x_index is not None:
             dec_x = dec_x[batch.mask_x_index]
         if batch.mask_e_index is not None:
