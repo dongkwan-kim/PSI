@@ -64,7 +64,7 @@ class Readout(nn.Module):
         if "mean" in self.name:
             o_list.append(torch.mean(x, dim=0))
         if "max" in self.name:
-            o_list.append(torch.mean(x, dim=0))
+            o_list.append(torch.max(x, dim=0).values)
         if "sum" in self.name:
             o_list.append(torch.sum(x, dim=0))
         z_g = torch.cat(o_list, dim=0)
