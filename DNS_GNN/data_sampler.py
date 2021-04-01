@@ -1,24 +1,22 @@
 import copy
 import random
-from typing import List
+from pprint import pprint
+from typing import List, Tuple, Dict
 import time
 
 import torch
 import torch.utils.data.dataloader
 from termcolor import cprint
-from torch_geometric.data import Data
+from torch import Tensor
+from torch_geometric.data import Data, Batch
 from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj, subgraph, to_undirected
 from torch_geometric.utils.num_nodes import maybe_num_nodes
 
 import numpy as np
 import numpy_indexed as npi
 
-from data_utils import random_walk_indices_from_data
+from data_utils import random_walk_indices_from_data, DataPN
 from utils import print_time
-try:
-    from data_batch import Batch
-except ModuleNotFoundError:
-    from torch_geometric.data import Batch
 
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
@@ -171,12 +169,6 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  ke_method=None,
                  shuffle=False, verbose=0, **kwargs):
 
-        self.G = global_data
-        if subdata_filter_func is None:
-            self.subdata_list: List[Data] = subdata_list
-        else:
-            self.subdata_list: List[Data] = [d for d in subdata_list
-                                             if subdata_filter_func(d)]
         self.num_hops = num_hops
         self.use_labels_x = use_labels_x
         self.use_labels_e = use_labels_e
@@ -191,7 +183,19 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
+
+        self.G = global_data
         self.N = global_data.edge_index.max() + 1
+
+        if subdata_filter_func is None:
+            self.subdata_list: List[Data] = subdata_list
+        else:
+            self.subdata_list: List[Data] = [d for d in subdata_list
+                                             if subdata_filter_func(d)]
+
+        if self.use_inter_subgraph_infomax:
+            for idx, d in enumerate(self.subdata_list):
+                d.idx = idx
 
         self.verbose = verbose
         if verbose > 0:
@@ -203,19 +207,37 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             shuffle=shuffle, **kwargs,
         )
 
+    @property
+    def B(self):
+        return self.batch_size
+
     def __collate__(self, data_list):
 
-        if len(data_list) == 1:
-            return self.__process__(data_list[0])
+        is_single_batch = len(data_list) == 1
+
+        if self.use_inter_subgraph_infomax:
+            pos_attr_list, neg_attr_list = self.get_isi_attr_from_pos_data_list(data_list)
         else:
-            processed_data_list = [self.__process__(d) for d in data_list]
-            collated_batch = Batch.from_data_list(
-                processed_data_list,
-            )
+            pos_attr_list, neg_attr_list = [None for _ in range(self.B)], [None for _ in range(self.B)]
+
+        # DataPN.to_kwargs:
+        # Construct (x_pos, edge_index_pos, x_neg, edge_index_neg) for multi-batch B > 1,
+        #        or (x_pos_and_neg, edge_index_pos_and_neg, ptr_pos_and_neg) for single-batch B = 1.
+        processed_data_list = [
+            self.__process_to_data__(
+                d,
+                isi_kwargs=DataPN.to_kwargs(pos_x_and_e, neg_x_and_e, concat=is_single_batch))
+            for d, pos_x_and_e, neg_x_and_e in zip(data_list, pos_attr_list, neg_attr_list)
+        ]
+        if is_single_batch:
+            return processed_data_list[0]
+        else:
+            collated_batch = Batch.from_data_list(processed_data_list, follow_batch=["x_pos", "x_neg"])
+            collated_batch = DataPN.concat_pos_and_neg_in_batch_(collated_batch, batch_size=self.batch_size)
             return collated_batch
 
     @print_time
-    def __process__(self, d: Data):
+    def __process_to_data__(self, d: Data, isi_kwargs: dict) -> DataPN:
         assert hasattr(d, "edge_index")
         edge_index = d.edge_index
         edge_attr = getattr(d, "edge_attr", None)
@@ -330,30 +352,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         else:
             pergraph_attr = None
 
-        if self.use_inter_subgraph_infomax:
-            d_neg = self.sample_uni_data_neg(uni_data_pos=d)
-
-            try:
-                x_pos_isi, edge_index_pos_isi = d.x_cs, d.edge_index_cs
-                x_neg_isi, edge_index_neg_isi = d_neg.x_cs, d_neg.edge_index_cs
-            except AttributeError:
-                x_pos_isi, edge_index_pos_isi = d.x, d.edge_index
-                x_neg_isi, edge_index_neg_isi = d_neg.x, d_neg.edge_index
-
-            x_isi = torch.cat([x_pos_isi, x_neg_isi], dim=0).squeeze()  # [N_pos + N_neg]
-            edge_index_isi = torch.cat([edge_index_pos_isi, edge_index_neg_isi], dim=1)
-
-            # Relabeling
-            _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
-            _node_idx[x_isi] = torch.arange(x_isi.size(0))
-            edge_index_isi = _node_idx[edge_index_isi]
-
-            ptr_isi = torch.Tensor([x_pos_isi.size(0)]).long()
-        else:
-            x_isi, edge_index_isi, ptr_isi = None, None, None
-
-        # noinspection PyUnresolvedReferences
-        sampled_data = Data(
+        sampled_data = DataPN(
             x=khop_nodes,
             obs_x_index=obs_x_index,
             labels_x=labels_x,
@@ -364,22 +363,31 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             mask_e_index=mask_e_index,
             y=d.y,
             pergraph_attr=pergraph_attr,
-            x_isi=x_isi,
-            edge_index_isi=edge_index_isi,
-            ptr_isi=ptr_isi,
+            **isi_kwargs,
         )
         return sampled_data
 
-    def sample_uni_data_neg(self, uni_data_pos):
-        # todo: support multiple neg samples.
-        neg_idx_list = random.sample(range(len(self.subdata_list)), 2)
-        data_neg_0 = self.subdata_list[neg_idx_list[0]]
-        is_not_neg = (uni_data_pos.x.size(0) == data_neg_0.x.size(0) and
-                      uni_data_pos.x.sum() == data_neg_0.x.sum())
-        if is_not_neg:
-            return self.subdata_list[neg_idx_list[1]]
-        else:
-            return data_neg_0
+    def get_isi_attr_from_pos_data_list(self, pos_data_list: List[Data]):
+        num_subdata = len(self.subdata_list)
+        num_samples = min(len(pos_data_list), num_subdata // 2)
+        pos_idx_list = [d.idx for d in pos_data_list]
+        neg_data_list = [self.subdata_list[neg_idx]
+                         for neg_idx in random.sample(range(num_subdata), 2 * num_samples)
+                         if neg_idx not in pos_idx_list]
+        neg_data_list = neg_data_list[:num_samples]
+
+        _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
+
+        def get_isi_attr(d: Data, isi_type: str = None) -> Tuple[Tensor, Tensor]:
+            _x_isi = getattr(d, "x_cs", d.x).squeeze()
+            _edge_index_isi = getattr(d, "edge_index_cs", d.edge_index)
+            # Relabeling
+            _node_idx[_x_isi] = torch.arange(_x_isi.size(0))
+            _edge_index_isi = _node_idx[_edge_index_isi]
+            return _x_isi, _edge_index_isi
+
+        return ([get_isi_attr(d, "pos") for d in pos_data_list],
+                [get_isi_attr(d, "neg") for d in neg_data_list])
 
 
 if __name__ == '__main__':
@@ -529,4 +537,4 @@ if __name__ == '__main__':
         if i >= 4:
             break
 
-    print("Done!")
+    cprint("Done!", "green")

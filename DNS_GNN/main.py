@@ -58,8 +58,8 @@ class MainModel(LightningModule):
             batch.x, batch.obs_x_index, batch.edge_index_01,
             edge_index_2=batch.edge_index_2, pergraph_attr=batch.pergraph_attr,
             batch=batch.batch,
-            x_idx_isi=batch.x_isi, edge_index_isi=batch.edge_index_isi,
-            batch_isi=batch.batch_isi, ptr_isi=batch.ptr_isi,
+            x_idx_isi=batch.x_pos_and_neg, edge_index_isi=batch.edge_index_pos_and_neg,
+            batch_isi=batch.batch_pos_and_neg, ptr_isi=batch.ptr_pos_and_neg,
         )
 
     def loss_with_logits(self, logits, y) -> Tensor:
