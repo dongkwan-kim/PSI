@@ -161,13 +161,17 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_labels_x, use_labels_e,
                  neg_sample_ratio, dropout_edges,
                  obs_x_range=None, use_obs_edge_only=False,
-                 use_pergraph_attr=False, balanced_sampling=True,
+                 use_pergraph_attr=False,
+                 balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
                  batch_size=1,
                  subdata_filter_func=None,
                  cache_hop_computation=False,
                  ke_method=None,
-                 shuffle=False, verbose=0, **kwargs):
+                 shuffle=False,
+                 num_workers=0,  # todo
+                 verbose=0,
+                 **kwargs):
 
         self.num_hops = num_hops
         self.use_labels_x = use_labels_x
@@ -204,7 +208,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         super(KHopWithLabelsXESampler, self).__init__(
             self.subdata_list, batch_size=batch_size, collate_fn=self.__collate__,
-            shuffle=shuffle, **kwargs,
+            shuffle=shuffle, num_workers=num_workers, **kwargs,
         )
 
     @property
@@ -402,7 +406,7 @@ if __name__ == '__main__':
 
     if DATASET == "FNTN":
         SLICE_RANGE = (5, 10)
-        ke_method = "edge"
+        KE_METHOD = "edge"
         dataset_instance = FNTN(
             root=PATH,
             name="0.0",  # 0.0 0.001 0.002 0.003 0.004
@@ -416,7 +420,7 @@ if __name__ == '__main__':
         )
     elif DATASET == "HPOMetab":
         SLICE_RANGE = (3, 8)
-        ke_method = "node"
+        KE_METHOD = "node"
         dataset_instance = HPOMetab(
             root=PATH,
             name="HPOMetab",
@@ -430,7 +434,7 @@ if __name__ == '__main__':
         )
     elif DATASET == "HPONeuro":
         SLICE_RANGE = (3, 8)
-        ke_method = "node"
+        KE_METHOD = "node"
         dataset_instance = HPONeuro(
             root=PATH,
             name="HPONeuro",
@@ -455,7 +459,7 @@ if __name__ == '__main__':
         use_inter_subgraph_infomax=True,  # todo
         cache_hop_computation=False,
         batch_size=2,  # todo
-        ke_method=ke_method,
+        ke_method=KE_METHOD,
         shuffle=True,
     )
     seed_everything(42)
@@ -472,7 +476,7 @@ if __name__ == '__main__':
         obs_x_range=SLICE_RANGE,
         use_inter_subgraph_infomax=True,  # todo
         cache_hop_computation=False,
-        ke_method=ke_method,
+        ke_method=KE_METHOD,
         shuffle=True,
     )
     seed_everything(42)
@@ -489,7 +493,7 @@ if __name__ == '__main__':
         obs_x_range=SLICE_RANGE,
         use_inter_subgraph_infomax=False,  # todo
         cache_hop_computation=False,
-        ke_method=ke_method,
+        ke_method=KE_METHOD,
         shuffle=True,
     )
     cprint("Train XE first", "green")
@@ -511,7 +515,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
         cache_hop_computation=False,
-        ke_method=ke_method,
+        ke_method=KE_METHOD,
         shuffle=False,
     )
     cprint("Val", "green")
@@ -527,7 +531,7 @@ if __name__ == '__main__':
         neg_sample_ratio=0.0, dropout_edges=0.0,
         use_obs_edge_only=True,  # this.
         cache_hop_computation=False,
-        ke_method=ke_method,
+        ke_method=KE_METHOD,
         shuffle=True,
     )
     cprint("WO Sampler", "green")
