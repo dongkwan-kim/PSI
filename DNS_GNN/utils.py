@@ -1,6 +1,7 @@
 import hashlib
 from collections import Counter
 import time
+from typing import List
 
 import networkx as nx
 import numpy as np
@@ -115,6 +116,12 @@ class EPSILON(object):
 
 
 # Others
+
+
+def del_attrs(o, keys: List[str]):
+    for k in keys:
+        delattr(o, k)
+
 
 def create_hash(o: dict):
     def preprocess(v):
