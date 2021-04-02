@@ -35,6 +35,12 @@ class DataPN(Data):
         else:
             return super().__inc__(key, value)
 
+    def __getattr__(self, item):
+        if "batch" in item or "ptr" in item:
+            return None
+        else:
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
     @staticmethod
     def to_kwargs(pos_x_and_e: Optional[Tuple[Tensor, Tensor]],
                   neg_x_and_e: Optional[Tuple[Tensor, Tensor]],
