@@ -50,13 +50,13 @@ class DNSNet(nn.Module):
 
         dec_x, dec_e, loss_isi = None, None, None
 
-        if self.args.use_decoder:
+        if self.args.use_decoder:  # DNSDecoder
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
                 x, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
                 # todo: batch support
             )
-        else:
-            z_g, logits_g = self.dec_or_readout(x, pergraph_attr)
+        else:  # Readout
+            z_g, logits_g = self.dec_or_readout(x, pergraph_attr, batch)
 
         if self.args.use_inter_subgraph_infomax and self.training:  # only for training
             assert x_idx_isi is not None
