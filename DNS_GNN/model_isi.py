@@ -60,23 +60,27 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
             dense_z_pos_and_neg, mask = to_dense_batch(z_pos_and_neg, batch_pos_and_neg)  # [2B, N_max, F]
             B = dense_z_pos_and_neg.size(0)
             z_pos, z_neg = dense_z_pos_and_neg[:B // 2], dense_z_pos_and_neg[B // 2:]
+            mask_pos, mask_neg = mask[:B // 2], mask[B // 2:]
             loss = self.loss(pos_z=z_pos, neg_z=z_neg, summary=summarized,
-                             is_batched=True, batch_mask=mask)
+                             is_batched=True, pos_mask=mask_pos, neg_mask=mask_neg)
         elif ptr_pos_and_neg is not None:
+            summarized = summarized.squeeze()
             z_pos, z_neg = z_pos_and_neg[:ptr_pos_and_neg, :], z_pos_and_neg[ptr_pos_and_neg:, :]
             loss = self.loss(pos_z=z_pos, neg_z=z_neg, summary=summarized, is_batched=False)
         else:
             raise ValueError
         return loss
 
-    def loss(self, pos_z, neg_z, summary, is_batched=False, batch_mask=None):
+    def loss(self, pos_z, neg_z, summary,
+             is_batched=False, pos_mask=None, neg_mask=None):
         r"""Computes the mutual information maximization objective.
 
         :param pos_z: [N, F_h] or [B, N_max, F_h]
         :param neg_z: [N, F_h] or [B, N_max, F_h]
         :param summary: [F_s] or [B, F_s]
         :param is_batched: bool
-        :param batch_mask: [B, N_max]
+        :param pos_mask: [B, N_max]
+        :param neg_mask: [B, N_max]
         """
         if not is_batched:
             pos_loss = -torch.log(self.discriminate(
@@ -85,9 +89,9 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
                 neg_z, summary, sigmoid=True) + EPS).mean()
         else:
             pos_loss = -torch.log(self.batched_discriminate(
-                pos_z, summary, batch_mask, sigmoid=True) + EPS).mean()
+                pos_z, summary, pos_mask, sigmoid=True) + EPS).mean()
             neg_loss = -torch.log(1 - self.batched_discriminate(
-                neg_z, summary, batch_mask, sigmoid=True) + EPS).mean()
+                neg_z, summary, neg_mask, sigmoid=True) + EPS).mean()
         return pos_loss + neg_loss
 
     def batched_discriminate(self, z, summary, batch_mask, sigmoid=True):
