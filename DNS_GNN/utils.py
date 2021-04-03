@@ -160,12 +160,14 @@ def debug_with_exit(func):  # Decorator
 
 def print_time(method):
     """From https://medium.com/pythonhive/python-decorator-to-measure-the-execution-time-of-methods-fa04cb6bb36d"""
+
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
         cprint('%r  %2.2f s' % (method.__name__, (te - ts)), "red")
         return result
+
     return timed
 
 
@@ -180,7 +182,9 @@ def cprint_arg_conditionally(condition_func=lambda args: True,
                     if filter_func(arg):
                         cprint(out_func(arg), color)
             return func(*args)
+
         return wrapped
+
     return decorator
 
 
@@ -226,6 +230,7 @@ if __name__ == '__main__':
 
     elif MODE == "to_undirected":
         from torch_geometric.utils import to_undirected
+
         _ei = torch.randint(0, 7, [2, 5])
         print(_ei)
         _uei = to_undirected(_ei)
