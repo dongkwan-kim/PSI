@@ -88,6 +88,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--data-use-obs-edge-only", default=False, type=bool)
     parser.add_argument("--data-sampler-balanced-sampling", default=True, type=bool)
     parser.add_argument("--data-sampler-shuffle", default=True, type=bool)
+    parser.add_argument("--data-sampler-num-workers", default=0, type=int)
     parser.add_argument("--data-sampler-cache-hop-computation", default=False, type=bool)
 
     # Model Sampler

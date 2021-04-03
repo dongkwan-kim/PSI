@@ -169,7 +169,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  cache_hop_computation=False,
                  ke_method=None,
                  shuffle=False,
-                 num_workers=0,  # todo
+                 num_workers=0,
                  verbose=0,
                  **kwargs):
 

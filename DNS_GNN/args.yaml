@@ -10,16 +10,16 @@ DEFAULT: &DEFAULT
   verbose: 1
   save_model: True
   val_interval: 1
-
-  lr: 0.001
-  num_encoder_layers: 2  # todo
-  num_decoder_body_layers: 2  # todo
-
-  epochs: 75
-  use_skip: True
-  precision: 16  # todo
+  data_sampler_num_workers: 5  # todo
+  precision: 16
   accumulate_grad_batches: 16  # todo
   use_pruner: False
+
+  lr: 0.001
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  epochs: 75
+  use_skip: True
 
 
 FNTN: &FNTN

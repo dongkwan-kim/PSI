@@ -113,6 +113,7 @@ class DNSDataModule(pl.LightningDataModule):
             cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
             ke_method=self.ke_method,
             shuffle=self.hparams.data_sampler_shuffle,
+            num_workers=self.hparams.data_sampler_num_workers,
         )
         return sampler
 
@@ -129,6 +130,7 @@ class DNSDataModule(pl.LightningDataModule):
             cache_hop_computation=self.hparams.data_sampler_cache_hop_computation,
             ke_method=self.ke_method,
             shuffle=False,
+            num_workers=self.hparams.data_sampler_num_workers,
         )
         kw.update(kwargs)
         return KHopWithLabelsXESampler(
