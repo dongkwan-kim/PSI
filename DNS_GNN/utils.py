@@ -1,18 +1,30 @@
 import hashlib
 from collections import Counter
 import time
-from typing import List
+from typing import List, Tuple
 
 import networkx as nx
 import numpy as np
+from termcolor import cprint
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import torch_geometric
-from termcolor import cprint
+from torch import Tensor
+from torch_geometric.utils import to_dense_batch
 
 
 # PyTorch/PyTorch Geometric related
+
+
+def to_multiple_dense_batches(
+        x_list: List[Tensor],
+        batch=None, fill_value=0, max_num_nodes=None
+) -> Tuple[List[Tensor], Tensor]:
+    cat_x = torch.cat(x_list, dim=-1)
+    cat_out, mask = to_dense_batch(cat_x, batch, fill_value, max_num_nodes)
+    # [B, N, L*F] -> [B, N, F] * L
+    return torch.chunk(cat_out, len(x_list), dim=-1), mask
 
 
 def to_directed(edge_index, edge_attr=None):
@@ -26,7 +38,7 @@ def to_directed(edge_index, edge_attr=None):
 
 
 def convert_node_labels_to_integers_customized_ordering(
-    G, first_label=0, ordering="default", label_attribute=None
+        G, first_label=0, ordering="default", label_attribute=None
 ):
     if ordering == "keep":
         mapping = dict(zip(G.nodes(), [int(v) for v in G.nodes()]))
@@ -191,9 +203,9 @@ def merge_or_update(old_dict: dict, new_dict: dict):
 
 if __name__ == '__main__':
 
-    MODE = "TOD"
+    MODE = "to_multiple_dense_batches"
 
-    if MODE == "FNCO":
+    if MODE == "from_networkx_customized_ordering":
         nxg = nx.Graph()
         nxg.add_edges_from([(0, 1), (0, 2), (0, 5)])
         print(nxg.edges)
@@ -202,7 +214,17 @@ if __name__ == '__main__':
         pgg = from_networkx_customized_ordering(nxg, ordering="default")
         print(pgg.edge_index)
 
-    elif MODE == "TOD":
+    elif MODE == "to_multiple_dense_batches":
+        _x_list = [torch.randn((13, 7)) for _ in range(3)]
+        _batch = torch.zeros((13,)).long()
+        _batch[5:] = 1
+
+        _b_list, _mask = to_multiple_dense_batches(_x_list, _batch)
+        for _i, _b in enumerate(_b_list):
+            print(_i, _b.size())
+        print("mask", _mask.size())
+
+    elif MODE == "to_undirected":
         from torch_geometric.utils import to_undirected
         _ei = torch.randint(0, 7, [2, 5])
         print(_ei)
