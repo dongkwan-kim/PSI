@@ -31,7 +31,8 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + self.pe[:x.size(0), :]
+        # x: [N, F] or [B, N_max, F]
+        x = x + self.pe[:x.size(-2), :]
         return self.dropout(x)
 
     def __repr__(self):
@@ -40,34 +41,28 @@ class PositionalEncoding(nn.Module):
         )
 
 
-class AttentionPool(nn.Module):
-
-    def __init__(self, num_channels):
-        super(AttentionPool, self).__init__()
-        self.att = nn.Linear(num_channels, 1, bias=False)
-        self.num_channels = num_channels
-
-    def forward(self, x):
-        att_val = self.att(x)  # [N, F] -> [N, 1]
-        w_sum = torch.einsum("nf,nu->f", x, torch.softmax(att_val, dim=0))  # [F] i.e., \sum a * x
-        return w_sum.view(1, -1)
-
-    def __repr__(self):
-        return "{}(F={})".format(self.__class__.__name__, self.num_channels)
-
-
 class BilinearWith1d(nn.Bilinear):
 
     def __init__(self, in1_features, in2_features, out_features, bias=True):
         super().__init__(in1_features, in2_features, out_features, bias)
-        # weight = (o, i1, i2)
+        # weight: [o, i1, i2], bias: [o,]
 
     def forward(self, x1, x2):
-        # x1 [1, F] * weight [O, F, S] * x2 [N, S] -> [N, O]
-        assert len(x1.squeeze().size()) == 1
-        x1 = x1.view(1, -1)
-        x = torch.einsum("uf,ofs->os", x1, self.weight)
-        x = torch.einsum("ns,os->no", x2, x)
+
+        x1_dim = x1.squeeze().dim()
+
+        if x1_dim == 1:  # single-batch
+            # x1 [F,] * weight [O, F, S] * x2 [N, S] -> [N, O]
+            x1, x2 = x1.squeeze(), x2.squeeze()
+            x = torch.einsum("f,ofs,ns->no", x1, self.weight, x2)
+
+        elif x1_dim == 2:  # multi-batch
+            # x1 [B, F] * weight [O, F, S] * x2 [B, N, S] -> [B, N, O]
+            x = torch.einsum("bf,ofs,bns->bno", x1, self.weight, x2)
+
+        else:
+            raise ValueError("Wrong x1 shape: {}".format(x1.size()))
+
         if self.bias is not None:
             x += self.bias
         return x
@@ -158,15 +153,12 @@ class Act(nn.Module):
 
 if __name__ == '__main__':
 
-    MODE = "POOL"
-
-    if MODE == "POOL":
-        _att_pool = AttentionPool(3)
-        _x = torch.randn((7, 3))
-        print(_att_pool)
-        print(_att_pool(_x).size())
-    elif MODE == "BILINEAR":
-        _bilinear = BilinearWith1d(3, 6, 7)
+    MODE = "BILINEAR"
+    if MODE == "BILINEAR":
+        _bilinear = BilinearWith1d(in1_features=3, in2_features=6, out_features=7)
         _x1 = torch.randn((1, 3))
         _x2 = torch.randn((23, 6))
-        print(_bilinear(_x1, _x2).size())
+        print(_bilinear(_x1, _x2).size())  # [23, 7]
+        _x1 = torch.randn((5, 3))
+        _x2 = torch.randn((5, 23, 6))
+        print(_bilinear(_x1, _x2).size())  # [5, 23, 7]
