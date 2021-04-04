@@ -1,7 +1,7 @@
 import hashlib
 from collections import Counter
 import time
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import networkx as nx
 import numpy as np
@@ -11,10 +11,19 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch_geometric
 from torch import Tensor
-from torch_geometric.utils import to_dense_batch
+from torch_geometric.utils import to_dense_batch, softmax
 
 
 # PyTorch/PyTorch Geometric related
+
+
+def softmax_half(src: Tensor, index: Tensor, num_nodes: Optional[int] = None) -> Tensor:
+    r"""softmax that supports torch.half tensors.
+        See torch_geometric.utils.softmax for more details."""
+    is_half = (src.dtype == torch.half)
+    src = src.float() if is_half else src
+    smx = softmax(src, index, num_nodes=num_nodes)
+    return smx.half() if is_half else smx
 
 
 def to_multiple_dense_batches(
@@ -207,7 +216,10 @@ def merge_or_update(old_dict: dict, new_dict: dict):
 
 if __name__ == '__main__':
 
-    MODE = "to_multiple_dense_batches"
+    from pytorch_lightning import seed_everything
+    seed_everything(42)
+
+    MODE = "softmax_half"
 
     if MODE == "from_networkx_customized_ordering":
         nxg = nx.Graph()
@@ -217,6 +229,13 @@ if __name__ == '__main__':
         print(pgg.edge_index)
         pgg = from_networkx_customized_ordering(nxg, ordering="default")
         print(pgg.edge_index)
+
+    elif MODE == "softmax_half":
+        _num_nodes = 3
+        _src = torch.randn((6, 1))
+        _index = torch.Tensor([0, 1, 1, 2, 2, 2]).long()
+        print(softmax(_src, _index, num_nodes=_num_nodes).squeeze())
+        print(softmax_half(_src.half(), _index, num_nodes=_num_nodes).squeeze())
 
     elif MODE == "to_multiple_dense_batches":
         _x_list = [torch.randn((13, 7)) for _ in range(3)]

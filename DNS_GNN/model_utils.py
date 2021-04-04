@@ -4,6 +4,11 @@ import torch.nn.functional as F
 import numpy as np
 import math
 
+from torch_geometric.nn import GlobalAttention
+from torch_scatter import scatter_add
+
+from utils import softmax_half
+
 
 class MyLinear(nn.Linear):
 
@@ -149,6 +154,27 @@ class Act(nn.Module):
 
     def __repr__(self):
         return self.a.__repr__()
+
+
+class GlobalAttentionHalf(GlobalAttention):
+    r"""GlobalAttention that supports torch.half tensors.
+        See torch_geometric.nn.GlobalAttention for more details."""
+
+    def __init__(self, gate_nn, nn=None):
+        super(GlobalAttentionHalf, self).__init__(gate_nn, nn)
+
+    def forward(self, x, batch, size=None):
+        x = x.unsqueeze(-1) if x.dim() == 1 else x
+        size = batch[-1].item() + 1 if size is None else size
+
+        gate = self.gate_nn(x).view(-1, 1)
+        x = self.nn(x) if self.nn is not None else x
+        assert gate.dim() == x.dim() and gate.size(0) == x.size(0)
+
+        gate = softmax_half(gate, batch, num_nodes=size)  # A substitute for softmax
+        out = scatter_add(gate * x, batch, dim=0, dim_size=size)
+
+        return out
 
 
 if __name__ == '__main__':

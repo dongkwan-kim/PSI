@@ -5,13 +5,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from termcolor import cprint
-from torch_geometric.nn import GlobalAttention
 from torch_geometric.nn.pool.topk_pool import topk
 from torch_geometric.utils import to_dense_batch, softmax
 from torch_scatter import scatter_add
 
-from model_utils import MultiLinear, PositionalEncoding, BilinearWith1d
-from utils import act, get_extra_repr
+from model_utils import MultiLinear, PositionalEncoding, BilinearWith1d, GlobalAttentionHalf
+from utils import act, get_extra_repr, softmax_half
 
 
 class ObsSummarizer(nn.Module):
@@ -23,7 +22,7 @@ class ObsSummarizer(nn.Module):
             self.pe = PositionalEncoding(max_len=args.obs_max_len, num_channels=args.hidden_channels)
         else:
             self.pe = None
-        self.pool = GlobalAttention(gate_nn=nn.Linear(args.hidden_channels, 1, bias=False))
+        self.pool = GlobalAttentionHalf(gate_nn=nn.Linear(args.hidden_channels, 1, bias=False))
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=args.hidden_channels, nhead=8, dim_feedforward=args.hidden_channels,
@@ -206,10 +205,10 @@ class DNSDecoder(nn.Module):
         batch = (~mask).squeeze().long() if batch is None else batch
 
         if use_pool:
-            score = decoded[:, 0] if idx_to_pool is None else decoded[:idx_to_pool, 0]
+            score = decoded[:, 0] if idx_to_pool is None else decoded[:idx_to_pool, 0]  # [N,] or [\sum E,]
             perm = topk(score, self.pool_ratio, batch, self.pool_min_score)
             batch_topk, o_v_topk = batch[perm], o_v[perm]
-            score_topk = softmax(score[perm].view(-1, 1), batch_topk, num_nodes=batch_size)
+            score_topk = softmax_half(score[perm].view(-1, 1), batch_topk, num_nodes=batch_size)
             pooled = scatter_add(score_topk * o_v_topk, batch_topk, dim=0, dim_size=batch_size)  # [B, F]
             return decoded, pooled
         else:
