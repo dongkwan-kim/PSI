@@ -32,6 +32,10 @@ def _cac_kw():
     )
 
 
+def ga(b, attr_name):
+    return getattr(b, attr_name, None)
+
+
 class MainModel(LightningModule):
 
     def __init__(self, hparams, dataset: DNSDataModule):
@@ -56,10 +60,10 @@ class MainModel(LightningModule):
     def forward(self, batch):
         return self.model(
             batch.x, batch.obs_x_index, batch.edge_index_01,
-            edge_index_2=batch.edge_index_2, pergraph_attr=batch.pergraph_attr,
+            edge_index_2=ga(batch, "edge_index_2"), pergraph_attr=ga(batch, "pergraph_attr"),
             batch=batch.batch,
-            x_idx_isi=batch.x_pos_and_neg, edge_index_isi=batch.edge_index_pos_and_neg,
-            batch_isi=batch.batch_pos_and_neg, ptr_isi=batch.ptr_pos_and_neg,
+            x_idx_isi=ga(batch, "x_pos_and_neg"), edge_index_isi=ga(batch, "edge_index_pos_and_neg"),
+            batch_isi=ga(batch, "batch_pos_and_neg"), ptr_isi=ga(batch, "ptr_pos_and_neg"),
         )
 
     def loss_with_logits(self, logits, y) -> Tensor:
@@ -168,20 +172,20 @@ class MainModel(LightningModule):
         #   x_idx, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
         #   x_idx_isi, edge_index_isi, ptr_isi
         logits_g, dec_x, dec_e, loss_isi = self(batch)
-        if batch.mask_x_index is not None:
+        if ga(batch, "mask_x_index") is not None:
             dec_x = dec_x[batch.mask_x_index]
-        if batch.mask_e_index is not None:
+        if ga(batch, "mask_e_index") is not None:
             dec_e = dec_e[batch.mask_e_index]
 
         total_loss = 0
         loss_g = self.loss_with_logits(logits_g, batch.y)
         total_loss += loss_g
         o = {"logits_g": logits_g, "loss_g": loss_g}
-        if self.hparams.lambda_aux_x > 0 and batch.labels_x is not None:
+        if self.hparams.lambda_aux_x > 0 and ga(batch, "labels_x") is not None:
             loss_x = F.cross_entropy(dec_x, batch.labels_x)
             total_loss += self.hparams.lambda_aux_x * loss_x
             o["loss_x"] = loss_x
-        if self.hparams.lambda_aux_e > 0 and batch.labels_e is not None:
+        if self.hparams.lambda_aux_e > 0 and ga(batch, "labels_e") is not None:
             loss_e = F.cross_entropy(dec_e, batch.labels_e)
             total_loss += self.hparams.lambda_aux_e * loss_e
             o["loss_e"] = loss_e
@@ -317,7 +321,7 @@ if __name__ == '__main__':
 
     main_args = get_args(
         model_name="DNS",
-        dataset_name="HPOMetab",  # FNTN, HPOMetab
+        dataset_name="HPONeuro",  # FNTN, HPOMetab, HPONeuro
         custom_key="E2D2F64-ISI-X-GB",  # BISAGE-SHORT, BIE2D2F64-ISI-X-PGA, E2D2F64-ISI-X-GB
     )
     pprint_args(main_args)
