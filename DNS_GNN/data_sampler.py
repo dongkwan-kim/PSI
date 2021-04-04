@@ -237,7 +237,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             return processed_data_list[0]
         else:
             collated_batch = Batch.from_data_list(processed_data_list, follow_batch=["x_pos", "x_neg"])
-            collated_batch = DataPN.concat_pos_and_neg_in_batch_(collated_batch, batch_size=self.batch_size)
+            if self.use_inter_subgraph_infomax:
+                collated_batch = DataPN.concat_pos_and_neg_in_batch_(collated_batch, batch_size=self.batch_size)
             return collated_batch
 
     @print_time
