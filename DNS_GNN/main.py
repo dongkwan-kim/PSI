@@ -26,9 +26,9 @@ from utils import merge_or_update, cprint_arg_conditionally
 
 def _cac_kw():
     return dict(
-        condition_func=lambda args: args[0].hparams.model_debug,
+        condition_func=lambda args: (args[0].hparams.model_debug or args[0].hparams.verbose > 1),
         filter_func=lambda arg: isinstance(arg, Data),
-        out_func=lambda arg: "\nBatch on model_debug=True: {}".format(arg),
+        out_func=lambda arg: "\nBatch: {}".format(arg),
     )
 
 
@@ -316,7 +316,7 @@ def run_train_multiple(num_runs, args,
 
 if __name__ == '__main__':
 
-    MODE = "RUN_MULTIPLE"  # RUN_ONCE, RUN_MULTIPLE
+    MODE = "RUN_ONCE"  # RUN_ONCE, RUN_MULTIPLE
     NUM_RUNS = 5
 
     main_args = get_args(
