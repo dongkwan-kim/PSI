@@ -53,7 +53,7 @@ DNS-FNTN-BASE: &DNS-FNTN-BASE
 DNS-FNTN-Linear: &DNS-FNTN-Linear
   <<: *DNS-FNTN-BASE
   gnn_name: Linear
-  readout_name: mean-max
+  readout_name: mean
   lambda_l2: 1e-3
 
 DNS-FNTN-Linear-SHORT: &DNS-FNTN-Linear-SHORT
@@ -81,7 +81,7 @@ DNS-FNTN-BISAGE: &DNS-FNTN-BISAGE
   <<: *DNS-FNTN-BASE
   gnn_name: SAGEConv
   is_bidirectional: True
-  readout_name: mean-max
+  readout_name: mean
   lambda_l2: 1e-3
 
 DNS-FNTN-BISAGE-SHORT: &DNS-FNTN-BISAGE-SHORT
