@@ -85,8 +85,9 @@ class MainModel(LightningModule):
             acc_list = [output[f"{prefix}_acc_step"] for output in outputs]
             return f"{prefix}_acc", torch.stack(acc_list).mean()
         elif self.hparams.metric == "micro-f1":
-            logits = torch.stack([output[f"{prefix}_logits"] for output in outputs]).squeeze()
-            ys = torch.stack([output[f"{prefix}_y"] for output in outputs]).squeeze()
+            logits = torch.stack([output[f"{prefix}_logits"] for output in outputs])
+            ys = torch.stack([output[f"{prefix}_y"] for output in outputs])
+            logits, ys = logits.view(-1, self.hparams.num_classes), ys.view(-1, self.hparams.num_classes)
             pred, ys = (logits > 0.0).float().cpu().numpy(), ys.cpu().numpy()
             micro_f1 = f1_score(pred, ys, average="micro") if pred.sum() > 0 else 0
             return f"{prefix}_f1", micro_f1
