@@ -241,7 +241,6 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 collated_batch = DataPN.concat_pos_and_neg_in_batch_(collated_batch, batch_size=self.batch_size)
             return collated_batch
 
-    @print_time
     def __process_to_data__(self, d: Data, isi_kwargs: dict) -> DataPN:
         assert hasattr(d, "edge_index")
         edge_index = d.edge_index
