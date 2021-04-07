@@ -41,6 +41,7 @@ class MainModel(LightningModule):
     def __init__(self, hparams, dataset: DNSDataModule):
         super().__init__()
         self.model = None  # see setup
+        self.debug_model = None
         self.hparams = hparams
         self.dataset = dataset
         self.save_hyperparameters(hparams)
@@ -52,12 +53,20 @@ class MainModel(LightningModule):
             self.model = DNSNet(self.hparams, self.dataset.embedding)
         else:
             raise ValueError(f"Wrong model ({self.hparams.model_name}) or version ({self.hparams.version})")
+        if self.hparams.debug_batch_idx is not None:
+            # Use this to debug specific batch_idx.
+            self.debug_model = nn.Parameter(torch.Tensor([0.1]))
         pprint(next(self.model.modules()))
 
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.lambda_l2)
 
-    def forward(self, batch):
+    def forward(self, batch, batch_idx=None):
+
+        if self.hparams.debug_batch_idx is not None and batch_idx <= self.hparams.debug_batch_idx:
+            assert not self.hparams.use_edge_decoder
+            return self.debug_model * batch.y, (self.debug_model * batch.x).expand(2, -1).t(), None, 0
+
         return self.model(
             batch.x, batch.obs_x_index, batch.edge_index_01,
             edge_index_2=ga(batch, "edge_index_2"), pergraph_attr=ga(batch, "pergraph_attr"),
@@ -148,7 +157,7 @@ class MainModel(LightningModule):
             total_loss = out["total_loss"]
         else:
             out = {}
-            logits_g, _, _, loss_isi = self(batch)
+            logits_g, _, _, loss_isi = self(batch, batch_idx)
             # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
             total_loss = self.loss_with_logits(logits_g, batch.y)
             if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
@@ -172,7 +181,7 @@ class MainModel(LightningModule):
         # forward args:
         #   x_idx, obs_x_index, edge_index_01, edge_index_2, pergraph_attr,
         #   x_idx_isi, edge_index_isi, ptr_isi
-        logits_g, dec_x, dec_e, loss_isi = self(batch)
+        logits_g, dec_x, dec_e, loss_isi = self(batch, batch_idx)
         if ga(batch, "mask_x_index") is not None:
             dec_x = dec_x[batch.mask_x_index]
         if ga(batch, "mask_e_index") is not None:

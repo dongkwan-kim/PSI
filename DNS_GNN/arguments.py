@@ -51,6 +51,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--dataset-seed", default=42)
     parser.add_argument("--model-seed", default=42)
     parser.add_argument("--model-debug", default=False)
+    parser.add_argument("--debug-batch-idx", default=None, type=int)
     parser.add_argument("--accumulate-grad-batches", default=64)
     parser.add_argument("--use-tensorboard", default=True)
     parser.add_argument("--precision", default=32)
