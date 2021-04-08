@@ -68,7 +68,10 @@ def objective(trial):
     trainer, model, callbacks = results["trainer"], results["model"], results["callbacks"]
     metrics = [cb for cb in callbacks if cb.__class__.__name__ == "MetricsCallback"][0].metrics
 
-    metrics_list = [m[METRIC_TO_MONITOR].item() for m in metrics]
+    try:
+        metrics_list = [m[METRIC_TO_MONITOR].item() for m in metrics]  # tensor
+    except AttributeError:  # primitive: int or float
+        metrics_list = [m[METRIC_TO_MONITOR] for m in metrics]
     if METRIC_TO_MONITOR in ["val_acc", "val_f1"]:
         return max(metrics_list)
     elif METRIC_TO_MONITOR == "val_loss":
