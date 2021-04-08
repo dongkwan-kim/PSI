@@ -68,7 +68,7 @@ class MainModel(LightningModule):
             return self.debug_model * batch.y, (self.debug_model * batch.x).expand(2, -1).t(), None, 0
 
         return self.model(
-            batch.x, batch.obs_x_index, batch.edge_index_01,
+            batch.x, ga(batch, "obs_x_index"), batch.edge_index_01,
             edge_index_2=ga(batch, "edge_index_2"), pergraph_attr=ga(batch, "pergraph_attr"),
             batch=batch.batch,
             x_idx_isi=ga(batch, "x_pos_and_neg"), edge_index_isi=ga(batch, "edge_index_pos_and_neg"),
@@ -94,8 +94,8 @@ class MainModel(LightningModule):
             acc_list = [output[f"{prefix}_acc_step"] for output in outputs]
             return f"{prefix}_acc", torch.stack(acc_list).mean()
         elif self.hparams.metric == "micro-f1":
-            logits = torch.stack([output[f"{prefix}_logits"] for output in outputs])
-            ys = torch.stack([output[f"{prefix}_y"] for output in outputs])
+            logits = torch.cat([output[f"{prefix}_logits"] for output in outputs])
+            ys = torch.cat([output[f"{prefix}_y"] for output in outputs])
             logits, ys = logits.view(-1, self.hparams.num_classes), ys.view(-1, self.hparams.num_classes)
             pred, ys = (logits > 0.0).float().cpu().numpy(), ys.cpu().numpy()
             micro_f1 = f1_score(pred, ys, average="micro") if pred.sum() > 0 else 0
