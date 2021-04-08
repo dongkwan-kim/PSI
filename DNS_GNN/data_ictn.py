@@ -6,16 +6,12 @@ import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
 from torch_geometric.utils import from_networkx
-import numpy as np
 import networkx as nx
-import os.path as osp
-
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
 from data_base import DatasetBase
 from data_utils import CompleteSubgraph
+
 
 def load_propagation_graphs_data_split(paths, **kwargs) -> (List[Data], Dict[int, str]):
     propagation = pickle.load(open(paths[1], "rb"))
@@ -24,20 +20,19 @@ def load_propagation_graphs_data_split(paths, **kwargs) -> (List[Data], Dict[int
     data_val = load_propagation_graphs(propagation, 'dev')
     data_test = load_propagation_graphs(propagation, 'test')
 
-    return (data_train, data_val, data_test)
+    return data_train, data_val, data_test
+
 
 def load_propagation_graphs(file, file_type, **kwargs) -> (List[Data], Dict[int, str]):
-    
-
     x_index_list = file[file_type]["x_index_list"]
     edge_index_list = file[file_type]["edge_index_list"]
-    labels = file[file_type]["ys1_list"] # changable ['ys1_list', 'ys2_list']
+    labels = file[file_type]["ys1_list"]  # changeable ['ys1_list', 'ys2_list']
 
     data_list = []
     for x_index, edge_index, y in tqdm(zip(x_index_list,
-                                            edge_index_list,
-                                            labels),
-                                        total=len(labels)):
+                                           edge_index_list,
+                                           labels),
+                                       total=len(labels)):
         x_index = torch.Tensor(x_index).long().view(-1, 1)  # [N, 1]
         sorted_edge_index = torch.Tensor(edge_index).long()  # [2, E]
         y = torch.Tensor([y]).long()  # [1]
@@ -146,7 +141,7 @@ if __name__ == '__main__':
 
     ictn = ICTN(**ictn_kwargs)
     ictn.save_global_data()
-    
+
     train_ictn, val_ictn, test_ictn = ictn.get_train_val_test()
 
     print("Train")
