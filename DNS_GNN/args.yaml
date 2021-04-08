@@ -128,22 +128,22 @@ DNS-FNTN-BISAGE-SHORT-1SG: &DNS-FNTN-BISAGE-SHORT-1SG
 DNS-FNTN-BISAGE-SHORT-PGA:
   <<: *DNS-FNTN-BISAGE-SHORT
   use_pergraph_attr: True
-  lambda_l2: 0.00022681
+  lambda_l2: 0.00028476
 
 DNS-FNTN-BISAGE-LONG-PGA:
   <<: *DNS-FNTN-BISAGE-LONG
   use_pergraph_attr: True
-  lambda_l2: 0.00010766
+  lambda_l2: 0.00023504
 
 DNS-FNTN-BISAGE-XLONG-PGA:
   <<: *DNS-FNTN-BISAGE-XLONG
   use_pergraph_attr: True
-  lambda_l2: 0.000043635
+  lambda_l2: 0.00018054
 
 DNS-FNTN-BISAGE-MAX-PGA:
   <<: *DNS-FNTN-BISAGE-MAX
   use_pergraph_attr: True
-  lambda_l2: 0.00015872
+  lambda_l2: 0.00022044
 
 DNS-FNTN-BISAGE-SHORT-0SG-PGA:
   <<: *DNS-FNTN-BISAGE-SHORT-0SG
