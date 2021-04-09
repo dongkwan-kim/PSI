@@ -140,7 +140,10 @@ if __name__ == '__main__':
         seed=42,
     )
 
-    ccaminer = CCAMiner(**ccaminer_kwargs)
+    ccaminer = CCAMiner(
+        **ccaminer_kwargs,
+        pre_transform=CompleteSubgraph(add_sub_edge_index=True),
+    )
 
     train_ccaminer, val_ccaminer, test_ccaminer = ccaminer.get_train_val_test()
 
