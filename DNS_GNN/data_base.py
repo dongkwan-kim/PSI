@@ -4,6 +4,7 @@ from collections import OrderedDict
 from itertools import chain
 from pprint import pprint
 from typing import List, Dict, Tuple
+import os.path as osp
 
 import torch
 from termcolor import cprint
@@ -11,10 +12,7 @@ from torch_geometric.data import InMemoryDataset, Data
 from torch_geometric.utils import from_networkx
 import numpy as np
 import networkx as nx
-import os.path as osp
-
-from torch_cluster import random_walk
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import numpy_indexed as npi
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
@@ -42,6 +40,7 @@ class DatasetBase(InMemoryDataset):
         self.num_val = -1
         self.global_data = None
         self.vocab = None
+        self._num_nodes_global = None
         super(DatasetBase, self).__init__(root, transform, pre_transform)
 
         self.load()
@@ -66,7 +65,9 @@ class DatasetBase(InMemoryDataset):
 
     @property
     def num_nodes_global(self):
-        return self.global_data.edge_index.max().item() + 1
+        if self._num_nodes_global is None:
+            self._num_nodes_global = self.global_data.edge_index.max().item() + 1
+        return self._num_nodes_global
 
     @property
     def vocab_size(self):
