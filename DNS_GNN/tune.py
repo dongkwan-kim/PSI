@@ -68,8 +68,11 @@ def objective(trial):
     trainer, model, callbacks = results["trainer"], results["model"], results["callbacks"]
     metrics = [cb for cb in callbacks if cb.__class__.__name__ == "MetricsCallback"][0].metrics
 
-    metrics_list = [m[METRIC_TO_MONITOR].item() for m in metrics]
-    if METRIC_TO_MONITOR == "val_acc":
+    try:
+        metrics_list = [m[METRIC_TO_MONITOR].item() for m in metrics]  # tensor
+    except AttributeError:  # primitive: int or float
+        metrics_list = [m[METRIC_TO_MONITOR] for m in metrics]
+    if METRIC_TO_MONITOR in ["val_acc", "val_f1"]:
         return max(metrics_list)
     elif METRIC_TO_MONITOR == "val_loss":
         return min(metrics_list)
@@ -80,13 +83,13 @@ def objective(trial):
 if __name__ == '__main__':
 
     N_TRIALS = 5
-    METRIC_TO_MONITOR = "val_acc"
 
     tune_args = get_args(
         model_name="DNS",
-        dataset_name="FNTN",
-        custom_key="BIE2D2F64-ISI-X",  # BISAGE, SMALL-E
+        dataset_name="HPONeuro",
+        custom_key="SAGE-MAX",  # BISAGE, SMALL-E
     )
+    METRIC_TO_MONITOR = {"HPONeuro": "val_f1"}.get(tune_args.dataset_name, "val_acc")
     tune_args.verbose = 0  # Force args' verbose be 0
     tune_args.use_early_stop = False
     tune_args_key = get_args_key(tune_args)
@@ -128,7 +131,7 @@ if __name__ == '__main__':
 
     study = optuna.create_study(
         study_name=tune_args_key,
-        direction="maximize" if METRIC_TO_MONITOR == "val_acc" else "minimize",
+        direction="maximize" if METRIC_TO_MONITOR in ["val_acc", "val_f1"] else "minimize",
         sampler=sampler,
         pruner=pruner,
         storage=f'sqlite:///{hparams_dir}/{tune_args_key}.db',
