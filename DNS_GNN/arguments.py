@@ -62,6 +62,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
                         metavar='LR', help='initial learning rate', dest='lr')
     parser.add_argument('--batch-size', default=1, type=int, metavar='N', help='mini-batch size')
+    parser.add_argument('--eval-batch-size', default=None, type=int,
+                        help='mini-batch size for evaluation. If not given, use batch_size')
     parser.add_argument('--epochs', default=50, type=int, metavar='N',
                         help='number of total epochs to run')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
@@ -86,6 +88,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--data-sampler-num-hops", default=1, type=int)
     parser.add_argument("--data-sampler-neg-sample-ratio", default=1.0, type=float)
     parser.add_argument("--data-sampler-dropout-edges", default=0.0, type=float)
+    parser.add_argument("--data-sampler-no-drop-pos-edges", default=False, type=bool)
     parser.add_argument("--data-use-obs-edge-only", default=False, type=bool)
     parser.add_argument("--data-sampler-balanced-sampling", default=True, type=bool)
     parser.add_argument("--data-sampler-shuffle", default=True, type=bool)
@@ -162,6 +165,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "data_sampler_num_hops", "data_sampler_neg_sample_ratio",
         "data_sampler_dropout_edges", "data_sampler_balanced_sampling",
         "data_sampler_shuffle", "data_use_obs_edge_only", "data_sampler_cache_hop_computation",
+        "data_sampler_no_drop_pos_edges",
         "model_sampler_name", "model_sampler_kwargs",
         "model_name", "dataset_name", "custom_key", "dataset_seed", "model_seed", "model_debug",
         "accumulate_grad_batches",

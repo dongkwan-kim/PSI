@@ -129,7 +129,7 @@ def create_khop_edge_attr(khop_edge_index, edge_index, edge_attr, N, method):
     else:
         khop_edge_attr = torch.Tensor(is_khp_in_subgraph).float()
     khop_edge_attr = khop_edge_attr.unsqueeze(1)  # [E_khp, 1]
-    return khop_edge_attr, is_khp_in_subgraph
+    return khop_edge_attr, torch.Tensor(is_khp_in_subgraph).bool()
 
 
 def _create_khop_edge_attr_edge_ver(khop_edge_index, edge_index, N):
@@ -164,6 +164,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False,
                  balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
+                 no_drop_pos_edges=False,
                  batch_size=1,
                  subdata_filter_func=None,
                  cache_hop_computation=False,
@@ -187,6 +188,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
+        self.no_drop_pos_edges = no_drop_pos_edges
 
         self.G = global_data
         self.N = global_data.edge_index.max() + 1
@@ -252,6 +254,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             khop_edge_index = d.khop_edge_index
             obs_x_index = d.obs_x_index
             khop_edge_attr = d.khop_edge_attr
+            is_khp_in_sub_edge = None
         else:
             observed_nodes, observed_edge_index = get_observed_nodes_and_edges(
                 data=d, obs_x_range=self.obs_x_range,
@@ -301,10 +304,20 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         # Drop Edges in graph and subgraph
         if self.dropout_edges > 0.0:
-            khop_edge_index, khop_edge_attr = dropout_adj(
-                khop_edge_index, khop_edge_attr,
-                p=self.dropout_edges, num_nodes=self.N,
-            )
+            if not self.no_drop_pos_edges:  # General cases
+                khop_edge_index, khop_edge_attr = dropout_adj(
+                    khop_edge_index, khop_edge_attr,
+                    p=self.dropout_edges, num_nodes=self.N,
+                )
+            else:
+                _ks_mask = is_khp_in_sub_edge
+                khop_edge_index_pos, khop_edge_attr_pos = khop_edge_index[:, _ks_mask], khop_edge_attr[_ks_mask]
+                khop_edge_index_neg, khop_edge_attr_neg = dropout_adj(
+                    khop_edge_index[:, ~_ks_mask], khop_edge_attr[~_ks_mask],
+                    p=self.dropout_edges, num_nodes=self.N,
+                )
+                khop_edge_index = torch.cat([khop_edge_index_pos, khop_edge_index_neg], dim=1)
+                khop_edge_attr = torch.cat([khop_edge_attr_pos, khop_edge_attr_neg], dim=0)
 
         KE = khop_edge_index.size(1)
         if edge_attr is not None:
@@ -450,6 +463,24 @@ if __name__ == '__main__':
         raise ValueError
 
     train_fntn, val_fntn, test_fntn = dataset_instance.get_train_val_test()
+
+    sampler = KHopWithLabelsXESampler(
+        dataset_instance.global_data, train_fntn,
+        num_hops=1, use_labels_x=True, use_labels_e=False,
+        neg_sample_ratio=1.0, dropout_edges=0.9, balanced_sampling=True,
+        obs_x_range=SLICE_RANGE,
+        use_inter_subgraph_infomax=True,  # todo
+        no_drop_pos_edges=True,  # todo
+        cache_hop_computation=False,
+        ke_method=KE_METHOD,
+        shuffle=True,
+    )
+    seed_everything(42)
+    cprint("Train ISI-X-GB no_drop_pos_edges=True", "green")
+    for i, b in enumerate(sampler):
+        print(i, b)
+        if i >= 4:
+            break
 
     sampler = KHopWithLabelsXESampler(
         dataset_instance.global_data, train_fntn,
