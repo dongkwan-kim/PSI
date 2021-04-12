@@ -258,3 +258,148 @@ DNS-FNTN-BIE2D2F64-ISI-X-GB-PGA:
   lambda_aux_isi: 1.85
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
+
+
+
+HPONeuro: &HPONeuro
+  <<: *DEFAULT
+  dataset_id: HPONeuro
+  metric: micro-f1
+  dataset_slice_type: random
+  num_classes: 10
+  global_channels: 64
+  global_channel_type: Pretrained
+  is_obs_sequential: False
+  lr: 0.001
+
+  batch_size: 64
+  eval_batch_size: 4
+  accumulate_grad_batches: 2
+  data_sampler_num_workers: 10
+  epochs: 2000
+  val_interval: 50
+  log_dir: ../lightning_logs_neuro_l2/  # todo
+
+
+DNS-HPONeuro-BASE: &DNS-HPONeuro-BASE
+  <<: *HPONeuro
+  use_node_decoder: False
+  use_edge_decoder: False
+  data_sampler_num_hops: 0
+  data_sampler_neg_sample_ratio: 0.0
+  data_sampler_dropout_edges: 0.0
+  data_use_obs_edge_only: True
+  use_decoder: False
+
+DNS-HPONeuro-Linear: &DNS-HPONeuro-Linear
+  <<: *DNS-HPONeuro-BASE
+  gnn_name: Linear
+  readout_name: mean
+  lambda_l2: 1e-3
+
+DNS-HPONeuro-Linear-SHORT: &DNS-HPONeuro-Linear-SHORT
+  <<: *DNS-HPONeuro-Linear
+  dataset_slice_range_1: 3
+  dataset_slice_range_2: 8
+
+DNS-HPONeuro-Linear-LONG: &DNS-HPONeuro-Linear-LONG
+  <<: *DNS-HPONeuro-Linear
+  dataset_slice_range_1: 10
+  dataset_slice_range_2: 15
+
+DNS-HPONeuro-Linear-XLONG: &DNS-HPONeuro-Linear-XLONG
+  <<: *DNS-HPONeuro-Linear
+  dataset_slice_range_1: 25
+  dataset_slice_range_2: 30
+
+DNS-HPONeuro-Linear-MAX: &DNS-HPONeuro-Linear-MAX
+  <<: *DNS-HPONeuro-Linear
+  dataset_slice_range_1: 55
+  dataset_slice_range_2: 56
+
+
+DNS-HPONeuro-SAGE: &DNS-HPONeuro-SAGE
+  <<: *DNS-HPONeuro-BASE
+  gnn_name: SAGEConv
+  readout_name: mean
+  lambda_l2: 1e-3
+
+DNS-HPONeuro-SAGE-SHORT: &DNS-HPONeuro-SAGE-SHORT
+  <<: *DNS-HPONeuro-SAGE
+  dataset_slice_range_1: 3
+  dataset_slice_range_2: 8
+
+DNS-HPONeuro-SAGE-LONG: &DNS-HPONeuro-SAGE-LONG
+  <<: *DNS-HPONeuro-SAGE
+  dataset_slice_range_1: 10
+  dataset_slice_range_2: 15
+
+DNS-HPONeuro-SAGE-XLONG: &DNS-HPONeuro-SAGE-XLONG
+  <<: *DNS-HPONeuro-SAGE
+  dataset_slice_range_1: 25
+  dataset_slice_range_2: 30
+
+DNS-HPONeuro-SAGE-MAX: &DNS-HPONeuro-SAGE-MAX
+  <<: *DNS-HPONeuro-SAGE
+  dataset_slice_range_1: 55
+  dataset_slice_range_2: 56
+
+DNS-HPONeuro-SAGE-SHORT-0SG:
+  <<: *DNS-HPONeuro-SAGE-SHORT
+  data_use_obs_edge_only: False
+
+DNS-HPONeuro-SAGE-LONG-0SG:
+  <<: *DNS-HPONeuro-SAGE-LONG
+  data_use_obs_edge_only: False
+
+DNS-HPONeuro-SAGE-XLONG-0SG:
+  <<: *DNS-HPONeuro-SAGE-XLONG
+  data_use_obs_edge_only: False
+
+DNS-HPONeuro-SAGE-SHORT-1SG:
+  <<: *DNS-HPONeuro-SAGE-SHORT
+  data_use_obs_edge_only: False
+  data_sampler_num_hops: 1
+
+
+DNS-HPONeuro-E2D2F64: &DNS-HPONeuro-E2D2F64
+  <<: *HPONeuro
+  dataset_slice_range_1: 3
+  dataset_slice_range_2: 8
+  gnn_name: SAGEConv
+  use_decoder: True
+  data_sampler_num_hops: 1
+  data_sampler_neg_sample_ratio: 1.0
+  data_sampler_dropout_edges: 0.99
+  data_sampler_no_drop_pos_edges: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+
+DNS-HPONeuro-E2D2F64-X:
+  <<: *DNS-HPONeuro-E2D2F64
+  main_decoder_type: node
+  use_node_decoder: True
+  use_edge_decoder: False
+  lambda_l2: 1e-3
+  lambda_aux_x: 0.1
+  pool_ratio: 0.1
+
+DNS-HPONeuro-E2D2F64-ISI: &DNS-HPONeuro-E2D2F64-ISI
+  <<: *DNS-HPONeuro-E2D2F64
+  use_inter_subgraph_infomax: True
+  data_sampler_dropout_edges: 0.99
+  data_sampler_no_drop_pos_edges: True
+
+DNS-HPONeuro-E2D2F64-ISI-X: &DNS-HPONeuro-E2D2F64-ISI-X
+  <<: *DNS-HPONeuro-E2D2F64-ISI
+  main_decoder_type: node
+  use_node_decoder: True
+  use_edge_decoder: False
+
+DNS-HPONeuro-E2D2F64-ISI-X-GB:
+  <<: *DNS-HPONeuro-E2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  lambda_l2: 1e-3
+  lambda_aux_x: 0.1
+  lambda_aux_isi: 0.1
+  pool_ratio: 0.01
