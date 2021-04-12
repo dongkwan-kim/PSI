@@ -5,12 +5,14 @@ from typing import List, Dict, Tuple
 import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
+from torch_geometric.transforms import Compose
 from torch_geometric.utils import from_networkx
 import networkx as nx
 from tqdm import tqdm
+import numpy as np
 
 from data_base import DatasetBase
-from data_utils import CompleteSubgraph
+from data_utils import CompleteSubgraph, DigitizeY
 
 
 def load_cascades_train_val_test(paths, **kwargs) -> (List[Data], Dict[int, str]):
@@ -141,7 +143,10 @@ if __name__ == '__main__':
 
     ccaminer = CCAMiner(
         **ccaminer_kwargs,
-        pre_transform=CompleteSubgraph(add_sub_edge_index=True),
+        pre_transform=Compose([
+            CompleteSubgraph(add_sub_edge_index=True),
+            DigitizeY(bins=[1, 2, 3, 4], transform_y=lambda y: np.log2(y + 1))
+        ]),
     )
 
     train_ccaminer, val_ccaminer, test_ccaminer = ccaminer.get_train_val_test()
