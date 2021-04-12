@@ -134,7 +134,7 @@ class CompleteSubgraph(object):
             _edge_index_cs = torch.cat([edge_index_cs, data.edge_index], dim=1)
             _idx = _edge_index_cs[0] * self.N + _edge_index_cs[1]
             _idx = torch.unique(_idx)
-            edge_index_cs = torch.stack([_idx // self.N, _idx * self.N], dim=0).long()
+            edge_index_cs = torch.stack([_idx // self.N, _idx % self.N], dim=0).long()
         data.x_cs = x_cs.view(data.x.size(0), -1)
         data.edge_index_cs = edge_index_cs
         return data
