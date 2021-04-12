@@ -205,3 +205,4 @@ if __name__ == '__main__':
         break
 
     fntn.print_summary()
+    print(f"Edge relationship: {fntn.edge_relationship()}")

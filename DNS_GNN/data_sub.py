@@ -340,3 +340,4 @@ if __name__ == '__main__':
             break
 
     dts.print_summary()
+    print(f"Edge relationship: {dts.edge_relationship()}")

@@ -160,3 +160,4 @@ if __name__ == '__main__':
             break
 
     ccaminer.print_summary()
+    print(f"Edge relationship: {ccaminer.edge_relationship()}")

@@ -1,6 +1,6 @@
 import pickle
 import re
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from itertools import chain
 from pprint import pprint
 from typing import List, Dict, Tuple
@@ -9,7 +9,7 @@ import os.path as osp
 import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
-from torch_geometric.utils import from_networkx
+from torch_geometric.utils import from_networkx, subgraph
 import numpy as np
 import networkx as nx
 import numpy_indexed as npi
@@ -287,6 +287,29 @@ class DatasetBase(InMemoryDataset):
                           self._get_stats().items()):
             print("{:>20}{:>25}".format(k, out(v)))
         print("---------------------------------------------")
+
+    def edge_relationship(self):
+        N = self.num_nodes_global
+        _g_edge_index = self.global_data.edge_index
+        _edge_index = self.data.edge_index
+        g_idx = (_g_edge_index[0] * N + _g_edge_index[1]).numpy()
+        idx = (_edge_index[0] * N + _edge_index[1]).numpy()
+
+        global_edges_contain_sub_edges = npi.contains(g_idx, idx)
+        if np.all(global_edges_contain_sub_edges):
+            for d in self:
+                khop_edge_index, _ = subgraph(
+                    subset=d.x.flatten(),
+                    edge_index=_g_edge_index,
+                    edge_attr=None, relabel_nodes=False,
+                    num_nodes=N,
+                )
+                if d.edge_index.size(1) != khop_edge_index.size(1):
+                    return "inclusive"
+            else:
+                return "identical"
+        else:
+            return f"not inclusive / {Counter(global_edges_contain_sub_edges)}"
 
     def __repr__(self):
         return '{}(\n{}\n)'.format(
