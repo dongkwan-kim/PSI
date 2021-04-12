@@ -140,7 +140,10 @@ class CompleteSubgraph(object):
         return data
 
     def __repr__(self):
-        return '{}(add_sub_edge_index={})'.format(self.__class__.__name__, self.add_sub_edge_index)
+        if self.add_sub_edge_index:
+            return '{}(add_sub_edge_index={})'.format(self.__class__.__name__, self.add_sub_edge_index)
+        else:
+            return '{}()'.format(self.__class__.__name__)
 
 
 if __name__ == '__main__':
