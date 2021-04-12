@@ -71,7 +71,7 @@ class CCAMiner(DatasetBase):
 
     @property
     def raw_file_names(self):
-        return ["idx_network.gpickle", "idx_cascade.pkl", "network_data.pt"]
+        return ["idx_network_v3.gpickle", "idx_cascade_v1.pkl", "network_data.pt"]
 
     @property
     def processed_file_names(self):
