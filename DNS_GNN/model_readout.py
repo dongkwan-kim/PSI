@@ -68,7 +68,10 @@ class Readout(nn.Module):
             o_list.append(torch.mean(x, dim=0) if batch is None else
                           global_mean_pool(x, batch, B))
         if "max" in self.name:
+            is_half = x.dtype == torch.half
+            x = x.float() if is_half else x
             o_list.append(torch.max(x, dim=0).values if batch is None else
+                          global_max_pool(x, batch, B).half() if is_half else
                           global_max_pool(x, batch, B))
         if "sum" in self.name:
             o_list.append(torch.sum(x, dim=0) if batch is None else
