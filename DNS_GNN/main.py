@@ -76,7 +76,7 @@ class MainModel(LightningModule):
         )
 
     def loss_with_logits(self, logits, y) -> Tensor:
-        if y.size(-1) == 1:
+        if y.dim() == 1:
             return F.cross_entropy(logits, y)
         else:  # multi-label
             return F.binary_cross_entropy_with_logits(logits, y)
