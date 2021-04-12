@@ -282,11 +282,11 @@ class DatasetBase(InMemoryDataset):
         def out(v):
             return str(float(v)) if isinstance(v, torch.Tensor) else str(v)
 
-        print("---------------------------------------------")
+        print("---------------------------------------------------------------")
         for k, v in chain(self._get_important_elements().items(),
                           self._get_stats().items()):
-            print("{:>20}{:>25}".format(k, out(v)))
-        print("---------------------------------------------")
+            print("{:>20}{:>43}".format(k, out(v)))
+        print("---------------------------------------------------------------")
 
     def edge_relationship(self):
         N = self.num_nodes_global
