@@ -143,7 +143,7 @@ class CompleteSubgraph(object):
 
     def __repr__(self):
         if self.add_sub_edge_index:
-            return '{}(add_sub_edge_index={})'.format(self.__class__.__name__, self.add_sub_edge_index)
+            return '{}(asei={})'.format(self.__class__.__name__, self.add_sub_edge_index)
         else:
             return '{}()'.format(self.__class__.__name__)
 
@@ -165,6 +165,22 @@ class CompleteSubgraph(object):
             for t in transform.transforms:
                 if isinstance(t, cls):
                     t.global_edge_index = global_edge_index
+
+
+class DigitizeY(object):
+
+    def __init__(self, bins, transform_y=None):
+        self.bins = np.asarray(bins)
+        self.transform_y = transform_y
+
+    def __call__(self, data):
+        y = self.transform_y(data.y).numpy()
+        digitized_y = np.digitize(y, self.bins)
+        data.y = torch.from_numpy(digitized_y)
+        return data
+
+    def __repr__(self):
+        return '{}(bins={})'.format(self.__class__.__name__, self.bins.tolist())
 
 
 if __name__ == '__main__':
