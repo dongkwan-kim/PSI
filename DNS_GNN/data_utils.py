@@ -3,8 +3,10 @@ from typing import Tuple, Optional
 import torch
 from torch import Tensor
 from torch_geometric.data import Data, Batch
+from torch_geometric.transforms import Compose
 from torch_geometric.utils import k_hop_subgraph
 from torch_cluster import random_walk
+import numpy as np
 
 from utils import del_attrs
 
@@ -144,6 +146,25 @@ class CompleteSubgraph(object):
             return '{}(add_sub_edge_index={})'.format(self.__class__.__name__, self.add_sub_edge_index)
         else:
             return '{}()'.format(self.__class__.__name__)
+
+    @classmethod
+    def isinstance(cls, transform):
+        if isinstance(transform, cls):
+            return True
+        elif isinstance(transform, Compose):
+            for t in transform.transforms:
+                if isinstance(t, cls):
+                    return True
+        return False
+
+    @classmethod
+    def set_global_edge_index(cls, transform, global_edge_index):
+        if isinstance(transform, cls):
+            transform.global_edge_index = global_edge_index
+        elif isinstance(transform, Compose):
+            for t in transform.transforms:
+                if isinstance(t, cls):
+                    t.global_edge_index = global_edge_index
 
 
 if __name__ == '__main__':

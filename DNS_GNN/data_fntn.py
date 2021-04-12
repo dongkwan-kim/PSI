@@ -152,8 +152,7 @@ class FNTN(DatasetBase):
 
         data_total = data_train + data_val + data_test
         if self.pre_transform is not None:
-            if isinstance(self.pre_transform, CompleteSubgraph):
-                self.pre_transform.global_edge_index = global_data.edge_index[[1, 0]]
+            CompleteSubgraph.set_global_edge_index(self.pre_transform, global_data.edge_index[[1, 0]])
             data_total = [self.pre_transform(d) for d in tqdm(data_total)]
             cprint("Pre-transformed: {}".format(self.pre_transform), "green")
 
