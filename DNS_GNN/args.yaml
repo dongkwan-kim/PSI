@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [0]
+  gpu_ids: [3]
   num_gpus_total: 4
   num_gpus_to_use: 1
   model_debug: False
@@ -273,12 +273,12 @@ HPONeuro: &HPONeuro
   lr: 0.001
 
   batch_size: 64
-  eval_batch_size: 4
-  accumulate_grad_batches: 2
-  data_sampler_num_workers: 10
-  epochs: 2000
-  val_interval: 50
-  log_dir: ../lightning_logs_neuro_l2/  # todo
+  eval_batch_size: 3
+  accumulate_grad_batches: 1
+  data_sampler_num_workers: 20
+  epochs: 200
+  val_interval: 5
+  log_dir: ../lightning_logs_neuro/
 
 
 DNS-HPONeuro-BASE: &DNS-HPONeuro-BASE
@@ -370,7 +370,7 @@ DNS-HPONeuro-E2D2F64: &DNS-HPONeuro-E2D2F64
   use_decoder: True
   data_sampler_num_hops: 1
   data_sampler_neg_sample_ratio: 1.0
-  data_sampler_dropout_edges: 0.99
+  data_sampler_dropout_edges: 0.95
   data_sampler_no_drop_pos_edges: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
@@ -387,7 +387,7 @@ DNS-HPONeuro-E2D2F64-X:
 DNS-HPONeuro-E2D2F64-ISI: &DNS-HPONeuro-E2D2F64-ISI
   <<: *DNS-HPONeuro-E2D2F64
   use_inter_subgraph_infomax: True
-  data_sampler_dropout_edges: 0.99
+  data_sampler_dropout_edges: 0.95
   data_sampler_no_drop_pos_edges: True
 
 DNS-HPONeuro-E2D2F64-ISI-X: &DNS-HPONeuro-E2D2F64-ISI-X
