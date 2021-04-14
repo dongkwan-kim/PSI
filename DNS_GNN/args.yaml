@@ -194,11 +194,11 @@ DNS-FNTN-BIE2D2F64-X: &DNS-FNTN-BIE2D2F64-X  # not-used
 DNS-FNTN-BIE2D2F64-X-PGA:
   <<: *DNS-FNTN-BIE2D2F64-X
   use_pergraph_attr: True
-  lambda_l2: 0.0046803
-  lambda_aux_x: 0.06
   lambda_aux_isi: 0.0
-  data_sampler_dropout_edges: 0.4
-  pool_ratio: 0.070401
+  lambda_l2: 0.00024979
+  lambda_aux_x: 2.49
+  data_sampler_dropout_edges: 0.55
+  pool_ratio: 0.0016009
 
 DNS-FNTN-BIE2D2F64-E:  # not-used
   <<: *DNS-FNTN-BIE2D2F64
