@@ -56,8 +56,7 @@ class DNSDataModule(pl.LightningDataModule):
             root=self.hparams.dataset_path,
             name=self.hparams.dataset_id,
             slice_type=self.hparams.dataset_slice_type,
-            slice_range=(self.hparams.dataset_slice_range_1,
-                         self.hparams.dataset_slice_range_2),
+            slice_range=self.slice_range,
             num_slices=self.hparams.dataset_num_slices,
             val_ratio=self.hparams.dataset_val_ratio,
             test_ratio=self.hparams.dataset_test_ratio,
@@ -74,6 +73,15 @@ class DNSDataModule(pl.LightningDataModule):
             return "node"
         else:
             raise ValueError("Wrong dataset_name: {}".format(self.dataset_name))
+
+    @property
+    def slice_range(self):
+        if self.hparams.dataset_slice_ratio is None:
+            return (self.hparams.dataset_slice_range_1,
+                    self.hparams.dataset_slice_range_2)
+        else:
+            return (self.hparams.dataset_slice_ratio,
+                    self.hparams.dataset_slice_range_2)
 
     def prepare_data(self):
         pre_transform = None
@@ -104,7 +112,7 @@ class DNSDataModule(pl.LightningDataModule):
             use_labels_e=self.hparams.use_edge_decoder,
             neg_sample_ratio=self.hparams.data_sampler_neg_sample_ratio,
             dropout_edges=self.hparams.data_sampler_dropout_edges,
-            obs_x_range=(self.hparams.dataset_slice_range_1, self.hparams.dataset_slice_range_2),
+            obs_x_range=self.slice_range,
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,

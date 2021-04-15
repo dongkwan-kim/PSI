@@ -30,6 +30,7 @@ FNTN: &FNTN
   global_channels: 32
   global_channel_type: Embedding
   obs_max_len: 20
+  log_dir: ../lightning_logs_fntn/
 
 DNS-FNTN-TEST:
   <<: *FNTN
@@ -73,12 +74,12 @@ DNS-FNTN-Linear-XLONG: &DNS-FNTN-Linear-XLONG
 
 DNS-FNTN-Linear-25P: &DNS-FNTN-Linear-25P
   <<: *DNS-FNTN-Linear
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-FNTN-Linear-50P: &DNS-FNTN-Linear-50P
   <<: *DNS-FNTN-Linear
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-FNTN-Linear-MAX: &DNS-FNTN-Linear-MAX
@@ -111,12 +112,12 @@ DNS-FNTN-BISAGE-XLONG: &DNS-FNTN-BISAGE-XLONG
 
 DNS-FNTN-BISAGE-25P: &DNS-FNTN-BISAGE-25P
   <<: *DNS-FNTN-BISAGE
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-FNTN-BISAGE-50P: &DNS-FNTN-BISAGE-50P
   <<: *DNS-FNTN-BISAGE
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-FNTN-BISAGE-MAX: &DNS-FNTN-BISAGE-MAX
@@ -342,12 +343,12 @@ DNS-HPONeuro-Linear-XLONG: &DNS-HPONeuro-Linear-XLONG
 
 DNS-HPONeuro-Linear-25P: &DNS-HPONeuro-Linear-25P
   <<: *DNS-HPONeuro-Linear
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-HPONeuro-Linear-50P: &DNS-HPONeuro-Linear-50P
   <<: *DNS-HPONeuro-Linear
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-HPONeuro-Linear-MAX: &DNS-HPONeuro-Linear-MAX
@@ -380,12 +381,12 @@ DNS-HPONeuro-SAGE-XLONG: &DNS-HPONeuro-SAGE-XLONG
 
 DNS-HPONeuro-SAGE-25P: &DNS-HPONeuro-SAGE-25P
   <<: *DNS-HPONeuro-SAGE
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-HPONeuro-SAGE-50P: &DNS-HPONeuro-SAGE-50P
   <<: *DNS-HPONeuro-SAGE
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-HPONeuro-SAGE-MAX: &DNS-HPONeuro-SAGE-MAX
