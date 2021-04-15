@@ -3,7 +3,7 @@ import re
 from collections import OrderedDict, Counter
 from itertools import chain
 from pprint import pprint
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import os.path as osp
 
 import torch
@@ -17,6 +17,23 @@ from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
 from data_utils import random_walk_indices_from_data
+
+
+def get_int_range(r1: Union[int, float], r2: int, N: int):
+    # (r1: int, r2: int) -> same (r1, r2)
+    if isinstance(r1, int):
+        _r1, _r2 = r1, r2
+
+    # (r1: float, window: int) -> (N * r1 - window, N * r1 + window)
+    elif isinstance(r1, float):
+        _n = int(r1 * N)
+        _r1 = max(_n - r2, 1)  # not zero
+        _r2 = _n + r2
+
+    else:
+        raise TypeError("Wrong type: {}".format(type(r1)))
+
+    return _r1, _r2
 
 
 class DatasetBase(InMemoryDataset):
@@ -214,8 +231,12 @@ class DatasetBase(InMemoryDataset):
                 if self.slice_type == "time":
                     time_range_mask = (self.slice_range[0] <= data.edge_attr) & (data.edge_attr < self.slice_range[1])
                     targets = time_range_mask.squeeze().nonzero().squeeze().tolist()
+                    raise NotImplementedError("slice_type time is deprecated")
+
                 elif self.slice_type == "num_edges":
-                    targets = range(self.slice_range[0], self.slice_range[1])
+                    targets = range(*get_int_range(
+                        self.slice_range[0], self.slice_range[1], data.x.size(0)
+                    ))
 
                 if not is_eval:
                     random_slices = np.random.choice(targets, self.num_slices, replace=True)
@@ -231,7 +252,9 @@ class DatasetBase(InMemoryDataset):
             for data in data_list:
                 # e.g., Data(edge_index=[2, 250], x=[17, 1], y=[1])
                 N = data.x.size(0)
-                targets = range(self.slice_range[0], self.slice_range[1])
+                targets = range(*get_int_range(
+                    self.slice_range[0], self.slice_range[1], data.x.size(0)
+                ))
 
                 if not is_eval:
                     random_slices = np.random.choice(targets, self.num_slices, replace=True)
@@ -250,7 +273,9 @@ class DatasetBase(InMemoryDataset):
                     cprint("random_walk slice cannot be applied to no-edge-graph", "red")
                     continue
 
-                targets = range(self.slice_range[0], self.slice_range[1])
+                targets = range(*get_int_range(
+                    self.slice_range[0], self.slice_range[1], data.x.size(0)
+                ))
 
                 if not is_eval:
                     random_slices = np.random.choice(targets, self.num_slices, replace=True)

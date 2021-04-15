@@ -82,12 +82,12 @@ def objective(trial):
 
 if __name__ == '__main__':
 
-    N_TRIALS = 5
+    N_TRIALS = 10
 
     tune_args = get_args(
         model_name="DNS",
         dataset_name="HPONeuro",
-        custom_key="SAGE-MAX",  # BISAGE, SMALL-E
+        custom_key="E2D2F64-ISI-X-GB",  # BISAGE, SMALL-E
     )
     METRIC_TO_MONITOR = {"HPONeuro": "val_f1"}.get(tune_args.dataset_name, "val_acc")
     tune_args.verbose = 0  # Force args' verbose be 0
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     logger.addHandler(logging.FileHandler(os.path.join(hparams_dir, f"{tune_args_key}.log"), mode="w"))
 
     search_config = {
-        "lambda_l2": ("loguniform", 1e-5, 5e-3),
+        "lambda_l2": ("loguniform", 1e-8, 1e-4),
         # "lr": ("categorical", [0.001, 0.005])
     }
     if tune_args.use_decoder:
@@ -115,7 +115,11 @@ if __name__ == '__main__':
             search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
         if not tune_args.use_pool_min_score:
             search_config["pool_ratio"] = ("loguniform", 1e-3, 1e-1)
-        search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
+
+        if tune_args.data_sampler_no_drop_pos_edges:
+            search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.95, 0.99, 0.01)
+        else:
+            search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
 
     logger.info("-- HPARAM SEARCH CONFIG --")
     for k, v in search_config.items():

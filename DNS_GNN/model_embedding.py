@@ -24,7 +24,7 @@ class DNSEmbedding(nn.Module):
             N, C = pretrained_embedding.size()
             assert self.args.num_nodes_global == N
             assert self.args.global_channels == C
-            self.embedding = nn.Embedding.from_pretrained(pretrained_embedding)
+            self.embedding = nn.Embedding.from_pretrained(pretrained_embedding, freeze=False)
         else:
             raise ValueError(f"Wrong global_channel_type: {self.args.global_channel_type}")
 
