@@ -1,20 +1,18 @@
 import pickle
 import re
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from itertools import chain
 from pprint import pprint
 from typing import List, Dict, Tuple, Union
+import os.path as osp
 
 import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
-from torch_geometric.utils import from_networkx
+from torch_geometric.utils import from_networkx, subgraph
 import numpy as np
 import networkx as nx
-import os.path as osp
-
-from torch_cluster import random_walk
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import numpy_indexed as npi
 from sklearn.model_selection import StratifiedKFold, KFold, train_test_split
 from tqdm import tqdm
 
@@ -59,6 +57,7 @@ class DatasetBase(InMemoryDataset):
         self.num_val = -1
         self.global_data = None
         self.vocab = None
+        self._num_nodes_global = None
         super(DatasetBase, self).__init__(root, transform, pre_transform)
 
         self.load()
@@ -83,7 +82,9 @@ class DatasetBase(InMemoryDataset):
 
     @property
     def num_nodes_global(self):
-        return self.global_data.edge_index.max().item() + 1
+        if self._num_nodes_global is None:
+            self._num_nodes_global = self.global_data.edge_index.max().item() + 1
+        return self._num_nodes_global
 
     @property
     def vocab_size(self):
@@ -306,11 +307,34 @@ class DatasetBase(InMemoryDataset):
         def out(v):
             return str(float(v)) if isinstance(v, torch.Tensor) else str(v)
 
-        print("---------------------------------------------")
+        print("---------------------------------------------------------------")
         for k, v in chain(self._get_important_elements().items(),
                           self._get_stats().items()):
-            print("{:>20}{:>25}".format(k, out(v)))
-        print("---------------------------------------------")
+            print("{:>20}{:>43}".format(k, out(v)))
+        print("---------------------------------------------------------------")
+
+    def edge_relationship(self):
+        N = self.num_nodes_global
+        _g_edge_index = self.global_data.edge_index
+        _edge_index = self.data.edge_index
+        g_idx = (_g_edge_index[0] * N + _g_edge_index[1]).numpy()
+        idx = (_edge_index[0] * N + _edge_index[1]).numpy()
+
+        global_edges_contain_sub_edges = npi.contains(g_idx, idx)
+        if np.all(global_edges_contain_sub_edges):
+            for d in self:
+                khop_edge_index, _ = subgraph(
+                    subset=d.x.flatten(),
+                    edge_index=_g_edge_index,
+                    edge_attr=None, relabel_nodes=False,
+                    num_nodes=N,
+                )
+                if d.edge_index.size(1) != khop_edge_index.size(1):
+                    return "inclusive"
+            else:
+                return "identical"
+        else:
+            return f"not inclusive / {Counter(global_edges_contain_sub_edges)}"
 
     def __repr__(self):
         return '{}(\n{}\n)'.format(

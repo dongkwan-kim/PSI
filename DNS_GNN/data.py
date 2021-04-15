@@ -5,11 +5,14 @@ import pytorch_lightning as pl
 import torch
 from termcolor import cprint
 from torch_geometric.data import InMemoryDataset, Data
+from torch_geometric.transforms import Compose
+import numpy as np
 
+from data_ccaminer import CCAMiner
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
-from data_sub import HPONeuro, HPOMetab, EMUser
-from data_utils import CompleteSubgraph
+from data_sub import HPONeuro, HPOMetab
+from data_utils import CompleteSubgraph, DigitizeY
 
 
 def _subdata_filter_func(data: Data):
@@ -67,7 +70,7 @@ class DNSDataModule(pl.LightningDataModule):
 
     @property
     def ke_method(self):
-        if self.dataset_name == "FNTN":
+        if self.dataset_name in ["FNTN", "CCAMiner"]:
             return "edge"
         elif self.dataset_name in ["HPONeuro", "HPOMetab"]:
             return "node"
@@ -96,8 +99,12 @@ class DNSDataModule(pl.LightningDataModule):
             self.dataset = HPONeuro(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "HPOMetab":
             self.dataset = HPOMetab(**self.data_kwargs, pre_transform=pre_transform)
-        elif self.dataset_name == "EMUser":
-            self.dataset = EMUser(**self.data_kwargs, pre_transform=pre_transform)
+        elif self.dataset_name == "CCAMiner":
+            pre_transform = Compose([
+                CompleteSubgraph(add_sub_edge_index=True),
+                DigitizeY(bins=[1, 2, 3, 4], transform_y=lambda y: np.log2(y + 1))
+            ])
+            self.dataset = CCAMiner(**self.data_kwargs, pre_transform=pre_transform)
         else:
             raise ValueError(f"Wrong dataset: {self.dataset_name}")
 

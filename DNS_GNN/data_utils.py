@@ -3,8 +3,10 @@ from typing import Tuple, Optional
 import torch
 from torch import Tensor
 from torch_geometric.data import Data, Batch
+from torch_geometric.transforms import Compose
 from torch_geometric.utils import k_hop_subgraph
 from torch_cluster import random_walk
+import numpy as np
 
 from utils import del_attrs
 
@@ -109,7 +111,8 @@ def random_walk_indices_from_data(data: Data, walk_length: int):
 
 class CompleteSubgraph(object):
 
-    def __init__(self, global_edge_index=None):
+    def __init__(self, add_sub_edge_index=False, global_edge_index=None):
+        self.add_sub_edge_index = add_sub_edge_index
         self.global_edge_index = global_edge_index
         self._N = None
 
@@ -119,7 +122,7 @@ class CompleteSubgraph(object):
             self._N = self.global_edge_index.max() + 1
         return self._N
 
-    def __call__(self, data):
+    def __call__(self, data: Data):
         assert self.global_edge_index is not None
         x_cs, edge_index_cs, _, _ = k_hop_subgraph(
             node_idx=data.x.flatten(),
@@ -129,12 +132,55 @@ class CompleteSubgraph(object):
             num_nodes=self.N,
             flow="target_to_source"
         )
+        if self.add_sub_edge_index:
+            _edge_index_cs = torch.cat([edge_index_cs, data.edge_index], dim=1)
+            _idx = _edge_index_cs[0] * self.N + _edge_index_cs[1]
+            _idx = torch.unique(_idx)
+            edge_index_cs = torch.stack([_idx // self.N, _idx % self.N], dim=0).long()
         data.x_cs = x_cs.view(data.x.size(0), -1)
         data.edge_index_cs = edge_index_cs
         return data
 
     def __repr__(self):
-        return '{}()'.format(self.__class__.__name__)
+        if self.add_sub_edge_index:
+            return '{}(asei={})'.format(self.__class__.__name__, self.add_sub_edge_index)
+        else:
+            return '{}()'.format(self.__class__.__name__)
+
+    @classmethod
+    def isinstance(cls, transform):
+        if isinstance(transform, cls):
+            return True
+        elif isinstance(transform, Compose):
+            for t in transform.transforms:
+                if isinstance(t, cls):
+                    return True
+        return False
+
+    @classmethod
+    def set_global_edge_index(cls, transform, global_edge_index):
+        if isinstance(transform, cls):
+            transform.global_edge_index = global_edge_index
+        elif isinstance(transform, Compose):
+            for t in transform.transforms:
+                if isinstance(t, cls):
+                    t.global_edge_index = global_edge_index
+
+
+class DigitizeY(object):
+
+    def __init__(self, bins, transform_y=None):
+        self.bins = np.asarray(bins)
+        self.transform_y = transform_y
+
+    def __call__(self, data):
+        y = self.transform_y(data.y).numpy()
+        digitized_y = np.digitize(y, self.bins)
+        data.y = torch.from_numpy(digitized_y)
+        return data
+
+    def __repr__(self):
+        return '{}(bins={})'.format(self.__class__.__name__, self.bins.tolist())
 
 
 if __name__ == '__main__':

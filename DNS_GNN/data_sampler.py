@@ -9,6 +9,7 @@ import torch.utils.data.dataloader
 from termcolor import cprint
 from torch import Tensor
 from torch_geometric.data import Data, Batch
+from torch_geometric.transforms import Compose
 from torch_geometric.utils import k_hop_subgraph, negative_sampling, dropout_adj, subgraph, to_undirected
 from torch_geometric.utils.num_nodes import maybe_num_nodes
 
@@ -17,7 +18,8 @@ import numpy_indexed as npi
 from tqdm import tqdm
 
 from data_base import get_int_range
-from data_utils import random_walk_indices_from_data, DataPN
+from data_ccaminer import CCAMiner
+from data_utils import random_walk_indices_from_data, DataPN, DigitizeY
 from utils import print_time
 
 
@@ -465,8 +467,6 @@ if __name__ == '__main__':
             slice_type="random",
             slice_range=SLICE_RANGE,
             num_slices=1,
-            val_ratio=0.15,
-            test_ratio=0.15,
             pre_transform=None,  # not CompleteSubgraph
             debug=DEBUG,
         )
@@ -479,9 +479,22 @@ if __name__ == '__main__':
             slice_type="random",
             slice_range=SLICE_RANGE,
             num_slices=1,
-            val_ratio=0.15,
-            test_ratio=0.15,
             pre_transform=None,  # not CompleteSubgraph
+            debug=DEBUG,
+        )
+    elif DATASET == "CCAMiner":
+        SLICE_RANGE = (3, 8)
+        KE_METHOD = "edge"
+        dataset_instance = CCAMiner(
+            root=PATH,
+            name="y1",
+            slice_type="num_edges",
+            slice_range=SLICE_RANGE,
+            num_slices=1,
+            pre_transform=Compose([
+                CompleteSubgraph(add_sub_edge_index=True),
+                DigitizeY(bins=[1, 2, 3, 4], transform_y=lambda y: np.log2(y + 1))
+            ]),
             debug=DEBUG,
         )
     else:
