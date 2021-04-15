@@ -15,6 +15,7 @@ from torch_geometric.utils.num_nodes import maybe_num_nodes
 import numpy as np
 import numpy_indexed as npi
 
+from data_base import get_int_range
 from data_utils import random_walk_indices_from_data, DataPN
 from utils import print_time
 
@@ -32,6 +33,11 @@ def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
 
 
 def get_observed_nodes_and_edges(data, obs_x_range):
+    if obs_x_range is not None:
+        # (r1: int, r2: int) -> same (r1, r2)
+        # (r1: float, window: int) -> (N * r1 - window, N * r1 + window)
+        obs_x_range = get_int_range(*obs_x_range, data.x.size(0))
+
     # Training stage: obs_x_range is not None -> sampling
     # Evaluation stage: obs_x_range is None -> use it from Data
     if hasattr(data, "num_obs_x"):
