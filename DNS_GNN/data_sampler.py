@@ -15,6 +15,7 @@ from torch_geometric.utils.num_nodes import maybe_num_nodes
 
 import numpy as np
 import numpy_indexed as npi
+from tqdm import tqdm
 
 from data_base import get_int_range
 from data_ccaminer import CCAMiner
@@ -415,6 +416,24 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 [get_isi_attr(d, "neg") for d in neg_data_list])
 
 
+def print_obs_stats(data_iters):
+    oxi_list = []
+    for idx, data in enumerate(tqdm(data_iters)):
+        if hasattr(data, "obs_x"):
+            oxi_list.append(data.obs_x.size(0))
+        elif hasattr(data, "num_obs_x"):
+            oxi_list.append(data.num_obs_x.item())
+        else:
+            raise ValueError
+    print({
+        "mean": np.mean(oxi_list),
+        "std": np.std(oxi_list),
+        "min": np.min(oxi_list),
+        "max": np.max(oxi_list),
+        "median": np.median(oxi_list),
+    })
+
+
 if __name__ == '__main__':
     from data_fntn import FNTN
     from data_sub import HPOMetab, HPONeuro
@@ -422,7 +441,7 @@ if __name__ == '__main__':
     from data_utils import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DATASET = "CCAMiner"
+    DATASET = "HPOMetab"
     DEBUG = False
 
     if DATASET == "FNTN":
@@ -481,6 +500,8 @@ if __name__ == '__main__':
     else:
         raise ValueError
 
+    print_obs_stats(dataset_instance)
+    exit()
     train_fntn, val_fntn, test_fntn = dataset_instance.get_train_val_test()
 
     sampler = KHopWithLabelsXESampler(
