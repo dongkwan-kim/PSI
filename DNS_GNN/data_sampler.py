@@ -459,7 +459,7 @@ if __name__ == '__main__':
             debug=DEBUG,
         )
     elif DATASET == "HPOMetab":
-        SLICE_RANGE = (3, 8)
+        SLICE_RANGE = (2, 7)
         KE_METHOD = "node"
         dataset_instance = HPOMetab(
             root=PATH,
@@ -471,7 +471,7 @@ if __name__ == '__main__':
             debug=DEBUG,
         )
     elif DATASET == "HPONeuro":
-        SLICE_RANGE = (3, 8)
+        SLICE_RANGE = (2, 7)
         KE_METHOD = "node"
         dataset_instance = HPONeuro(
             root=PATH,
@@ -483,7 +483,7 @@ if __name__ == '__main__':
             debug=DEBUG,
         )
     elif DATASET == "CCAMiner":
-        SLICE_RANGE = (3, 8)
+        SLICE_RANGE = (1, 6)
         KE_METHOD = "edge"
         dataset_instance = CCAMiner(
             root=PATH,
@@ -501,7 +501,6 @@ if __name__ == '__main__':
         raise ValueError
 
     print_obs_stats(dataset_instance)
-    exit()
     train_fntn, val_fntn, test_fntn = dataset_instance.get_train_val_test()
 
     sampler = KHopWithLabelsXESampler(
