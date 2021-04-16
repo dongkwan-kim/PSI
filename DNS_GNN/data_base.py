@@ -76,7 +76,8 @@ class DatasetBase(InMemoryDataset):
                 self.num_train, self.num_val, len(self) - self.num_train - self.num_val)
             + "/ slice_type: {}, slice_range: {} \n".format(
                 self.slice_type, self.slice_range,
-            ),
+            )
+            + "Loaded from: {} \n".format(self.processed_dir),
             "blue",
         )
 
