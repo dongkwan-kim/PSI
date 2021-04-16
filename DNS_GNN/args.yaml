@@ -159,10 +159,12 @@ DNS-FNTN-BISAGE-LONG-PGA:
 DNS-FNTN-BISAGE-25P-PGA:
   <<: *DNS-FNTN-BISAGE-25P
   use_pergraph_attr: True
+  lambda_l2: 0.00026687
 
 DNS-FNTN-BISAGE-50P-PGA:
   <<: *DNS-FNTN-BISAGE-50P
   use_pergraph_attr: True
+  lambda_l2: 0.00026903
 
 DNS-FNTN-BISAGE-XLONG-PGA:
   <<: *DNS-FNTN-BISAGE-XLONG
@@ -328,8 +330,8 @@ DNS-HPONeuro-Linear: &DNS-HPONeuro-Linear
 
 DNS-HPONeuro-Linear-SHORT: &DNS-HPONeuro-Linear-SHORT
   <<: *DNS-HPONeuro-Linear
-  dataset_slice_range_1: 3
-  dataset_slice_range_2: 8
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
 
 DNS-HPONeuro-Linear-LONG: &DNS-HPONeuro-Linear-LONG
   <<: *DNS-HPONeuro-Linear
@@ -365,57 +367,33 @@ DNS-HPONeuro-SAGE: &DNS-HPONeuro-SAGE
 
 DNS-HPONeuro-SAGE-SHORT: &DNS-HPONeuro-SAGE-SHORT
   <<: *DNS-HPONeuro-SAGE
-  dataset_slice_range_1: 3
-  dataset_slice_range_2: 8
-
-DNS-HPONeuro-SAGE-LONG: &DNS-HPONeuro-SAGE-LONG
-  <<: *DNS-HPONeuro-SAGE
-  dataset_slice_range_1: 10
-  dataset_slice_range_2: 15
-
-DNS-HPONeuro-SAGE-XLONG: &DNS-HPONeuro-SAGE-XLONG
-  <<: *DNS-HPONeuro-SAGE
-  dataset_slice_range_1: 25
-  dataset_slice_range_2: 30
-  lambda_l2: 0.000052883
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  lambda_l2: 0.000012889
 
 DNS-HPONeuro-SAGE-25P: &DNS-HPONeuro-SAGE-25P
   <<: *DNS-HPONeuro-SAGE
   dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
+  lambda_l2: 4.1256e-7
 
 DNS-HPONeuro-SAGE-50P: &DNS-HPONeuro-SAGE-50P
   <<: *DNS-HPONeuro-SAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
+  lambda_l2: 1.8303e-7
 
 DNS-HPONeuro-SAGE-MAX: &DNS-HPONeuro-SAGE-MAX
   <<: *DNS-HPONeuro-SAGE
   dataset_slice_range_1: 55
   dataset_slice_range_2: 56
-
-DNS-HPONeuro-SAGE-SHORT-0SG:
-  <<: *DNS-HPONeuro-SAGE-SHORT
-  data_use_obs_edge_only: False
-
-DNS-HPONeuro-SAGE-LONG-0SG:
-  <<: *DNS-HPONeuro-SAGE-LONG
-  data_use_obs_edge_only: False
-
-DNS-HPONeuro-SAGE-XLONG-0SG:
-  <<: *DNS-HPONeuro-SAGE-XLONG
-  data_use_obs_edge_only: False
-
-DNS-HPONeuro-SAGE-SHORT-1SG:
-  <<: *DNS-HPONeuro-SAGE-SHORT
-  data_use_obs_edge_only: False
-  data_sampler_num_hops: 1
+  lambda_l2: 0.0000049517
 
 
 DNS-HPONeuro-E2D2F64: &DNS-HPONeuro-E2D2F64
   <<: *HPONeuro
-  dataset_slice_range_1: 3
-  dataset_slice_range_2: 8
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
   gnn_name: SAGEConv
   use_decoder: True
   data_sampler_num_hops: 1
@@ -424,6 +402,7 @@ DNS-HPONeuro-E2D2F64: &DNS-HPONeuro-E2D2F64
   data_sampler_no_drop_pos_edges: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
+  epochs: 250  # todo
 
 DNS-HPONeuro-E2D2F64-X:
   <<: *DNS-HPONeuro-E2D2F64
@@ -455,6 +434,138 @@ DNS-HPONeuro-E2D2F64-ISI-X-GB:
   pool_ratio: 0.01
 
 
+
+HPOMetab: &HPOMetab
+  <<: *DEFAULT
+  dataset_id: HPOMetab
+  dataset_slice_type: random
+  num_classes: 6
+  global_channels: 64
+  global_channel_type: Pretrained
+  is_obs_sequential: False
+  lr: 0.001
+
+  batch_size: 64
+  eval_batch_size: 3
+  accumulate_grad_batches: 1
+  data_sampler_num_workers: 20
+  epochs: 200
+  val_interval: 5
+  log_dir: ../lightning_logs_metab/
+
+
+DNS-HPOMetab-BASE: &DNS-HPOMetab-BASE
+  <<: *HPOMetab
+  use_node_decoder: False
+  use_edge_decoder: False
+  data_sampler_num_hops: 0
+  data_sampler_neg_sample_ratio: 0.0
+  data_sampler_dropout_edges: 0.0
+  data_use_obs_edge_only: True
+  use_decoder: False
+
+DNS-HPOMetab-Linear: &DNS-HPOMetab-Linear
+  <<: *DNS-HPOMetab-BASE
+  gnn_name: Linear
+  readout_name: mean
+  lambda_l2: 1e-3
+
+DNS-HPOMetab-Linear-SHORT: &DNS-HPOMetab-Linear-SHORT
+  <<: *DNS-HPOMetab-Linear
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+
+DNS-HPOMetab-Linear-25P: &DNS-HPOMetab-Linear-25P
+  <<: *DNS-HPOMetab-Linear
+  dataset_slice_ratio: 0.25
+  dataset_slice_range_2: 2
+
+DNS-HPOMetab-Linear-50P: &DNS-HPOMetab-Linear-50P
+  <<: *DNS-HPOMetab-Linear
+  dataset_slice_ratio: 0.5
+  dataset_slice_range_2: 2
+
+DNS-HPOMetab-Linear-MAX: &DNS-HPOMetab-Linear-MAX
+  <<: *DNS-HPOMetab-Linear
+  dataset_slice_range_1: 50
+  dataset_slice_range_2: 51
+
+
+DNS-HPOMetab-SAGE: &DNS-HPOMetab-SAGE
+  <<: *DNS-HPOMetab-BASE
+  gnn_name: SAGEConv
+  readout_name: mean
+  lambda_l2: 1e-3
+
+DNS-HPOMetab-SAGE-SHORT: &DNS-HPOMetab-SAGE-SHORT
+  <<: *DNS-HPOMetab-SAGE
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  lambda_l2: 0.0000015576
+
+DNS-HPOMetab-SAGE-25P: &DNS-HPOMetab-SAGE-25P
+  <<: *DNS-HPOMetab-SAGE
+  dataset_slice_ratio: 0.25
+  dataset_slice_range_2: 2
+  lambda_l2: 0.000046241
+
+DNS-HPOMetab-SAGE-50P: &DNS-HPOMetab-SAGE-50P
+  <<: *DNS-HPOMetab-SAGE
+  dataset_slice_ratio: 0.5
+  dataset_slice_range_2: 2
+  lambda_l2: 0.000018973
+
+DNS-HPOMetab-SAGE-MAX: &DNS-HPOMetab-SAGE-MAX
+  <<: *DNS-HPOMetab-SAGE
+  dataset_slice_range_1: 50
+  dataset_slice_range_2: 51
+  lambda_l2: 0.0000023807
+
+
+DNS-HPOMetab-E2D2F64: &DNS-HPOMetab-E2D2F64
+  <<: *HPOMetab
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  gnn_name: SAGEConv
+  use_decoder: True
+  data_sampler_num_hops: 1
+  data_sampler_neg_sample_ratio: 1.0
+  data_sampler_dropout_edges: 0.95
+  data_sampler_no_drop_pos_edges: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  epochs: 250  # todo
+
+DNS-HPOMetab-E2D2F64-X:
+  <<: *DNS-HPOMetab-E2D2F64
+  main_decoder_type: node
+  use_node_decoder: True
+  use_edge_decoder: False
+  lambda_l2: 1e-3
+  lambda_aux_x: 0.1
+  pool_ratio: 0.1
+
+DNS-HPOMetab-E2D2F64-ISI: &DNS-HPOMetab-E2D2F64-ISI
+  <<: *DNS-HPOMetab-E2D2F64
+  use_inter_subgraph_infomax: True
+  data_sampler_dropout_edges: 0.95
+  data_sampler_no_drop_pos_edges: True
+
+DNS-HPOMetab-E2D2F64-ISI-X: &DNS-HPOMetab-E2D2F64-ISI-X
+  <<: *DNS-HPOMetab-E2D2F64-ISI
+  main_decoder_type: node
+  use_node_decoder: True
+  use_edge_decoder: False
+
+DNS-HPOMetab-E2D2F64-ISI-X-GB:
+  <<: *DNS-HPOMetab-E2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  lambda_l2: 1e-3
+  lambda_aux_x: 0.1
+  lambda_aux_isi: 0.1
+  pool_ratio: 0.01
+
+
 CCAMiner: &CCAMiner
   <<: *DEFAULT
   dataset_id: "y1"
@@ -470,7 +581,7 @@ CCAMiner: &CCAMiner
   data_sampler_num_workers: 4  # todo
   lr: 0.001
   epochs: 500  # todo
-  # verbose: 2
+  log_dir: ../lightning_logs_ccaminer/
 
 DNS-CCAMiner-BASE: &DNS-CCAMiner-BASE
   <<: *CCAMiner
@@ -490,17 +601,17 @@ DNS-CCAMiner-Linear: &DNS-CCAMiner-Linear
 
 DNS-CCAMiner-Linear-SHORT: &DNS-CCAMiner-Linear-SHORT
   <<: *DNS-CCAMiner-Linear
-  dataset_slice_range_1: 2
-  dataset_slice_range_2: 7
+  dataset_slice_range_1: 1
+  dataset_slice_range_2: 6
 
 DNS-CCAMiner-Linear-25P: &DNS-CCAMiner-Linear-25P
   <<: *DNS-CCAMiner-Linear
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-CCAMiner-Linear-50P: &DNS-CCAMiner-Linear-50P
   <<: *DNS-CCAMiner-Linear
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-CCAMiner-Linear-MAX: &DNS-CCAMiner-Linear-MAX
@@ -516,14 +627,19 @@ DNS-CCAMiner-BISAGE: &DNS-CCAMiner-BISAGE
   readout_name: sum
   lambda_l2: 1e-3
 
+DNS-CCAMiner-BISAGE-SHORT: &DNS-CCAMiner-BISAGE-SHORT
+  <<: *DNS-CCAMiner-BISAGE
+  dataset_slice_range_1: 1
+  dataset_slice_range_2: 6
+
 DNS-CCAMiner-BISAGE-25P: &DNS-CCAMiner-BISAGE-25P
   <<: *DNS-CCAMiner-BISAGE
-  dataset_slice_range_1: 0.25
+  dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
 DNS-CCAMiner-BISAGE-50P: &DNS-CCAMiner-BISAGE-50P
   <<: *DNS-CCAMiner-BISAGE
-  dataset_slice_range_1: 0.5
+  dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
 DNS-CCAMiner-BISAGE-MAX: &DNS-CCAMiner-BISAGE-MAX
@@ -534,8 +650,8 @@ DNS-CCAMiner-BISAGE-MAX: &DNS-CCAMiner-BISAGE-MAX
 
 DNS-CCAMiner-BIE2D2F64: &DNS-CCAMiner-BIE2D2F64
   <<: *CCAMiner
-  dataset_slice_range_1: 2
-  dataset_slice_range_2: 7
+  dataset_slice_range_1: 1
+  dataset_slice_range_2: 6
   gnn_name: SAGEConv
   use_decoder: True
   is_bidirectional: True
