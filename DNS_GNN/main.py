@@ -83,7 +83,9 @@ class MainModel(LightningModule):
 
     def perf_ingredients_step(self, logits, y, prefix) -> Dict[str, Tensor]:
         if self.hparams.metric == "accuracy":
-            return {f"{prefix}_acc_step": accuracy(logits, y)}
+            batch_size = logits.size(0)
+            return {f"{prefix}_acc_step": accuracy(logits, y) * batch_size,
+                    f"{prefix}_batch_size_step": batch_size}
         elif self.hparams.metric == "micro-f1":
             return {f"{prefix}_logits": logits, f"{prefix}_y": y}
         else:
@@ -92,7 +94,9 @@ class MainModel(LightningModule):
     def perf_aggr(self, outputs: List, prefix) -> Tuple[str, Tensor]:
         if self.hparams.metric == "accuracy":
             acc_list = [output[f"{prefix}_acc_step"] for output in outputs]
-            return f"{prefix}_acc", torch.stack(acc_list).mean()
+            size_list = [output[f"{prefix}_batch_size_step"] for output in outputs]
+            acc = torch.stack(acc_list).sum() / sum(size_list)
+            return f"{prefix}_acc", acc
         elif self.hparams.metric == "micro-f1":
             logits = torch.cat([output[f"{prefix}_logits"] for output in outputs])
             ys = torch.cat([output[f"{prefix}_y"] for output in outputs])
@@ -116,8 +120,6 @@ class MainModel(LightningModule):
         for k in outputs[0]["loss_part"]:
             self.log(f"train_{k}", torch.stack([output["loss_part"][k] for output in outputs]).mean())
         self.log("train_loss", torch.stack([output["loss"] for output in outputs]).mean())
-        # Below is the same as
-        # self.log("train_acc", torch.stack([output["train_acc_step"] for output in outputs]).mean())
         self.log(*self.perf_aggr(outputs, prefix="train"))
 
     @cprint_arg_conditionally(**_cac_kw())
