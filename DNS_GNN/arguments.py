@@ -158,6 +158,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
 
     # Update params from .yamls
     args = parser.parse_args()
+    if args.model_debug:
+        args.val_interval = 1
     return args
 
 
