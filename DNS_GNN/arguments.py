@@ -28,6 +28,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
                         choices=["num_edges", "random", "random_walk"])
     parser.add_argument("--dataset-slice-range-1", default=5, type=int)
     parser.add_argument("--dataset-slice-range-2", default=10, type=int)
+    parser.add_argument("--train-dataset-slice-range-1", default=None, type=int)
+    parser.add_argument("--train-dataset-slice-range-2", default=None, type=int)
     parser.add_argument("--dataset-slice-ratio", default=None, type=float)  # Use this if given, otherwise use range-1
     parser.add_argument("--dataset-num-slices", default=1, type=int)
     parser.add_argument("--dataset-val-ratio", default=0.15, type=int)
@@ -161,7 +163,9 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
 
 def get_important_args(_args: argparse.Namespace) -> dict:
     important_args = [
-        "dataset_id", "dataset_slice_type", "dataset_slice_range_1", "dataset_slice_range_2", "dataset_slice_ratio",
+        "dataset_id", "dataset_slice_type",
+        "dataset_slice_range_1", "dataset_slice_range_2", "dataset_slice_ratio",
+        "train_dataset_slice_range_1", "train_dataset_slice_range_2",
         "dataset_num_slices", "dataset_val_ratio", "dataset_test_ratio", "dataset_debug",
         "data_sampler_num_hops", "data_sampler_neg_sample_ratio",
         "data_sampler_dropout_edges", "data_sampler_balanced_sampling",
