@@ -176,8 +176,7 @@ SGI-FNTN-BISAGE-MAX-PGA:
 SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-PGA:
   <<: *SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
   use_pergraph_attr: True
-  # lambda_l2: 0.00031851
-  lambda_l2: 0.00049707
+  lambda_l2: 0.00031851
 
 SGI-FNTN-BISAGE-SHORT-0SG-PGA:
   <<: *SGI-FNTN-BISAGE-SHORT-0SG
@@ -293,6 +292,16 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA:
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
+SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+  use_pergraph_attr: True
+  inter_subgraph_infomax_edge_type: subgraph
+  lambda_l2: 0.0018817
+  lambda_aux_x: 5.80
+  lambda_aux_isi: 1.85
+  data_sampler_dropout_edges: 0.60
+  pool_ratio: 0.010994
+
 
 
 HPONeuro: &HPONeuro
@@ -395,7 +404,7 @@ SGI-HPONeuro-E2D2F64: &SGI-HPONeuro-E2D2F64
   data_sampler_no_drop_pos_edges: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  epochs: 250  # todo
+  epochs: 300  # todo
 
 SGI-HPONeuro-E2D2F64-X:
   <<: *SGI-HPONeuro-E2D2F64
@@ -528,7 +537,7 @@ SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   data_sampler_no_drop_pos_edges: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  epochs: 250  # todo
+  epochs: 300  # todo
 
 SGI-HPOMetab-E2D2F64-X:
   <<: *SGI-HPOMetab-E2D2F64
