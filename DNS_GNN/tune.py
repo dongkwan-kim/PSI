@@ -82,7 +82,7 @@ def objective(trial):
 
 if __name__ == '__main__':
 
-    N_TRIALS = 10
+    N_TRIALS = 50
 
     tune_args = get_args(
         model_name="DNS",
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     logger.addHandler(logging.FileHandler(os.path.join(hparams_dir, f"{tune_args_key}.log"), mode="w"))
 
     search_config = {
-        "lambda_l2": ("loguniform", 1e-8, 1e-4),
+        "lambda_l2": ("loguniform", 1e-7, 1e-3),
         # "lr": ("categorical", [0.001, 0.005])
     }
     if tune_args.use_decoder:
