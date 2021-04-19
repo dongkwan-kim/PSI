@@ -22,7 +22,7 @@ def _subdata_filter_func(data: Data):
     return True
 
 
-class DNSDataModule(pl.LightningDataModule):
+class NoisySubgraphDataModule(pl.LightningDataModule):
 
     def __init__(self, hparams, prepare_data_and_setup):
         super().__init__()
@@ -203,10 +203,10 @@ def random_input_generator(n_p=49, n_n=50, F_f=10, e_p=11, e_n=13, batch_size=1,
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("DNS", "HPOMetab", "BIE2D2F64-ISI-X-GB")
+    _args = get_args("SGI", "HPOMetab", "E2D2F64-ISI-X-GB")
     pprint(_args)
 
-    dm = DNSDataModule(_args, prepare_data_and_setup=True)
+    dm = NoisySubgraphDataModule(_args, prepare_data_and_setup=True)
     print(dm)
     print("num_classes", dm.num_classes)
     print("num_nodes_global", dm.num_nodes_global)

@@ -9,11 +9,11 @@ from torch_geometric.nn.pool.topk_pool import topk
 from torch_geometric.utils import to_dense_batch, softmax
 from torch_scatter import scatter_add
 
-from model_utils import MultiLinear, PositionalEncoding, BilinearWith1d, GlobalAttentionHalf
+from model_utils import MLP, PositionalEncoding, BilinearWith1d, GlobalAttentionHalf
 from utils import act, get_extra_repr, softmax_half
 
 
-class ObsSummarizer(nn.Module):
+class ObservedSubgraphPooler(nn.Module):
 
     def __init__(self, args):
         super().__init__()
@@ -70,7 +70,7 @@ class ObsSummarizer(nn.Module):
         )
 
 
-class DNSDecoder(nn.Module):
+class SGIDecoder(nn.Module):
 
     def __init__(self, args):
         super().__init__()
@@ -79,7 +79,7 @@ class DNSDecoder(nn.Module):
         self.num_body_layers = self.args.num_decoder_body_layers
         self.main_decoder_type = self.args.main_decoder_type
 
-        self.obs_summarizer_k = ObsSummarizer(args=args)  # [N_obs, F] -> [1, F]
+        self.obs_sg_pooler_k = ObservedSubgraphPooler(args=args)  # [N_obs, F] -> [1, F]
         self.body_fc_q = self.build_body_fc()  # [N, F] -> [N, F]
         self.body_fc_v = self.build_body_fc()  # [N, F] -> [N, F]
 
@@ -135,7 +135,7 @@ class DNSDecoder(nn.Module):
             activate_last=True,  # important
         )
         kw.update(**kwargs)
-        return MultiLinear(**kw)
+        return MLP(**kw)
 
     def forward(
             self, x, obs_x_index, edge_index_01, edge_index_2,
@@ -144,7 +144,7 @@ class DNSDecoder(nn.Module):
 
         B = int(batch.max().item() + 1) if batch is not None else 1
         batch_obs_x = batch[obs_x_index] if batch is not None else None
-        obs_x_k = self.obs_summarizer_k(x[obs_x_index], batch_obs_x)  # [B, F]
+        obs_x_k = self.obs_sg_pooler_k(x[obs_x_index], batch_obs_x)  # [B, F]
         x_q = self.body_fc_q(x)  # [N, F]
         x_v = self.body_fc_v(x)  # [N, F]
 
@@ -233,14 +233,14 @@ if __name__ == '__main__':
             print(f"_de: {_de.size(), _de.mean().item(), _de.std().item()}")
 
     seed_everything(42)
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
     _args.use_pool_min_score = False  # todo
     _args.pool_ratio = 0.3
     _args.main_decoder_type = "node"  # todo
     _args.use_edge_decoder = False  # todo
     _args.use_node_decoder = True
     _args.use_pergraph_attr = True
-    dec = DNSDecoder(_args)
+    dec = SGIDecoder(_args)
     print(dec)
 
     _N = 9

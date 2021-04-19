@@ -8,13 +8,13 @@ from torch_geometric.nn import DeepGraphInfomax
 from torch_geometric.nn.inits import glorot
 from torch_geometric.utils import to_dense_batch
 
-from model_utils import MultiLinear
+from model_utils import MLP
 from utils import EPSILON
 
 EPS = EPSILON()
 
 
-class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
+class InterSGILoss(DeepGraphInfomax):
 
     def __init__(self, args, encoder=None):
         self.args = args
@@ -26,7 +26,7 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
             raise ValueError
 
         if encoder is None:
-            encoder = MultiLinear(
+            encoder = MLP(
                 num_layers=args.num_decoder_body_layers,
                 num_input=args.hidden_channels,
                 num_hidden=args.hidden_channels,
@@ -116,8 +116,8 @@ class InterSubgraphInfoMaxLoss(DeepGraphInfomax):
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
-    _isi = InterSubgraphInfoMaxLoss(_args)
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _isi = InterSGILoss(_args)
     print(_isi)
     print("----")
     for m in _isi.modules():

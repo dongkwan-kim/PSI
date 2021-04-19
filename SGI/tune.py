@@ -85,7 +85,7 @@ if __name__ == '__main__':
     N_TRIALS = 50
 
     tune_args = get_args(
-        model_name="DNS",
+        model_name="SGI",
         dataset_name="HPONeuro",
         custom_key="E2D2F64-ISI-X-GB",  # BISAGE, SMALL-E
     )

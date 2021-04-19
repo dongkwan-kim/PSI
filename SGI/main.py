@@ -19,8 +19,8 @@ from torch_geometric.data import Data
 from sklearn.metrics import f1_score
 
 from arguments import get_args_key, get_args, pprint_args, get_args_hash
-from data import DNSDataModule
-from model import DNSNet
+from data import NoisySubgraphDataModule
+from model import SGINet
 from utils import merge_or_update, cprint_arg_conditionally
 
 
@@ -38,7 +38,7 @@ def ga(b, attr_name):
 
 class MainModel(LightningModule):
 
-    def __init__(self, hparams, dataset: DNSDataModule):
+    def __init__(self, hparams, dataset: NoisySubgraphDataModule):
         super().__init__()
         self.model = None  # see setup
         self.debug_model = None
@@ -49,8 +49,8 @@ class MainModel(LightningModule):
     def setup(self, stage: str = None):
         self.hparams.num_nodes_global = self.dataset.num_nodes_global
         self.hparams.num_classes = self.dataset.num_classes
-        if self.hparams.model_name == "DNS" and self.hparams.version == "1.0":
-            self.model = DNSNet(self.hparams, self.dataset.embedding)
+        if self.hparams.model_name == "SGI" and self.hparams.version == "1.0":
+            self.model = SGINet(self.hparams, self.dataset.embedding)
         else:
             raise ValueError(f"Wrong model ({self.hparams.model_name}) or version ({self.hparams.version})")
         if self.hparams.debug_batch_idx is not None:
@@ -212,7 +212,7 @@ class MainModel(LightningModule):
 def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
     seed_everything(args.model_seed)
 
-    dm = DNSDataModule(args, prepare_data_and_setup=True)
+    dm = NoisySubgraphDataModule(args, prepare_data_and_setup=True)
     model = MainModel(args, dm)
     callbacks = []
     args_key = get_args_key(args)
@@ -328,14 +328,18 @@ def run_train_multiple(num_runs, args,
 
 if __name__ == '__main__':
 
-    MODE = "RUN_ONCE"  # RUN_ONCE, RUN_MULTIPLE
+    MODE = "RUN_MULTIPLE"  # RUN_ONCE, RUN_MULTIPLE
     NUM_RUNS = 5
 
     main_args = get_args(
-        model_name="DNS",
+        model_name="SGI",
         dataset_name="HPONeuro",  # FNTN, HPOMetab, HPONeuro
         custom_key="E2D2F64-ISI-X-GB",  # BISAGE-SHORT, BIE2D2F64-ISI-X-PGA, E2D2F64-ISI-X-GB
     )
+    if main_args.model_debug:
+        main_args.log_dir = "../logs_tmp"
+        main_args.val_interval = 1
+
     pprint_args(main_args)
     cprint("MODE: {} (#={})".format(MODE, NUM_RUNS), "red")
 

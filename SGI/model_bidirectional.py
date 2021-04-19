@@ -30,12 +30,12 @@ class BiConv(nn.Module):
 
 
 if __name__ == '__main__':
-    from model_encoder import DNSEncoder
+    from model_encoder import GraphEncoder
     from arguments import get_args
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
-    enc = BiConv(DNSEncoder(_args))
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    enc = BiConv(GraphEncoder(_args))
     print(enc)
 
-    _x = torch.ones(10 * 64).view(10, 64)
+    _x = torch.ones(10 * 32).view(10, 32)
     _ei = torch.randint(0, 10, [2, 10])
     print(enc(_x, _ei).size())

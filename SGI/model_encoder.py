@@ -25,7 +25,7 @@ def get_gnn_conv_and_kwargs(gnn_name, args):
     return gnn_cls, gkw
 
 
-class DNSEncoder(nn.Module):
+class GraphEncoder(nn.Module):
 
     def __init__(self, args, activate_last=True):
         super().__init__()
@@ -82,8 +82,8 @@ class DNSEncoder(nn.Module):
 
 if __name__ == '__main__':
     from arguments import get_args
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
-    enc = DNSEncoder(_args)
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    enc = GraphEncoder(_args)
     print(enc)
 
     _x = torch.ones(10 * _args.global_channels).view(10, -1)

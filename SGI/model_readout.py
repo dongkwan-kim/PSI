@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from termcolor import cprint
 from torch_geometric.nn.glob import global_mean_pool, global_max_pool, global_add_pool
 
-from model_utils import MultiLinear
+from model_utils import MLP
 
 
 class Readout(nn.Module):
@@ -22,7 +22,7 @@ class Readout(nn.Module):
         self.fc_in = self.build_body_fc()  # [N, F] -> [N, F]
 
         if self.args.use_pergraph_attr:
-            self.pergraph_fc = MultiLinear(
+            self.pergraph_fc = MLP(
                 num_layers=1,
                 num_input=args.pergraph_channels,
                 num_hidden=None,
@@ -56,7 +56,7 @@ class Readout(nn.Module):
             activate_last=True,  # important
         )
         kw.update(**kwargs)
-        return MultiLinear(**kw)
+        return MLP(**kw)
 
     def forward(self, x, pergraph_attr=None, batch=None):
 
@@ -101,7 +101,7 @@ class Readout(nn.Module):
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
     _args.readout_name = "mean-max"
     _args.use_pergraph_attr = True
     _args.num_decoder_body_layers = 2

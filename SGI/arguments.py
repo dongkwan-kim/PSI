@@ -17,7 +17,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
 
     custom_key = custom_key.split("+")[0]
 
-    parser = argparse.ArgumentParser(description='Argument Parser for DNS-GNN')
+    parser = argparse.ArgumentParser(description='Argument Parser for SGI and baselines.')
 
     parser.add_argument("--m", default="", type=str, help="Memo")
 
@@ -222,7 +222,7 @@ def pdebug_args(_args: argparse.Namespace, logger):
 
 
 if __name__ == '__main__':
-    test_args = get_args("DNS", "FNTN", "TEST+MEMO")
+    test_args = get_args("SGI", "FNTN", "TEST+MEMO")
     pprint_args(test_args)
     print("Type: {}".format(type(test_args)))
     print("Dict [get_important_args(test_args)]: {}".format(get_important_args(test_args)))

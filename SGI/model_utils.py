@@ -73,7 +73,7 @@ class BilinearWith1d(nn.Bilinear):
         return x
 
 
-class MultiLinear(nn.Module):
+class MLP(nn.Module):
 
     def __init__(self, num_layers, num_input, num_hidden, num_out, activation,
                  use_bn=False, dropout=0.0, activate_last=False):

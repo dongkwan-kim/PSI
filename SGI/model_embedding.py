@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class DNSEmbedding(nn.Module):
+class VersatileEmbedding(nn.Module):
 
     def __init__(self, args, pretrained_embedding=None):
         super().__init__()
@@ -46,7 +46,7 @@ class DNSEmbedding(nn.Module):
 
 if __name__ == '__main__':
     from arguments import get_args
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 11
     _args.global_channels = 32
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     else:
         _pte = None
 
-    de = DNSEmbedding(_args, _pte)
+    de = VersatileEmbedding(_args, _pte)
     print(de)
     print("Embedding: {} +- {}".format(
         de.embedding.weight.mean().item(),

@@ -9,35 +9,35 @@ from pytorch_lightning import seed_everything
 from termcolor import cprint
 
 from model_bidirectional import BiConv
-from model_decoder import DNSDecoder
-from model_embedding import DNSEmbedding
-from model_encoder import DNSEncoder
-from model_isi import InterSubgraphInfoMaxLoss
+from model_embedding import VersatileEmbedding
+from model_encoder import GraphEncoder
+from model_decoder import SGIDecoder
 from model_readout import Readout
+from model_inter_sgi import InterSGILoss
 
 
-class DNSNet(nn.Module):
+class SGINet(nn.Module):
 
     def __init__(self, args, embedding=None):
         super().__init__()
         self.args = args
-        self.emb = DNSEmbedding(args, embedding)
+        self.emb = VersatileEmbedding(args, embedding)
 
         if not self.args.is_bidirectional:
-            self.enc = DNSEncoder(args, activate_last=True)
+            self.enc = GraphEncoder(args, activate_last=True)
         else:
             assert args.hidden_channels % 2 == 0
             args_with_half = deepcopy(args)
             args_with_half.hidden_channels //= 2
-            self.enc = BiConv(DNSEncoder(args_with_half, activate_last=True))
+            self.enc = BiConv(GraphEncoder(args_with_half, activate_last=True))
 
         if self.args.use_decoder:
-            self.dec_or_readout = DNSDecoder(args)
+            self.dec_or_readout = SGIDecoder(args)
         else:
             self.dec_or_readout = Readout(args)
 
         if self.args.use_inter_subgraph_infomax:
-            self.isi_loss = InterSubgraphInfoMaxLoss(args)
+            self.isi_loss = InterSGILoss(args)
         else:
             self.isi_loss = None
 
@@ -52,7 +52,7 @@ class DNSNet(nn.Module):
 
         dec_x, dec_e, loss_isi = None, None, None
 
-        if self.args.use_decoder:  # DNSDecoder
+        if self.args.use_decoder:  # SGIDecoder
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
                 x, obs_x_index, edge_index_01, edge_index_2,
                 pergraph_attr, batch,
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     from arguments import get_args
     from utils import count_parameters
 
-    _args = get_args("DNS", "FNTN", "TEST+MEMO")
+    _args = get_args("SGI", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 19
     _args.main_decoder_type = "node"
     _args.is_bidirectional = True
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     _args.use_inter_subgraph_infomax = True
     _args.use_pergraph_attr = True
     _args.readout_name = "mean-max"
-    net = DNSNet(_args)
+    net = SGINet(_args)
     print(net)
     print(f"#: {count_parameters(net)}")
 
