@@ -374,7 +374,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             obs_x_index = None
 
         if self.use_pergraph_attr:
-            pergraph_attr = d.pergraph_attr
+            pergraph_attr = d.pergraph_attr.view(1, -1)
         else:
             pergraph_attr = None
 
