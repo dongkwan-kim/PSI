@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [1]
+  gpu_ids: [2]
   num_gpus_total: 4
   num_gpus_to_use: 1
   model_debug: False
@@ -66,6 +66,18 @@ SGI-FNTN-Linear-SHORT-PGA:
   <<: *SGI-FNTN-Linear-SHORT
   use_pergraph_attr: True
   lambda_l2: 4.5200e-7
+
+SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *SGI-FNTN-Linear
+  train_dataset_slice_range_1: 3089
+  train_dataset_slice_range_2: 3090
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+
+SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT-PGA:
+  <<: *SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
+  use_pergraph_attr: True
+  lambda_l2: 1.6697e-7
 
 SGI-FNTN-BISAGE: &SGI-FNTN-BISAGE
   <<: *SGI-FNTN-BASE
@@ -346,6 +358,14 @@ SGI-HPONeuro-Linear-SHORT: &SGI-HPONeuro-Linear-SHORT
   dataset_slice_range_2: 7
   lambda_l2: 1.9119e-7
 
+SGI-HPONeuro-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-HPONeuro-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *SGI-HPONeuro-Linear
+  train_dataset_slice_range_1: 55
+  train_dataset_slice_range_2: 56
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  lambda_l2: 0.000098108
+
 SGI-HPONeuro-SAGE: &SGI-HPONeuro-SAGE
   <<: *SGI-HPONeuro-BASE
   gnn_name: SAGEConv
@@ -477,6 +497,14 @@ SGI-HPOMetab-Linear-SHORT: &SGI-HPOMetab-Linear-SHORT
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.000055036
+
+SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *SGI-HPOMetab-Linear
+  train_dataset_slice_range_1: 50
+  train_dataset_slice_range_2: 51
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  lambda_l2: 0.0000031107
 
 
 SGI-HPOMetab-SAGE: &SGI-HPOMetab-SAGE
