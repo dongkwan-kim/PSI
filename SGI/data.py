@@ -102,8 +102,14 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
         elif self.dataset_name == "HPOMetab":
             self.dataset = HPOMetab(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "CCAMiner":
-            pre_transform = Compose([
-                CompleteSubgraph(add_sub_edge_index=True),
+            pre_transforms = []
+            if self.hparams.inter_subgraph_infomax_edge_type == "global":
+                pre_transforms = [CompleteSubgraph(add_sub_edge_index=False)]
+            elif self.hparams.inter_subgraph_infomax_edge_type == "union":
+                pre_transforms = [CompleteSubgraph(add_sub_edge_index=True)]
+            else:
+                raise ValueError("Wrong type: {}".format(self.hparams.inter_subgraph_infomax_edge_type))
+            pre_transform = Compose(pre_transforms + [
                 DigitizeY(bins=[1, 2, 3, 4], transform_y=lambda y: np.log2(y + 1))
             ])
             self.dataset = CCAMiner(**self.data_kwargs, pre_transform=pre_transform)
