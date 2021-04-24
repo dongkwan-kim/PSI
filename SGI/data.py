@@ -11,7 +11,7 @@ import numpy as np
 from data_ccaminer import CCAMiner
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
-from data_sub import HPONeuro, HPOMetab
+from data_sub import HPONeuro, HPOMetab, EMUser
 from data_utils import CompleteSubgraph, DigitizeY
 
 
@@ -72,7 +72,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
     def ke_method(self):
         if self.dataset_name in ["FNTN", "CCAMiner"]:
             return "edge"
-        elif self.dataset_name in ["HPONeuro", "HPOMetab"]:
+        elif self.dataset_name in ["HPONeuro", "HPOMetab", "EMUser"]:
             return "node"
         else:
             raise ValueError("Wrong dataset_name: {}".format(self.dataset_name))
@@ -101,6 +101,8 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             self.dataset = HPONeuro(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "HPOMetab":
             self.dataset = HPOMetab(**self.data_kwargs, pre_transform=pre_transform)
+        elif self.dataset_name == "EMUser":
+            self.dataset = EMUser(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "CCAMiner":
             pre_transform = Compose([
                 CompleteSubgraph(add_sub_edge_index=True),

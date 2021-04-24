@@ -436,12 +436,12 @@ def print_obs_stats(data_iters):
 
 if __name__ == '__main__':
     from data_fntn import FNTN
-    from data_sub import HPOMetab, HPONeuro
+    from data_sub import HPOMetab, HPONeuro, EMUser
     from pytorch_lightning import seed_everything
     from data_utils import CompleteSubgraph
 
     PATH = "/mnt/nas2/GNN-DATA"
-    DATASET = "HPOMetab"
+    DATASET = "EMUser"
     DEBUG = False
 
     if DATASET == "FNTN":
@@ -476,6 +476,18 @@ if __name__ == '__main__':
         dataset_instance = HPONeuro(
             root=PATH,
             name="HPONeuro",
+            slice_type="random",
+            slice_range=SLICE_RANGE,
+            num_slices=1,
+            pre_transform=None,  # not CompleteSubgraph
+            debug=DEBUG,
+        )
+    elif DATASET == "EMUser":
+        SLICE_RANGE = (6, 11)
+        KE_METHOD = "node"
+        dataset_instance = EMUser(
+            root=PATH,
+            name="EMUser",
             slice_type="random",
             slice_range=SLICE_RANGE,
             num_slices=1,

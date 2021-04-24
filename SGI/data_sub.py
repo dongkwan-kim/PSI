@@ -283,7 +283,7 @@ class EMUser(DatasetSubGNN):
 
 if __name__ == '__main__':
 
-    TYPE = "HPONeuro"
+    TYPE = "EMUser"
 
     PATH = "/mnt/nas2/GNN-DATA"
     DEBUG = False
@@ -315,7 +315,7 @@ if __name__ == '__main__':
             root=PATH,
             name="EMUser",
             slice_type="random",
-            slice_range=(5, 10),
+            slice_range=(6, 11),
             num_slices=1,
             val_ratio=0.15,
             test_ratio=0.15,
