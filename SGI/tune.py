@@ -114,7 +114,10 @@ if __name__ == '__main__':
         if tune_args.use_inter_subgraph_infomax:
             search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
         if not tune_args.use_pool_min_score:
-            search_config["pool_ratio"] = ("loguniform", 1e-3, 1e-1)
+            if tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
+                search_config["pool_ratio"] = ("loguniform", 1e-4, 1e-2)
+            else:
+                search_config["pool_ratio"] = ("loguniform", 1e-3, 1e-1)
 
         if tune_args.data_sampler_no_drop_pos_edges:
             search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.95, 0.99, 0.01)
