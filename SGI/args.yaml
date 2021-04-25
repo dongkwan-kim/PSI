@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [2]
+  gpu_ids: [3]
   num_gpus_total: 4
   num_gpus_to_use: 1
   model_debug: False
@@ -597,25 +597,27 @@ SGI-HPOMetab-E2D2F64-ISI-X-GB:
   pool_ratio: 0.01
 
 
-CCAMiner: &CCAMiner
+EMUser: &EMUser
   <<: *DEFAULT
-  dataset_id: "y1"
-  dataset_slice_type: num_edges
-  num_classes: 5
-  global_channels: 32
-  global_channel_type: Embedding
-  obs_max_len: 14
-
-  batch_size: 16  # todo
-  eval_batch_size: 32  # todo
-  accumulate_grad_batches: 1
-  data_sampler_num_workers: 4  # todo
+  dataset_id: EMUser
+  dataset_slice_type: random
+  num_classes: 2
+  global_channels: 64
+  global_channel_type: Pretrained
+  is_obs_sequential: False
   lr: 0.001
-  epochs: 500  # todo
-  log_dir: ../lightning_logs_ccaminer/
 
-SGI-CCAMiner-BASE: &SGI-CCAMiner-BASE
-  <<: *CCAMiner
+  batch_size: 64
+  eval_batch_size: 3
+  accumulate_grad_batches: 1
+  data_sampler_num_workers: 20
+  epochs: 200
+  val_interval: 5
+  log_dir: ../lightning_logs_emuser_report/
+
+
+SGI-EMUser-BASE: &SGI-EMUser-BASE
+  <<: *EMUser
   use_node_decoder: False
   use_edge_decoder: False
   data_sampler_num_hops: 0
@@ -624,74 +626,88 @@ SGI-CCAMiner-BASE: &SGI-CCAMiner-BASE
   data_use_obs_edge_only: True
   use_decoder: False
 
-SGI-CCAMiner-Linear: &SGI-CCAMiner-Linear
-  <<: *SGI-CCAMiner-BASE
+SGI-EMUser-Linear: &SGI-EMUser-Linear
+  <<: *SGI-EMUser-BASE
   gnn_name: Linear
-  readout_name: sum
+  readout_name: mean
   lambda_l2: 1e-3
 
-SGI-CCAMiner-Linear-SHORT: &SGI-CCAMiner-Linear-SHORT
-  <<: *SGI-CCAMiner-Linear
-  dataset_slice_range_1: 1
-  dataset_slice_range_2: 6
+SGI-EMUser-Linear-SHORT: &SGI-EMUser-Linear-SHORT
+  <<: *SGI-EMUser-Linear
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  lambda_l2: 0.0000014086
+
+SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *SGI-EMUser-Linear
+  train_dataset_slice_range_1: 499
+  train_dataset_slice_range_2: 500
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  lambda_l2: 0.00010494
 
 
-SGI-CCAMiner-BISAGE: &SGI-CCAMiner-BISAGE
-  <<: *SGI-CCAMiner-BASE
+SGI-EMUser-SAGE: &SGI-EMUser-SAGE
+  <<: *SGI-EMUser-BASE
   gnn_name: SAGEConv
-  is_bidirectional: True
-  readout_name: sum
+  readout_name: mean
   lambda_l2: 1e-3
 
-SGI-CCAMiner-BIGCN-SHORT:
-  <<: *SGI-CCAMiner-BISAGE
+SGI-EMUser-GCN-SHORT:
+  <<: *SGI-EMUser-SAGE
   gnn_name: GCNConv
-  dataset_slice_range_1: 1
-  dataset_slice_range_2: 6
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
 
-SGI-CCAMiner-BISAGE-SHORT: &SGI-CCAMiner-BISAGE-SHORT
-  <<: *SGI-CCAMiner-BISAGE
-  dataset_slice_range_1: 1
-  dataset_slice_range_2: 6
+SGI-EMUser-SAGE-SHORT: &SGI-EMUser-SAGE-SHORT
+  <<: *SGI-EMUser-SAGE
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  lambda_l2: 0.00019239
 
-SGI-CCAMiner-BISAGE-25P: &SGI-CCAMiner-BISAGE-25P
-  <<: *SGI-CCAMiner-BISAGE
+SGI-EMUser-SAGE-25P: &SGI-EMUser-SAGE-25P
+  <<: *SGI-EMUser-SAGE
   dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
+  lambda_l2: 0.00023945
 
-SGI-CCAMiner-BISAGE-50P: &SGI-CCAMiner-BISAGE-50P
-  <<: *SGI-CCAMiner-BISAGE
+SGI-EMUser-SAGE-50P: &SGI-EMUser-SAGE-50P
+  <<: *SGI-EMUser-SAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
+  lambda_l2: 0.0000070983
 
-SGI-CCAMiner-BISAGE-MAX: &SGI-CCAMiner-BISAGE-MAX
-  <<: *SGI-CCAMiner-BISAGE
-  dataset_slice_range_1: 120
-  dataset_slice_range_2: 121
+SGI-EMUser-SAGE-MAX: &SGI-EMUser-SAGE-MAX
+  <<: *SGI-EMUser-SAGE
+  dataset_slice_range_1: 499
+  dataset_slice_range_2: 500
+  lambda_l2: 0.000039415
 
-SGI-CCAMiner-BISAGE-TRAIN-MAX-EVAL-SHORT:
-  <<: *SGI-CCAMiner-BISAGE
-  train_dataset_slice_range_1: 120
-  train_dataset_slice_range_2: 121
-  dataset_slice_range_1: 1
-  dataset_slice_range_2: 6
+SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT:
+  <<: *SGI-EMUser-SAGE
+  train_dataset_slice_range_1: 499
+  train_dataset_slice_range_2: 500
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  lambda_l2: 0.00024352
 
 
-SGI-CCAMiner-BIE2D2F64: &SGI-CCAMiner-BIE2D2F64
-  <<: *CCAMiner
-  dataset_slice_range_1: 1
-  dataset_slice_range_2: 6
+SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
+  <<: *EMUser
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
   gnn_name: SAGEConv
   use_decoder: True
-  is_bidirectional: True
   data_sampler_num_hops: 1
   data_sampler_neg_sample_ratio: 1.0
   data_sampler_dropout_edges: 0.5
+  data_sampler_no_drop_pos_edges: False  # todo
   num_encoder_layers: 2
   num_decoder_body_layers: 2
+  epochs: 400  # todo
 
-SGI-CCAMiner-BIE2D2F64-X:
-  <<: *SGI-CCAMiner-BIE2D2F64
+SGI-EMUser-E2D2F64-X:
+  <<: *SGI-EMUser-E2D2F64
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
@@ -699,19 +715,20 @@ SGI-CCAMiner-BIE2D2F64-X:
   lambda_aux_x: 0.1
   pool_ratio: 0.1
 
-SGI-CCAMiner-BIE2D2F64-ISI: &SGI-CCAMiner-BIE2D2F64-ISI
-  <<: *SGI-CCAMiner-BIE2D2F64
+SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
+  <<: *SGI-EMUser-E2D2F64
   use_inter_subgraph_infomax: True
-  data_sampler_dropout_edges: 0.3
+  data_sampler_dropout_edges: 0.5
+  data_sampler_no_drop_pos_edges: False  # todo
 
-SGI-CCAMiner-BIE2D2F64-ISI-X: &SGI-CCAMiner-BIE2D2F64-ISI-X
-  <<: *SGI-CCAMiner-BIE2D2F64-ISI
+SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
+  <<: *SGI-EMUser-E2D2F64-ISI
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
 
-SGI-CCAMiner-BIE2D2F64-ISI-X-GB:
-  <<: *SGI-CCAMiner-BIE2D2F64-ISI-X
+SGI-EMUser-E2D2F64-ISI-X-GB:
+  <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 1e-3
   lambda_aux_x: 0.1
