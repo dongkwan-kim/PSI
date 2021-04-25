@@ -82,6 +82,8 @@ class Readout(nn.Module):
                 p_g = self.pergraph_fc(pergraph_attr)  # [F] or [1, F]
                 if batch is not None:
                     p_g = p_g.expand(B, -1)  # [B, F]
+                else:
+                    p_g = p_g.squeeze()  # [F]
                 z_with_p_g = torch.cat([z_g, p_g], dim=-1)  # [F * #type + F] or [B, F * #type + F]
             else:
                 z_with_p_g = z_g
