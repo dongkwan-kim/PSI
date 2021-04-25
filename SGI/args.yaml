@@ -324,6 +324,7 @@ HPONeuro: &HPONeuro
   num_classes: 10
   global_channels: 64
   global_channel_type: Pretrained
+  include_obs_x_in_pooling: True
   is_obs_sequential: False
   lr: 0.001
 
@@ -464,6 +465,7 @@ HPOMetab: &HPOMetab
   num_classes: 6
   global_channels: 64
   global_channel_type: Pretrained
+  include_obs_x_in_pooling: True
   is_obs_sequential: False
   lr: 0.001
 

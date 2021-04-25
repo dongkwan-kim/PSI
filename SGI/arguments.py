@@ -126,6 +126,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--use-inter-subgraph-infomax", default=False)
     parser.add_argument("--inter-subgraph-infomax-edge-type", default="global",
                         type=str, choices=["global", "subgraph"])
+    parser.add_argument("--include-obs-x-in-pooling", default=False)
 
     # per-graph feature (e.g., text)
     parser.add_argument("--use-pergraph-attr", default=False, type=bool)
@@ -183,7 +184,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
-        "use_inter_subgraph_infomax", "inter_subgraph_infomax_edge_type",
+        "use_inter_subgraph_infomax", "inter_subgraph_infomax_edge_type", "include_obs_x_in_pooling",
         "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
     ret = {}

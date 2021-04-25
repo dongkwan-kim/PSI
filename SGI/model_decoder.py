@@ -78,6 +78,7 @@ class SGIDecoder(nn.Module):
         self.args = args
         self.num_body_layers = self.args.num_decoder_body_layers
         self.main_decoder_type = self.args.main_decoder_type
+        self.include_obs_x_in_pooling = self.args.include_obs_x_in_pooling
 
         self.obs_sg_pooler_k = ObservedSubgraphPooler(args=args)  # [N_obs, F] -> [1, F]
         self.body_fc_q = self.build_body_fc()  # [N, F] -> [N, F]
@@ -151,7 +152,7 @@ class SGIDecoder(nn.Module):
         dec_x, pool_x, dec_e, pool_e = None, None, None, None
         if self.args.use_node_decoder:
             dec_x, pool_x = self.decode_and_pool(
-                obs_x_k, x_q, x_v, edge_index_01,
+                obs_x_k, obs_x_index, x_q, x_v, edge_index_01,
                 decoder_type="node",
                 use_pool=self.main_decoder_type == "node",
                 batch=batch, batch_size=B,
@@ -162,7 +163,7 @@ class SGIDecoder(nn.Module):
             else:
                 edge_index_012 = edge_index_01
             dec_e, pool_e = self.decode_and_pool(
-                obs_x_k, x_q, x_v, edge_index_012,
+                obs_x_k, obs_x_index, x_q, x_v, edge_index_012,
                 decoder_type="edge",
                 use_pool=self.main_decoder_type == "edge",
                 idx_to_pool=edge_index_01.size(1),
@@ -179,8 +180,8 @@ class SGIDecoder(nn.Module):
         logits_g = self.graph_fc(z_with_p_g).view(B, -1)
         return z_g, logits_g, dec_x, dec_e
 
-    def decode_and_pool(self, obs_x_k, x_q, x_v, edge_index, decoder_type, use_pool,
-                        idx_to_pool=None, batch=None, batch_size=1):
+    def decode_and_pool(self, obs_x_k, obs_x_index, x_q, x_v, edge_index,
+                        decoder_type, use_pool, idx_to_pool=None, batch=None, batch_size=1):
         # x_q, x_v: [N, F]
         # obs_x_k: [B, F]
         # edge_index: [2, E] or [2, \sum E]
@@ -207,6 +208,8 @@ class SGIDecoder(nn.Module):
         if use_pool:
             score = decoded[:, 0] if idx_to_pool is None else decoded[:idx_to_pool, 0]  # [N,] or [\sum E,]
             perm = topk(score, self.pool_ratio, batch, self.pool_min_score)
+            if self.include_obs_x_in_pooling:
+                perm = torch.unique(torch.cat([obs_x_index, perm], dim=0))
             batch_topk, o_v_topk = batch[perm], o_v[perm]
             score_topk = softmax_half(score[perm].view(-1, 1), batch_topk, num_nodes=batch_size)
             pooled = scatter_add(score_topk * o_v_topk, batch_topk, dim=0, dim_size=batch_size)  # [B, F]
