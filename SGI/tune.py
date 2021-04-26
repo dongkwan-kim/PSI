@@ -121,6 +121,8 @@ if __name__ == '__main__':
 
         if tune_args.data_sampler_no_drop_pos_edges:
             search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.95, 0.99, 0.01)
+        elif tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
+            search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.55, 0.75, 0.05)
         else:
             search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
 
