@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [3]
+  gpu_ids: [0]
   num_gpus_total: 4
   num_gpus_to_use: 1
   model_debug: False
@@ -632,6 +632,7 @@ EMUser: &EMUser
   global_channels: 64
   global_channel_type: Pretrained
   is_obs_sequential: False
+  include_obs_x_in_pooling: True
   lr: 0.001
 
   batch_size: 64
@@ -639,8 +640,8 @@ EMUser: &EMUser
   accumulate_grad_batches: 1
   data_sampler_num_workers: 20
   epochs: 200
-  val_interval: 5
-  log_dir: ../lightning_logs_emuser_report/
+  val_interval: 1
+  log_dir: ../lightning_logs_emuser/
 
 
 SGI-EMUser-BASE: &SGI-EMUser-BASE
@@ -731,16 +732,18 @@ SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   data_sampler_no_drop_pos_edges: False  # todo
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  epochs: 400  # todo
+  epochs: 400
 
 SGI-EMUser-E2D2F64-X:
   <<: *SGI-EMUser-E2D2F64
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  pool_ratio: 0.1
+  lambda_aux_isi: 0.0
+  lambda_l2: 0.00018086
+  lambda_aux_x: 1.40
+  data_sampler_dropout_edges: 0.50
+  pool_ratio: 0.0036169
 
 SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
   <<: *SGI-EMUser-E2D2F64
@@ -753,11 +756,8 @@ SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
+  epochs: 600
 
 SGI-EMUser-E2D2F64-ISI-X-GB:
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  lambda_aux_isi: 0.1
-  pool_ratio: 0.01
