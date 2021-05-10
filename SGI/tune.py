@@ -8,7 +8,7 @@ from pytorch_lightning import Callback, seed_everything
 from pytorch_lightning import loggers as pl_loggers
 
 import torch
-
+import numpy as np
 import optuna
 from optuna.integration import PyTorchLightningPruningCallback
 from termcolor import cprint
@@ -82,12 +82,13 @@ def objective(trial):
 
 if __name__ == '__main__':
 
+    ABLATION_GRID_SEARCH = True
     N_TRIALS = 50
 
     tune_args = get_args(
         model_name="SGI",
-        dataset_name="HPONeuro",
-        custom_key="E2D2F64-ISI-X-GB",  # BISAGE, SMALL-E
+        dataset_name="FNTN",
+        custom_key="BIE2D2F64-ISI-X-GB-PGA-16",  # BISAGE, SMALL-E
     )
     METRIC_TO_MONITOR = {"HPONeuro": "val_f1"}.get(tune_args.dataset_name, "val_acc")
     tune_args.verbose = 0  # Force args' verbose be 0
@@ -102,31 +103,53 @@ if __name__ == '__main__':
     logger = optuna.logging._get_library_root_logger()
     logger.addHandler(logging.FileHandler(os.path.join(hparams_dir, f"{tune_args_key}.log"), mode="w"))
 
-    search_config = {
-        "lambda_l2": ("loguniform", 1e-7, 1e-3),
-        # "lr": ("categorical", [0.001, 0.005])
-    }
-    if tune_args.use_decoder:
-        if tune_args.use_node_decoder:
-            search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 8.0, 0.01)
-        if tune_args.use_edge_decoder:
-            search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 8.0, 0.01)
-        if tune_args.use_inter_subgraph_infomax:
-            search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
-        if not tune_args.use_pool_min_score:
-            if tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
-                search_config["pool_ratio"] = ("loguniform", 1e-4, 1e-2)
-            else:
-                search_config["pool_ratio"] = ("loguniform", 1e-3, 1e-1)
+    if not ABLATION_GRID_SEARCH:
+        search_config = {
+            "lambda_l2": ("loguniform", 1e-7, 1e-3),
+            # "lr": ("categorical", [0.001, 0.005])
+        }
+        if tune_args.use_decoder:
+            if tune_args.use_node_decoder:
+                search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 5.0, 0.01)
+            if tune_args.use_edge_decoder:
+                search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 5.0, 0.01)
+            if tune_args.use_inter_subgraph_infomax:
+                search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
+            if not tune_args.use_pool_min_score:
+                if tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
+                    search_config["pool_ratio"] = ("loguniform", 1e-4, 1e-2)
+                else:
+                    search_config["pool_ratio"] = ("loguniform", 1e-3, 1e-1)
 
-        if tune_args.data_sampler_no_drop_pos_edges:
-            search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.95, 0.99, 0.01)
+            if tune_args.data_sampler_no_drop_pos_edges:
+                search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.95, 0.99, 0.01)
+            else:
+                search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
+
+    else:  # ABLATION_GRID_SEARCH
+        tune_args.log_dir = tune_args.log_dir.replace("lightning_logs", "lightning_logs_ablation")
+        search_config = {
+            "lambda_aux_x": ("categorical", [1.0, 2.0, 3.0]),
+            "lambda_aux_isi": ("categorical", [1.0, 2.0, 3.0]),
+        }
+        if tune_args.dataset_name in ["FNTN"]:
+            search_config["lambda_l2"] = ("categorical", [1e-4, 1e-3])
         else:
-            search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
+            search_config["lambda_l2"] = ("categorical", [1e-6, 1e-5])
+
+        if tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
+            search_config["pool_ratio"] = ("categorical", [1e-4, 1e-3])
+        else:
+            search_config["pool_ratio"] = ("categorical", [1e-3, 1e-2])
+        tune_args.data_sampler_dropout_edges = 0.5
+        N_TRIALS = np.product([len(v2) for v1, v2 in search_config.values()])  # search all spaces
 
     logger.info("-- HPARAM SEARCH CONFIG --")
+    logger.info("- N_TRIALS: {}".format(N_TRIALS))
+    logger.info("- ABLATION_GRID_SEARCH: {}".format(ABLATION_GRID_SEARCH))
+    logger.info("- Search Space:")
     for k, v in search_config.items():
-        logger.info(f"{k}: {str(v)}")
+        logger.info(f"\t- {k}: {str(v)}")
 
     if all([v[0] == "categorical" for v in search_config.values()]):
         sampler = optuna.samplers.GridSampler({k: v[1] for k, v in search_config.items()})

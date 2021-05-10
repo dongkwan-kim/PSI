@@ -294,7 +294,7 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB:  # not-used
   lambda_aux_isi: 0.1
   pool_ratio: 0.1
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA:
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
@@ -308,11 +308,36 @@ SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: subgraph
-  lambda_l2: 0.0018817
-  lambda_aux_x: 5.80
-  lambda_aux_isi: 1.85
-  data_sampler_dropout_edges: 0.60
-  pool_ratio: 0.010994
+  lambda_l2: 0.0014368
+  lambda_aux_x: 3.73
+  lambda_aux_isi: 3.36
+  data_sampler_dropout_edges: 0.50
+  pool_ratio: 0.083167
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  data_sampler_dropout_edges: 0.50
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-16:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  dataset_slice_range_1: 13
+  dataset_slice_range_2: 18
+  obs_max_len: 36
+  data_sampler_dropout_edges: 0.50
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-32:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  dataset_slice_range_1: 29
+  dataset_slice_range_2: 34
+  obs_max_len: 68
+  data_sampler_dropout_edges: 0.50
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  dataset_slice_range_1: 61
+  dataset_slice_range_2: 66
+  obs_max_len: 132
+  data_sampler_dropout_edges: 0.50
 
 
 
