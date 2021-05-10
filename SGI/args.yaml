@@ -349,14 +349,14 @@ HPONeuro: &HPONeuro
   num_classes: 10
   global_channels: 64
   global_channel_type: Pretrained
-  include_obs_x_in_pooling: True
+  include_obs_x_in_pooling: False
   is_obs_sequential: False
   lr: 0.001
 
-  batch_size: 64
+  batch_size: 8
   eval_batch_size: 3
-  accumulate_grad_batches: 1
-  data_sampler_num_workers: 20
+  accumulate_grad_batches: 8
+  data_sampler_num_workers: 30
   epochs: 200
   val_interval: 5
   log_dir: ../lightning_logs_neuro/
@@ -447,7 +447,7 @@ SGI-HPONeuro-E2D2F64: &SGI-HPONeuro-E2D2F64
   data_sampler_num_hops: 1
   data_sampler_neg_sample_ratio: 1.0
   data_sampler_dropout_edges: 0.95
-  data_sampler_no_drop_pos_edges: True
+  data_sampler_no_drop_pos_edges: False
   num_encoder_layers: 2
   num_decoder_body_layers: 2
   epochs: 300  # todo
@@ -465,7 +465,7 @@ SGI-HPONeuro-E2D2F64-ISI: &SGI-HPONeuro-E2D2F64-ISI
   <<: *SGI-HPONeuro-E2D2F64
   use_inter_subgraph_infomax: True
   data_sampler_dropout_edges: 0.95
-  data_sampler_no_drop_pos_edges: True
+  data_sampler_no_drop_pos_edges: False
 
 SGI-HPONeuro-E2D2F64-ISI-X: &SGI-HPONeuro-E2D2F64-ISI-X
   <<: *SGI-HPONeuro-E2D2F64-ISI
@@ -490,14 +490,14 @@ HPOMetab: &HPOMetab
   num_classes: 6
   global_channels: 64
   global_channel_type: Pretrained
-  include_obs_x_in_pooling: True
+  include_obs_x_in_pooling: False
   is_obs_sequential: False
   lr: 0.001
 
-  batch_size: 64
+  batch_size: 8
   eval_batch_size: 3
-  accumulate_grad_batches: 1
-  data_sampler_num_workers: 20
+  accumulate_grad_batches: 8
+  data_sampler_num_workers: 30
   epochs: 200
   val_interval: 5
   log_dir: ../lightning_logs_metab/
@@ -589,7 +589,7 @@ SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   data_sampler_num_hops: 1
   data_sampler_neg_sample_ratio: 1.0
   data_sampler_dropout_edges: 0.95
-  data_sampler_no_drop_pos_edges: True
+  data_sampler_no_drop_pos_edges: False
   num_encoder_layers: 2
   num_decoder_body_layers: 2
   epochs: 300  # todo
@@ -607,7 +607,7 @@ SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
   <<: *SGI-HPOMetab-E2D2F64
   use_inter_subgraph_infomax: True
   data_sampler_dropout_edges: 0.95
-  data_sampler_no_drop_pos_edges: True
+  data_sampler_no_drop_pos_edges: False
 
 SGI-HPOMetab-E2D2F64-ISI-X: &SGI-HPOMetab-E2D2F64-ISI-X
   <<: *SGI-HPOMetab-E2D2F64-ISI
