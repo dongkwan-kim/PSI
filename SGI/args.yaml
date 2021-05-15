@@ -623,6 +623,19 @@ SGI-HPOMetab-E2D2F64-ISI-X-GB:
   lambda_aux_isi: 0.1
   pool_ratio: 0.01
 
+SubGNN-HPOMetab-SHORT: &SubGNN-HPOMetab-SHORT
+  <<: *SGI-HPOMetab-BASE
+  batch_size: 1
+  eval_batch_size: 1
+  accumulate_grad_batches: 1
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+
+SubGNN-HPOMetab-TRAIN-MAX-EVAL-SHORT:
+  <<: *SubGNN-HPOMetab-SHORT
+  train_dataset_slice_range_1: 50
+  train_dataset_slice_range_2: 51
+
 
 EMUser: &EMUser
   <<: *DEFAULT
@@ -761,3 +774,15 @@ SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
 SGI-EMUser-E2D2F64-ISI-X-GB:
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
+
+SubGNN-EMUser-SHORT: &SubGNN-EMUser-SHORT
+  <<: *SGI-EMUser-BASE
+  batch_size: 1
+  eval_batch_size: 1
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+
+SubGNN-EMUser-TRAIN-MAX-EVAL-SHORT:
+  <<: *SubGNN-EMUser-SHORT
+  train_dataset_slice_range_1: 499
+  train_dataset_slice_range_2: 500
