@@ -1,0 +1,95 @@
+{
+    "data": {
+        "task":"em_user"
+    },
+
+    "tb": {
+        "tb_logging":true,
+        "dir" :"/home/jiho/tensorboard",
+        "name": "S_em_optuna",
+        "local": true
+
+    },
+
+    "optuna":{
+        "opt_n_trials" : 50,
+        "opt_n_cores" : 1,
+        "monitor_metric" : "val_acc",
+        "opt_direction" : "maximize" ,
+        "sampler" : "random",
+        "pruning" : false
+    },
+
+    "hyperparams_fix" : {
+        "max_epochs": 200,
+        "use_neighborhood": true,
+        "use_structure": false,
+        "use_position": false,
+        "seed": 42,
+        "node_embed_size": 64,
+        "structure_patch_type": "triangular_random_walk",
+        "lstm_aggregator": "last",
+        "n_processes": 4,
+        "resample_anchor_patches": false,
+        "freeze_node_embeds":false,
+        "use_mpn_projection":true,
+        "print_train_times":false,
+        "compute_similarities":false,
+        "sample_walk_len":22,
+        "n_triangular_walks": 10,
+        "random_walk_len":23,
+        "rw_beta" : 0.1816027331132596,
+        "ff_attn": false,
+        "max_sim_epochs": 5,
+        "embedding_type": "graphsaint",
+        "n_layers": 2,
+        "batch_size": 64,
+        "learning_rate": 0.001,
+        "auto_lr_find": false,
+        "linear_hidden_dim_1": 64,
+        "linear_hidden_dim_2": 64,
+        "lin_dropout": 0.2,
+        "lstm_dropout": 0.2,
+        "trainable_cc": true
+    },
+    
+    "hyperparams_optuna": {
+        "lambda_l2": {
+            "type" : "suggest_loguniform",
+            "args": [1e-7, 1e-3]
+        },
+        "neigh_sample_border_size" : {
+            "type" : "suggest_int",
+            "args" : [1,2]
+        },
+        "n_anchor_patches_pos_out": {
+            "type" : "suggest_int",
+            "args" : [50,200]
+        },
+        "n_anchor_patches_pos_in": {
+            "type" : "suggest_int",
+            "args" : [25,75]
+        },
+        "n_anchor_patches_N_in": {
+            "type" : "suggest_int",
+            "args" : [10,25]
+        },
+        "n_anchor_patches_N_out": {
+            "type" : "suggest_int",
+            "args" : [25,75]
+        },
+        "n_anchor_patches_structure": {
+            "type" : "suggest_int",
+            "args" : [15,45]
+        },
+        "lstm_n_layers" : {
+            "type" : "suggest_int",
+            "args" : [1,2]
+        },
+        "cc_aggregator":{
+            "type" : "suggest_categorical",
+            "args" : [["sum","max"]]
+        }
+    }
+
+}
