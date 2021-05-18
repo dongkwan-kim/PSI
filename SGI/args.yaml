@@ -768,6 +768,35 @@ SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
   use_edge_decoder: False
   epochs: 600
 
-SGI-EMUser-E2D2F64-ISI-X-GB:
+SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
+
+SGI-EMUser-E2D2F64-ISI-X-GB-08:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  data_sampler_dropout_edges: 0.50
+
+SGI-EMUser-E2D2F64-ISI-X-GB-16:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  dataset_slice_range_1: 14
+  dataset_slice_range_2: 19
+  data_sampler_dropout_edges: 0.50
+
+SGI-EMUser-E2D2F64-ISI-X-GB-32:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  batch_size: 32
+  eval_batch_size: 2
+  accumulate_grad_batches: 2
+  dataset_slice_range_1: 30
+  dataset_slice_range_2: 35
+  data_sampler_dropout_edges: 0.50
+
+SGI-EMUser-E2D2F64-ISI-X-GB-64:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  data_sampler_num_workers: 40
+  batch_size: 8
+  eval_batch_size: 2
+  accumulate_grad_batches: 8
+  dataset_slice_range_1: 62
+  dataset_slice_range_2: 67
+  data_sampler_dropout_edges: 0.50
