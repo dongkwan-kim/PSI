@@ -304,15 +304,23 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
-SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA:
+SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: subgraph
-  lambda_l2: 0.0014368
-  lambda_aux_x: 3.73
+  lambda_l2: 0.0010923
+  lambda_aux_x: 0.02
   lambda_aux_isi: 3.36
   data_sampler_dropout_edges: 0.50
-  pool_ratio: 0.083167
+  pool_ratio: 0.037004
+
+SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA-08:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 2.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.001
 
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
