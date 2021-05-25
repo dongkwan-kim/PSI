@@ -1,6 +1,8 @@
 import logging
 import os
 import shutil
+import random
+import time
 from pprint import pprint
 from typing import List, Tuple, Dict
 
@@ -49,11 +51,16 @@ def objective(trial):
     global tune_args  # tune_args in main lines.
     global search_config
     global METRIC_TO_MONITOR
+    global ABLATION_GRID_SEARCH
 
     # Filenames for each trial must be made unique in order to access each checkpoint.
     args_key = get_args_key(tune_args)
     metrics_callback = MetricsCallback(monitor=METRIC_TO_MONITOR)
     pruning_callback = PyTorchLightningPruningCallback(trial, monitor=METRIC_TO_MONITOR)
+
+    if ABLATION_GRID_SEARCH:
+        # Add randomness in suggest_hparams, since run_train has own seed_everything.
+        random.seed(int(time.time()))
     tune_args, trial = suggest_hparams(tune_args, trial, search_config)
 
     results = run_train(
@@ -82,13 +89,13 @@ def objective(trial):
 
 if __name__ == '__main__':
 
-    ABLATION_GRID_SEARCH = True
+    ABLATION_GRID_SEARCH = False
     N_TRIALS = 50
 
     tune_args = get_args(
         model_name="SGI",
         dataset_name="FNTN",
-        custom_key="BIE2D2F64-ISI-X-GB-PGA-16",  # BISAGE, SMALL-E
+        custom_key="BIE2D2F64-ISI-X-GB-PGA",  # BISAGE, SMALL-E
     )
     METRIC_TO_MONITOR = {"HPONeuro": "val_f1"}.get(tune_args.dataset_name, "val_acc")
     tune_args.verbose = 0  # Force args' verbose be 0
