@@ -326,28 +326,52 @@ SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA-08:
 
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_grid_report/
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+  m: fntn-08-v1
 
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-16:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 13
   dataset_slice_range_2: 18
   obs_max_len: 36
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 2.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+  m: fntn-16-v2
 
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-32:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 29
   dataset_slice_range_2: 34
   obs_max_len: 68
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 2.0
+  pool_ratio: 0.01
+  m: fntn-32-v2
 
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 61
   dataset_slice_range_2: 66
   obs_max_len: 132
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 2.0
+  lambda_aux_isi: 2.0
+  pool_ratio: 0.001
+  m: fntn-real-64-v2
 
 
 
