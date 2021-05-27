@@ -1,7 +1,7 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [0]
-  num_gpus_total: 4
+  gpu_ids: [4]
+  num_gpus_total: 5
   num_gpus_to_use: 1
   model_debug: False
   dataset_debug: False
@@ -215,6 +215,21 @@ SGI-FNTN-BISAGE-SHORT-1SG-PGA:
   use_pergraph_attr: True
   lambda_l2: 0.000347723
 
+SGI-FNTN-SHORT-ISI-X-GB-PGA:
+  <<: *SGI-FNTN-BASE
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+  gnn_name: SAGEConv
+  is_bidirectional: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  use_pergraph_attr: True
+  lambda_aux_x: 0.0
+  readout_name: mean
+  lambda_l2: 0.00018279
+  lambda_aux_isi: 2.00
+  m: fntn-inter-3
 
 SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
   <<: *FNTN
@@ -524,16 +539,16 @@ HPOMetab: &HPOMetab
   num_classes: 6
   global_channels: 64
   global_channel_type: Pretrained
-  include_obs_x_in_pooling: False
+  include_obs_x_in_pooling: True
   is_obs_sequential: False
   lr: 0.001
 
-  batch_size: 8
+  batch_size: 4
   eval_batch_size: 3
-  accumulate_grad_batches: 8
-  data_sampler_num_workers: 30
+  accumulate_grad_batches: 16
+  data_sampler_num_workers: 40
   epochs: 200
-  val_interval: 5
+  val_interval: 1
   log_dir: ../lightning_logs_metab/
 
 
@@ -613,6 +628,20 @@ SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT:
   dataset_slice_range_2: 7
   lambda_l2: 0.000019960
 
+SGI-HPOMetab-SHORT-ISI-X-GB: &SGI-HPOMetab-SHORT-ISI-X-GB
+  <<: *SGI-HPOMetab-BASE
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  lambda_aux_x: 0.0
+  readout_name: mean
+  epochs: 300
+  lambda_l2: 0.0000038420
+  lambda_aux_isi: 2.9300
+  m: metab-inter-1
 
 SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   <<: *HPOMetab
@@ -640,7 +669,7 @@ SGI-HPOMetab-E2D2F64-X:
 SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
   <<: *SGI-HPOMetab-E2D2F64
   use_inter_subgraph_infomax: True
-  data_sampler_dropout_edges: 0.95
+  data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False
 
 SGI-HPOMetab-E2D2F64-ISI-X: &SGI-HPOMetab-E2D2F64-ISI-X
@@ -753,6 +782,20 @@ SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT:
   dataset_slice_range_2: 11
   lambda_l2: 0.00024352
 
+SGI-EMUser-SHORT-ISI-X-GB: &SGI-EMUser-SHORT-ISI-X-GB
+  <<: *SGI-EMUser-BASE
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  lambda_aux_x: 0.0
+  readout_name: mean
+  epochs: 400
+  lambda_l2: 2.3018e-7
+  lambda_aux_isi: 1.3400
+  m: emuser-inter-2
 
 SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   <<: *EMUser
@@ -775,8 +818,8 @@ SGI-EMUser-E2D2F64-X:
   use_edge_decoder: False
   lambda_aux_isi: 0.0
   lambda_l2: 0.00018086
-  lambda_aux_x: 1.40
-  data_sampler_dropout_edges: 0.50
+  lambda_aux_x: 1.00
+  data_sampler_dropout_edges: 0.6
   pool_ratio: 0.0036169
 
 SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
@@ -795,28 +838,52 @@ SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
 SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
+  lambda_l2: 0.00019286991968807735
+  lambda_aux_x: 0.43
+  lambda_aux_isi: 0.55
+  data_sampler_dropout_edges: 0.45
+  pool_ratio: 0.0174784981734352
 
 SGI-EMUser-E2D2F64-ISI-X-GB-08:
   <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_grid_report/
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+  m: emuser-08-v2
 
 SGI-EMUser-E2D2F64-ISI-X-GB-16:
   <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_grid_report/
   dataset_slice_range_1: 14
   dataset_slice_range_2: 19
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 3.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.001
+  m: emuser-16-v1
 
 SGI-EMUser-E2D2F64-ISI-X-GB-32:
   <<: *SGI-EMUser-E2D2F64-ISI-X-GB
-  batch_size: 32
+  log_dir: ../lightning_logs_emuser_grid_report/
+  batch_size: 16
   eval_batch_size: 2
-  accumulate_grad_batches: 2
+  accumulate_grad_batches: 4
   dataset_slice_range_1: 30
   dataset_slice_range_2: 35
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 2.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.001
+  m: emuser-32-v1
 
 SGI-EMUser-E2D2F64-ISI-X-GB-64:
   <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_grid_report/
   data_sampler_num_workers: 40
   batch_size: 8
   eval_batch_size: 2
@@ -824,3 +891,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-64:
   dataset_slice_range_1: 62
   dataset_slice_range_2: 67
   data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.001
+  m: emuser-64-v1
