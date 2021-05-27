@@ -163,8 +163,9 @@ class MainModel(LightningModule):
             # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
             total_loss = self.loss_with_logits(logits_g, batch.y)
             if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
-                total_loss += self.hparams.lambda_aux_isi * loss_isi
-                out["loss_isi"] = loss_isi
+                if self.training:
+                    total_loss += self.hparams.lambda_aux_isi * loss_isi
+                    out["loss_isi"] = loss_isi
         return logits_g, total_loss, {k: v for k, v in out.items() if k not in ["logits_g", "total_loss"]}
 
     def _forward_with_dec(self, batch, batch_idx):

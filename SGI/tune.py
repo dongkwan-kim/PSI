@@ -135,6 +135,9 @@ if __name__ == '__main__':
             else:
                 search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
 
+        elif tune_args.use_inter_subgraph_infomax:
+            search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
+
     else:  # ABLATION_GRID_SEARCH
         tune_args.log_dir = tune_args.log_dir.replace("lightning_logs", "lightning_logs_ablation")
         search_config = {
