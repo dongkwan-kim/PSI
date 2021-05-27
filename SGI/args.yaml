@@ -519,9 +519,10 @@ SGI-HPOMetab-E2D2F64-X:
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
-  lambda_l2: 1e-3
-  lambda_aux_x: 0.1
-  pool_ratio: 0.1
+  lambda_l2: 9.586378119508694e-05
+  lambda_aux_x: 3.38
+  data_sampler_dropout_edges: 0.50
+  pool_ratio: 0.00014429312990061905
 
 SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
   <<: *SGI-HPOMetab-E2D2F64
