@@ -8,7 +8,6 @@ from torch_geometric.data import InMemoryDataset, Data
 from torch_geometric.transforms import Compose
 import numpy as np
 
-from data_ccaminer import CCAMiner
 from data_fntn import FNTN
 from data_sampler import KHopWithLabelsXESampler
 from data_sub import HPONeuro, HPOMetab, EMUser
@@ -70,7 +69,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
 
     @property
     def ke_method(self):
-        if self.dataset_name in ["FNTN", "CCAMiner"]:
+        if self.dataset_name in ["FNTN"]:
             return "edge"
         elif self.dataset_name in ["HPONeuro", "HPOMetab", "EMUser"]:
             return "node"
@@ -103,12 +102,6 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             self.dataset = HPOMetab(**self.data_kwargs, pre_transform=pre_transform)
         elif self.dataset_name == "EMUser":
             self.dataset = EMUser(**self.data_kwargs, pre_transform=pre_transform)
-        elif self.dataset_name == "CCAMiner":
-            pre_transform = Compose([
-                CompleteSubgraph(add_sub_edge_index=True),
-                DigitizeY(bins=[1, 2, 3, 4], transform_y=lambda y: np.log2(y + 1))
-            ])
-            self.dataset = CCAMiner(**self.data_kwargs, pre_transform=pre_transform)
         else:
             raise ValueError(f"Wrong dataset: {self.dataset_name}")
 
