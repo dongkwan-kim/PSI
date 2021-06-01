@@ -210,7 +210,8 @@ class MainModel(LightningModule):
         return o
 
 
-def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
+def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False,
+              additional_callbacks: List = None):
     seed_everything(args.model_seed)
 
     dm = NoisySubgraphDataModule(args, prepare_data_and_setup=True)
@@ -243,6 +244,9 @@ def run_train(args, trainer_given_kwargs=None, run_test=True, clean_ckpt=False):
             mode="max",
         )
         callbacks.append(early_stop_callback)
+
+    if additional_callbacks is not None:
+        callbacks += additional_callbacks
 
     # False in HP-search
     logger = TensorBoardLogger(args.log_dir, name=args_key) if args.use_tensorboard else False
