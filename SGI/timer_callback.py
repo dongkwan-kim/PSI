@@ -1,4 +1,5 @@
 import time
+import os
 
 from pytorch_lightning.callbacks import Callback
 from termcolor import cprint
@@ -64,6 +65,12 @@ if __name__ == '__main__':
         dataset_name="FNTN",  # FNTN, EMUser, HPOMetab
         custom_key="BIE2D2F64-ISI-X-GB-PGA",  # E2D2F64-X, BIE2D2F64-X-PGA, E2D2F64-ISI-X-GB, BIE2D2F64-ISI-X-GB-PGA
     )
+
+    # control variables
+    main_args.data_sampler_num_workers = max(40, os.cpu_count())
+    main_args.batch_size = 4
+    main_args.accumulate_grad_batches = 1
+
     main_args.log_dir = "../logs_tmp"
     # main_args.model_debug = True
 
