@@ -497,10 +497,10 @@ if __name__ == '__main__':
         raise ValueError
 
     print_obs_stats(dataset_instance)
-    train_fntn, val_fntn, test_fntn = dataset_instance.get_train_val_test()
+    train_data, val_data, test_data = dataset_instance.get_train_val_test()
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, train_fntn,
+        dataset_instance.global_data, train_data,
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.9, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
@@ -518,7 +518,7 @@ if __name__ == '__main__':
             break
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, train_fntn,
+        dataset_instance.global_data, train_data,
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
@@ -536,7 +536,7 @@ if __name__ == '__main__':
             break
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, train_fntn,
+        dataset_instance.global_data, train_data,
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
@@ -553,7 +553,7 @@ if __name__ == '__main__':
             break
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, train_fntn,
+        dataset_instance.global_data, train_data,
         num_hops=1, use_labels_x=True, use_labels_e=True,  # todo
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
@@ -577,7 +577,7 @@ if __name__ == '__main__':
             break
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, val_fntn,
+        dataset_instance.global_data, val_data,
         num_hops=1, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0, balanced_sampling=True,
         cache_hop_computation=False,
@@ -592,7 +592,7 @@ if __name__ == '__main__':
             break
 
     sampler = KHopWithLabelsXESampler(
-        dataset_instance.global_data, train_fntn,
+        dataset_instance.global_data, train_data,
         num_hops=0, use_labels_x=False, use_labels_e=False,
         neg_sample_ratio=0.0, dropout_edges=0.0,
         use_obs_edge_only=True,  # this.
