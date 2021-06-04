@@ -125,8 +125,11 @@ class FNTN(DatasetBase):
 
     def download(self):
         print("Please download: {} at {}".format(self.raw_file_names[:3], self.raw_dir))
-        print("Now save_global_data is performed to save {}".format(self.raw_file_names[3]))
-        self.save_global_data()
+        try:
+            self.save_global_data()
+            print("save_global_data has been performed to save {}".format(self.raw_file_names[3]))
+        except FileNotFoundError:
+            print("Or you do not need {} if you have processed datasets".format(self.raw_file_names[:3]))
 
     def save_global_data(self):
         global_graph: nx.DiGraph = nx.read_gpickle(self.raw_paths[0])

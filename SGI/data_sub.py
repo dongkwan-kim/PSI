@@ -159,6 +159,8 @@ def read_subgraphs(subgraph_path):
 class DatasetSubGNN(DatasetBase):
     """Dataset of Human Phenotype Ontology Disease - NEURO/METAB"""
 
+    url = "https://github.com/mims-harvard/SubGNN"
+
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
                  val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
@@ -196,8 +198,8 @@ class DatasetSubGNN(DatasetBase):
         return ["data.pt", "global.pt", "meta.pt"]
 
     def download(self):
-        raise FileNotFoundError("Please download: {} at {} from {}".format(
-            self.raw_file_names, self.raw_dir, "https://github.com/mims-harvard/SubGNN",
+        raise FileNotFoundError("Please download: {} \n\t at {} \n\t from {}".format(
+            self.raw_file_names, self.raw_dir, self.url,
         ))
 
     def process(self):
@@ -229,6 +231,8 @@ class DatasetSubGNN(DatasetBase):
 
 class HPONeuro(DatasetSubGNN):
 
+    url = "https://www.dropbox.com/sh/zv7gw2bqzqev9yn/AABa4J3UlMDkbbcksYKKHrgKa/hpo_neuro"
+
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
                  val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
@@ -247,6 +251,8 @@ class HPONeuro(DatasetSubGNN):
 
 class HPOMetab(DatasetSubGNN):
 
+    url = "https://www.dropbox.com/sh/zv7gw2bqzqev9yn/AAADqIa6QZC0PitB8ycR1Jgua/hpo_metab"
+
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
                  val_ratio=0.15, test_ratio=0.15, save_directed_edges=False, debug=False, seed=42,
@@ -264,6 +270,8 @@ class HPOMetab(DatasetSubGNN):
 
 
 class EMUser(DatasetSubGNN):
+
+    url = "https://www.dropbox.com/sh/zv7gw2bqzqev9yn/AAD4Nzs6z6AryU_BVJAtGjaZa/em_user"
 
     def __init__(self, root, name,
                  slice_type, slice_range: Tuple[int, int] or Tuple[float, float], num_slices,
