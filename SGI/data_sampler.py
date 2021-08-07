@@ -172,6 +172,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False,
                  balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
+                 use_deep_graph_infomax_in_isi=False,
                  no_drop_pos_edges=False,
                  batch_size=1,
                  subdata_filter_func=None,
@@ -196,6 +197,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
+        self.use_deep_graph_infomax_in_isi = use_deep_graph_infomax_in_isi
         self.no_drop_pos_edges = no_drop_pos_edges
 
         self.G = global_data
@@ -396,10 +398,21 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         num_subdata = len(self.subdata_list)
         num_samples = min(len(pos_data_list), num_subdata // 2)
         pos_idx_list = [d.idx for d in pos_data_list]
-        neg_data_list = [self.subdata_list[neg_idx]
-                         for neg_idx in random.sample(range(num_subdata), 2 * num_samples)
-                         if neg_idx not in pos_idx_list]
-        neg_data_list = neg_data_list[:num_samples]
+
+        def corruption(_x):
+            return _x[torch.randperm(_x.size(0))]
+
+        if not self.use_deep_graph_infomax_in_isi:
+            neg_data_list = [self.subdata_list[neg_idx]
+                             for neg_idx in random.sample(range(num_subdata), 2 * num_samples)
+                             if neg_idx not in pos_idx_list]
+            neg_data_list = neg_data_list[:num_samples]
+        else:
+            neg_data_list = []
+            for pos_data in pos_data_list:
+                corr_data = pos_data.clone()
+                corr_data.x = corruption(corr_data.x)
+                neg_data_list.append(corr_data)
 
         _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
 

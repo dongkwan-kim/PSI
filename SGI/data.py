@@ -121,6 +121,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
             use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
+            use_deep_graph_infomax_in_isi=self.hparams.use_deep_graph_infomax_in_isi,
             no_drop_pos_edges=self.hparams.data_sampler_no_drop_pos_edges,
             batch_size=self.hparams.batch_size,
             subdata_filter_func=_subdata_filter_func,
@@ -141,6 +142,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=False,
             use_inter_subgraph_infomax=False,
+            use_deep_graph_infomax_in_isi=False,
             no_drop_pos_edges=False,  # important
             batch_size=(self.hparams.eval_batch_size or self.hparams.batch_size),  # important
             subdata_filter_func=_subdata_filter_func,
