@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 
-from torch_geometric.nn import GlobalAttention
+from torch_geometric.nn import GlobalAttention, global_mean_pool
 from torch_scatter import scatter_add
 
 from utils import softmax_half
@@ -175,6 +175,15 @@ class GlobalAttentionHalf(GlobalAttention):
         out = scatter_add(gate * x, batch, dim=0, dim_size=size)
 
         return out
+
+
+class GlobalMeanPool(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x, batch, size=None):
+        return global_mean_pool(x, batch, size)
 
 
 if __name__ == '__main__':

@@ -127,6 +127,8 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--inter-subgraph-infomax-edge-type", default="global",
                         type=str, choices=["global", "subgraph"])
     parser.add_argument("--include-obs-x-in-pooling", default=False)
+    parser.add_argument("--use-transformer", default=True, type=bool)
+    parser.add_argument("--use-soft-attention-pooling", default=True, type=bool)
 
     # per-graph feature (e.g., text)
     parser.add_argument("--use-pergraph-attr", default=False, type=bool)
@@ -181,9 +183,11 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "use_early_stop", "early_stop_patience", "early_stop_min_delta",
         "global_channel_type",
         "gnn_name", "num_encoder_layers", "activation", "hidden_channels", "dropout_channels", "is_bidirectional",
+        "use_skip",
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
+        "use_transformer", "use_soft_attention_pooling",
         "use_inter_subgraph_infomax", "inter_subgraph_infomax_edge_type", "include_obs_x_in_pooling",
         "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
