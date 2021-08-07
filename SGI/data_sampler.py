@@ -512,6 +512,24 @@ if __name__ == '__main__':
     print_obs_stats(dataset_instance)
     train_data, val_data, test_data = dataset_instance.get_train_val_test()
 
+    cprint("Sampler Test", "green")
+    sampler = KHopWithLabelsXESampler(
+        dataset_instance.global_data, train_data,
+        num_hops=1, use_labels_x=True, use_labels_e=False,
+        neg_sample_ratio=1.0, dropout_edges=0.0, balanced_sampling=True,
+        obs_x_range=None,
+        use_inter_subgraph_infomax=False,  # todo
+        no_drop_pos_edges=False,  # todo
+        cache_hop_computation=False,
+        ke_method=KE_METHOD,
+        shuffle=False,
+    )
+    seed_everything(42)
+    for i, b in enumerate(sampler):
+        print(i, b)
+        if i >= 4:
+            break
+
     sampler = KHopWithLabelsXESampler(
         dataset_instance.global_data, train_data,
         num_hops=1, use_labels_x=True, use_labels_e=False,
