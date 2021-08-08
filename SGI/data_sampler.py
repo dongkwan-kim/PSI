@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from pprint import pprint
 from typing import List, Tuple, Dict
@@ -19,7 +20,7 @@ from tqdm import tqdm
 
 from data_base import get_int_range
 from data_utils import random_walk_indices_from_data, DataPN, DigitizeY
-from utils import print_time
+from utils import print_time, n_wise, dropout_nodes
 
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
@@ -173,6 +174,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
                  use_deep_graph_infomax_in_isi=False,
+                 neg_sample_ratio_in_isi=1.0,
                  no_drop_pos_edges=False,
                  batch_size=1,
                  subdata_filter_func=None,
@@ -198,6 +200,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
         self.use_deep_graph_infomax_in_isi = use_deep_graph_infomax_in_isi
+        self.neg_sample_ratio_in_isi = neg_sample_ratio_in_isi
         self.no_drop_pos_edges = no_drop_pos_edges
 
         self.G = global_data
@@ -396,17 +399,21 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
     def get_isi_attr_from_pos_data_list(self, pos_data_list: List[Data]):
         num_subdata = len(self.subdata_list)
-        num_samples = min(len(pos_data_list), num_subdata // 2)
+        neg_magnification = math.ceil(self.neg_sample_ratio_in_isi)
+        neg_non_dropout = self.neg_sample_ratio_in_isi / neg_magnification
+        num_samples = min(len(pos_data_list), num_subdata // 2) * neg_magnification
         pos_idx_list = [d.idx for d in pos_data_list]
 
         def corruption(_x):
             return _x[torch.randperm(_x.size(0))]
 
         if not self.use_deep_graph_infomax_in_isi:
-            neg_data_list = [self.subdata_list[neg_idx]
-                             for neg_idx in random.sample(range(num_subdata), 2 * num_samples)
-                             if neg_idx not in pos_idx_list]
-            neg_data_list = neg_data_list[:num_samples]
+            neg_data_idx_list = list(set(random.sample(range(num_subdata), 2 * num_samples)) - set(pos_idx_list))
+            neg_data_list = []
+            for neg_data_indices in n_wise(neg_data_idx_list[:num_samples], n=neg_magnification):
+                neg_subdata_list = [self.subdata_list[neg_idx] for neg_idx in neg_data_indices]
+                d = Batch.from_data_list(neg_subdata_list) if neg_magnification > 1 else neg_subdata_list[0]
+                neg_data_list.append(d)
         else:
             neg_data_list = []
             for pos_data in pos_data_list:
@@ -422,7 +429,11 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             # Relabeling
             _node_idx[_x_isi] = torch.arange(_x_isi.size(0))
             _edge_index_isi = _node_idx[_edge_index_isi]
-            return _x_isi, _edge_index_isi
+            if neg_non_dropout == 1.0 or isi_type == "pos":  # no neg_dropout, or positive
+                return _x_isi, _edge_index_isi
+            else:  # node drop
+                _x_isi, _edge_index_isi, _ = dropout_nodes(_x_isi, _edge_index_isi, p=1.0 - neg_non_dropout)
+                return _x_isi, _edge_index_isi
 
         return ([get_isi_attr(d, "pos") for d in pos_data_list],
                 [get_isi_attr(d, "neg") for d in neg_data_list])
