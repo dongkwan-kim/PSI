@@ -4,6 +4,7 @@ import random
 from pprint import pprint
 from typing import List, Tuple, Dict
 import time
+from types import MethodType
 
 import torch
 import torch.utils.data.dataloader
@@ -20,7 +21,7 @@ from tqdm import tqdm
 
 from data_base import get_int_range
 from data_utils import random_walk_indices_from_data, DataPN, DigitizeY
-from utils import print_time, n_wise, dropout_nodes
+from utils import print_time, n_wise, dropout_nodes, sample_index_with_replacement_and_exclusion
 
 
 def sort_by_edge_attr(edge_attr, edge_index, edge_labels=None):
@@ -408,12 +409,20 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             return _x[torch.randperm(_x.size(0))]
 
         if not self.use_deep_graph_infomax_in_isi:
-            neg_data_idx_list = list(set(random.sample(range(num_subdata), 2 * num_samples)) - set(pos_idx_list))
+            neg_data_idx_list = sample_index_with_replacement_and_exclusion(
+                num_subdata, num_to_sample=num_samples, set_to_exclude=set(pos_idx_list))
             neg_data_list = []
             for neg_data_indices in n_wise(neg_data_idx_list[:num_samples], n=neg_magnification):
-                neg_subdata_list = [self.subdata_list[neg_idx] for neg_idx in neg_data_indices]
-                d = Batch.from_data_list(neg_subdata_list) if neg_magnification > 1 else neg_subdata_list[0]
-                neg_data_list.append(d)
+                if neg_magnification == 1:
+                    neg_data_list.append(self.subdata_list[neg_data_indices[0]])
+                else:
+                    neg_subdata_list = []
+                    for neg_idx in neg_data_indices:
+                        subdata = self.subdata_list[neg_idx]
+                        subdata.__inc__ = MethodType(lambda s, k, v: 0, subdata)  # not accumulating edge_index
+                        neg_subdata_list.append(subdata)
+                    d = Batch.from_data_list(neg_subdata_list) if neg_magnification > 1 else neg_subdata_list[0]
+                    neg_data_list.append(d)
         else:
             neg_data_list = []
             for pos_data in pos_data_list:

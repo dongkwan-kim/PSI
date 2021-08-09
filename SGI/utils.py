@@ -1,6 +1,7 @@
 import hashlib
 from collections import Counter
 import time
+import random
 from itertools import tee, islice
 from typing import List, Tuple, Optional
 
@@ -156,6 +157,19 @@ class EPSILON(object):
 
 
 # Others
+
+
+def sample_index_with_replacement_and_exclusion(max_index, num_to_sample, set_to_exclude=None):
+    set_to_exclude = set_to_exclude or set()
+    populations = []
+    num_candidates = num_to_sample + len(set_to_exclude)
+    while num_candidates > 0:
+        num_to_sample_at_this_iter = min(num_candidates, max_index)
+        pops = list(set(random.sample(range(max_index), num_to_sample_at_this_iter))
+                    - set_to_exclude)
+        populations += pops
+        num_candidates -= len(pops)
+    return populations[:num_to_sample]
 
 
 def n_wise(iterable, n=2):
