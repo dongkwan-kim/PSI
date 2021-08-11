@@ -339,7 +339,7 @@ if __name__ == '__main__':
     main_args = get_args(
         model_name="SGI",
         dataset_name="FNTN",  # FNTN, EMUser, HPOMetab
-        custom_key="BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-64",  # E2D2F64-X, BIE2D2F64-X-PGA, E2D2F64-ISI-X-GB, BIE2D2F64-ISI-X-GB-PGA
+        custom_key="BIE2D2F64-ISI-X-GB-PGA",  # E2D2F64-X, BIE2D2F64-X-PGA, E2D2F64-ISI-X-GB, BIE2D2F64-ISI-X-GB-PGA
     )
     if main_args.model_debug:
         main_args.log_dir = "../logs_tmp"
