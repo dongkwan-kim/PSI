@@ -60,7 +60,7 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
 
 if __name__ == '__main__':
 
-    HPARAM = "NUM_NEGATIVES"  # NUM_NEGATIVES, LAMBDA
+    HPARAM = "NUM_OBS"  # NUM_OBS, NUM_NEGATIVES, LAMBDA
     MODE = "ALL"  # FNTN, EMUser, ALL
     EXTENSION = "pdf"
 
@@ -70,7 +70,81 @@ if __name__ == '__main__':
     except NameError:
         pass
 
-    if HPARAM == "NUM_NEGATIVES":
+    if HPARAM == "NUM_OBS":
+
+        sns.set_context("poster")
+
+        TUPLE_TO_MEAN_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.883, 0.867, 0.858, 0.858],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.732, 0.745, 0.757, 0.783],
+        }
+        TUPLE_TO_STD_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.003, 0.009, 0.036, 0.024],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.040, 0.032, 0.055],
+        }
+        NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
+        X_LIST = [8, 16, 32, 64]
+
+        plot_line_with_std(
+            tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+            tuple_to_std_list=TUPLE_TO_STD_LIST,
+            x_label="# of observed nodes",
+            y_label="Test Accuracy",
+            name_label_list=NAME_LABEL_LIST,
+            x_list=X_LIST,
+            hue="Dataset",
+            style="Dataset",
+            row=None,
+            # col="Hyperparameter",
+            hue_order=None,
+            markers=True, dashes=False,
+            height=5, aspect=1.0,
+            legend=False,
+            n=20000, err_style="band",
+            x_lim=(None, None),
+            y_lim=None,
+            use_xlabel=True, use_ylabel=True,
+            facet_kws=None,
+            base_path="../figs/",
+            custom_key="obs_xx",
+            extension=EXTENSION)
+
+        TUPLE_TO_MEAN_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.866, 0.883, 0.876, 0.878, 0.875],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.621, 0.732, 0.740, 0.728, 0.740],
+        }
+        TUPLE_TO_STD_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.003, 0.026, 0.021, 0.015],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.090, 0.024, 0.041, 0.065, 0.035],
+        }
+        NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
+        X_LIST = [4, 8, 16, 32, 64]
+
+        plot_line_with_std(
+            tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+            tuple_to_std_list=TUPLE_TO_STD_LIST,
+            x_label="# of observed nodes",
+            y_label="Test Accuracy",
+            name_label_list=NAME_LABEL_LIST,
+            x_list=X_LIST,
+            hue="Dataset",
+            style="Dataset",
+            row=None,
+            # col="Hyperparameter",
+            hue_order=None,
+            markers=True, dashes=False,
+            height=5, aspect=1.0,
+            legend=False,
+            n=20000, err_style="band",
+            x_lim=(None, None),
+            y_lim=None,
+            use_xlabel=True, use_ylabel=True,
+            facet_kws=None,
+            base_path="../figs/",
+            custom_key="obs_eval",
+            extension=EXTENSION)
+
+    elif HPARAM == "NUM_NEGATIVES":
 
         TUPLE_TO_MEAN_LIST = {
             ("FNTN", "Intra/Inter-SGI", "# of negatives"): [0.896, 0.873, 0.872, 0.863],
