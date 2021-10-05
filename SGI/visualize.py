@@ -18,6 +18,7 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
                        legend="full",
                        n=150, err_style="band",
                        x_lim=None, y_lim=None, use_xlabel=True, use_ylabel=True,
+                       use_x_list_as_xticks=False,
                        facet_kws=None,
                        base_path="../figs/",
                        custom_key="",
@@ -49,6 +50,8 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
                        **relplot_kwargs)
     plot.set(xlim=x_lim)
     plot.set(ylim=y_lim)
+    if use_x_list_as_xticks:
+        plot.set(xticks=x_list)
     if not use_xlabel:
         plot.set_axis_labels(x_var="")
     if not use_ylabel:
@@ -72,6 +75,13 @@ if __name__ == '__main__':
 
     if HPARAM == "NUM_OBS":
 
+        USE_LOG2 = True
+
+        if USE_LOG2:
+            x_label = "$\log_2(\#)$ of observed nodes"
+        else:
+            x_label = "# of observed nodes"
+
         sns.set_context("poster")
 
         TUPLE_TO_MEAN_LIST = {
@@ -84,11 +94,13 @@ if __name__ == '__main__':
         }
         NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
         X_LIST = [8, 16, 32, 64]
+        if USE_LOG2:
+            X_LIST = np.log2(X_LIST)
 
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label="# of observed nodes",
+            x_label=x_label,
             y_label="Test Accuracy",
             name_label_list=NAME_LABEL_LIST,
             x_list=X_LIST,
@@ -98,12 +110,13 @@ if __name__ == '__main__':
             # col="Hyperparameter",
             hue_order=None,
             markers=True, dashes=False,
-            height=5, aspect=1.0,
+            height=5, aspect=1.2,
             legend=False,
             n=20000, err_style="band",
             x_lim=(None, None),
             y_lim=None,
             use_xlabel=True, use_ylabel=True,
+            use_x_list_as_xticks=True,  # important
             facet_kws=None,
             base_path="../figs/",
             custom_key="obs_xx",
@@ -119,11 +132,13 @@ if __name__ == '__main__':
         }
         NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
         X_LIST = [4, 8, 16, 32, 64]
+        if USE_LOG2:
+            X_LIST = np.log2(X_LIST)
 
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label="# of observed nodes",
+            x_label=x_label,
             y_label="Test Accuracy",
             name_label_list=NAME_LABEL_LIST,
             x_list=X_LIST,
@@ -133,12 +148,13 @@ if __name__ == '__main__':
             # col="Hyperparameter",
             hue_order=None,
             markers=True, dashes=False,
-            height=5, aspect=1.0,
+            height=5, aspect=1.2,
             legend=False,
             n=20000, err_style="band",
             x_lim=(None, None),
             y_lim=None,
             use_xlabel=True, use_ylabel=True,
+            use_x_list_as_xticks=True,  # important
             facet_kws=None,
             base_path="../figs/",
             custom_key="obs_eval",
