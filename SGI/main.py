@@ -344,6 +344,7 @@ if __name__ == '__main__':
     if main_args.model_debug:
         main_args.log_dir = "../logs_tmp"
         main_args.val_interval = 1
+        main_args.data_sampler_num_workers = 0
         MODE = "RUN_ONCE"
 
     pprint_args(main_args)

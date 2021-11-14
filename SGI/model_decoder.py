@@ -9,7 +9,7 @@ from torch_geometric.nn.pool.topk_pool import topk
 from torch_geometric.utils import to_dense_batch, softmax
 from torch_scatter import scatter_add
 
-from model_utils import MLP, PositionalEncoding, BilinearWith1d, GlobalAttentionHalf
+from model_utils import MLP, PositionalEncoding, BilinearWith1d, GlobalAttentionHalf, GlobalMeanPool
 from utils import act, get_extra_repr, softmax_half
 
 
@@ -18,16 +18,26 @@ class ObservedSubgraphPooler(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        if args.is_obs_sequential:
-            self.pe = PositionalEncoding(max_len=args.obs_max_len, num_channels=args.hidden_channels)
-        else:
-            self.pe = None
-        self.pool = GlobalAttentionHalf(gate_nn=nn.Linear(args.hidden_channels, 1, bias=False))
 
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=args.hidden_channels, nhead=8, dim_feedforward=args.hidden_channels,
-        )
-        self.tf_enc = nn.TransformerEncoder(encoder_layer, num_layers=args.num_decoder_body_layers)
+        self.pe = None
+
+        if args.use_soft_attention_pooling:
+            self.pool = GlobalAttentionHalf(gate_nn=nn.Linear(args.hidden_channels, 1, bias=False))
+        else:
+            self.pool = GlobalMeanPool()
+
+        if args.use_transformer:
+            if args.is_obs_sequential:
+                self.pe = PositionalEncoding(max_len=args.obs_max_len, num_channels=args.hidden_channels)
+            encoder_layer = nn.TransformerEncoderLayer(
+                d_model=args.hidden_channels, nhead=8, dim_feedforward=args.hidden_channels,
+            )
+            self.obs_enc = nn.TransformerEncoder(encoder_layer, num_layers=args.num_decoder_body_layers)
+        else:
+            self.obs_enc = MLP(
+                args.num_decoder_body_layers, args.hidden_channels, args.hidden_channels, args.hidden_channels,
+                activation="relu", dropout=0.1,
+            )
 
     def forward(self, x, batch=None, is_batch_sorted=True):
 
@@ -45,7 +55,11 @@ class ObservedSubgraphPooler(nn.Module):
             x = self.pe(x)
             if is_multi_batch:
                 x[~mask] = 0.
-        x = self.tf_enc(x)
+        if self.args.use_transformer:
+            x = self.obs_enc(x)
+        else:  # MLP
+            H = self.args.hidden_channels
+            x = self.obs_enc(x.view(-1, H)).view(B, -1, H)
         x = act(x, self.args.activation)
 
         x = x[mask] if is_multi_batch else x.squeeze()  # [B, N_max, F] -> [\sum N, F]
@@ -57,7 +71,7 @@ class ObservedSubgraphPooler(nn.Module):
         return [
             str(self.pe),
             "{}(L={}, I={}, H={}, O={})".format(
-                self.tf_enc.__class__.__name__, self.tf_enc.num_layers,
+                self.obs_enc.__class__.__name__, self.obs_enc.num_layers,
                 self.args.hidden_channels, self.args.hidden_channels, self.args.hidden_channels,
             ),
             str(self.pool),
@@ -243,6 +257,8 @@ if __name__ == '__main__':
     _args.use_edge_decoder = False  # todo
     _args.use_node_decoder = True
     _args.use_pergraph_attr = True
+    _args.use_transformer = False  # todo
+    _args.use_soft_attention_pooling = False  # todo
     dec = SGIDecoder(_args)
     print(dec)
 

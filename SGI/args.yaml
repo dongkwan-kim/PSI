@@ -108,6 +108,11 @@ SGI-FNTN-BISAGE-XLONG: &SGI-FNTN-BISAGE-XLONG
   dataset_slice_range_1: 200
   dataset_slice_range_2: 205
 
+SGI-FNTN-BISAGE-12P: &SGI-FNTN-BISAGE-12P
+  <<: *SGI-FNTN-BISAGE
+  dataset_slice_ratio: 0.125
+  dataset_slice_range_2: 2
+
 SGI-FNTN-BISAGE-25P: &SGI-FNTN-BISAGE-25P
   <<: *SGI-FNTN-BISAGE
   dataset_slice_ratio: 0.25
@@ -129,6 +134,20 @@ SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT: &SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
   train_dataset_slice_range_2: 3090
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
+
+SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX: &SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
+  <<: *SGI-FNTN-BISAGE
+  train_dataset_slice_range_1: 0.25
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 3089
+  dataset_slice_range_2: 3090
+
+SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX: &SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
+  <<: *SGI-FNTN-BISAGE
+  train_dataset_slice_range_1: 0.50
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 3089
+  dataset_slice_range_2: 3090
 
 SGI-FNTN-BISAGE-SHORT-0SG: &SGI-FNTN-BISAGE-SHORT-0SG
   <<: *SGI-FNTN-BISAGE-SHORT
@@ -165,6 +184,11 @@ SGI-FNTN-BISAGE-LONG-PGA:
   use_pergraph_attr: True
   lambda_l2: 0.00023504
 
+SGI-FNTN-BISAGE-12P-PGA:
+  <<: *SGI-FNTN-BISAGE-12P
+  use_pergraph_attr: True
+  lambda_l2: 0.00096833
+
 SGI-FNTN-BISAGE-25P-PGA:
   <<: *SGI-FNTN-BISAGE-25P
   use_pergraph_attr: True
@@ -189,6 +213,16 @@ SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-PGA:
   <<: *SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
   use_pergraph_attr: True
   lambda_l2: 0.00031851
+
+SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX-PGA:
+  <<: *SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
+  use_pergraph_attr: True
+  lambda_l2: 0.00022044
+
+SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX-PGA:
+  <<: *SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
+  use_pergraph_attr: True
+  lambda_l2: 0.00022044
 
 SGI-FNTN-BISAGE-SHORT-0SG-PGA:
   <<: *SGI-FNTN-BISAGE-SHORT-0SG
@@ -230,6 +264,22 @@ SGI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
   lambda_l2: 0.00018279
   lambda_aux_isi: 2.00
   m: fntn-inter-3
+
+SGI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
+  <<: *SGI-FNTN-BASE
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+  gnn_name: SAGEConv
+  is_bidirectional: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  use_deep_graph_infomax_in_isi: True  # this
+  use_pergraph_attr: True
+  lambda_aux_x: 0.0
+  readout_name: mean
+  lambda_l2: 0.00038154
+  lambda_aux_isi: 4.02
 
 SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
   <<: *FNTN
@@ -321,6 +371,14 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NTF:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  use_transformer: False
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NSAP:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  use_soft_attention_pooling: False
+
 SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
@@ -387,6 +445,82 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
   lambda_aux_isi: 2.0
   pool_ratio: 0.001
   m: fntn-real-64-v2
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-04:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_diff_train_eval/
+  m: fntn-TRAIN-08-EVAL-04
+  train_dataset_slice_range_1: 5
+  train_dataset_slice_range_2: 10
+  dataset_slice_range_1: 1
+  dataset_slice_range_2: 6
+  obs_max_len: 20
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-08:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_diff_train_eval/
+  m: fntn-TRAIN-08-EVAL-08
+  train_dataset_slice_range_1: 5
+  train_dataset_slice_range_2: 10
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+  obs_max_len: 20
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-16:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_diff_train_eval/
+  m: fntn-TRAIN-08-EVAL-16
+  train_dataset_slice_range_1: 5
+  train_dataset_slice_range_2: 10
+  dataset_slice_range_1: 13
+  dataset_slice_range_2: 18
+  obs_max_len: 36
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-32:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_diff_train_eval/
+  m: fntn-TRAIN-08-EVAL-32
+  train_dataset_slice_range_1: 5
+  train_dataset_slice_range_2: 10
+  dataset_slice_range_1: 29
+  dataset_slice_range_2: 34
+  obs_max_len: 68
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+
+SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-64:
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  log_dir: ../lightning_logs_fntn_diff_train_eval/
+  m: fntn-TRAIN-08-EVAL-64
+  train_dataset_slice_range_1: 5
+  train_dataset_slice_range_2: 10
+  dataset_slice_range_1: 61
+  dataset_slice_range_2: 66
+  obs_max_len: 132
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 3.0
+  pool_ratio: 0.01
+
 
 
 HPOMetab: &HPOMetab
@@ -459,6 +593,12 @@ SGI-HPOMetab-SAGE-SHORT: &SGI-HPOMetab-SAGE-SHORT
   dataset_slice_range_2: 7
   lambda_l2: 0.000028790
 
+SGI-HPOMetab-SAGE-12P: &SGI-HPOMetab-SAGE-12P
+  <<: *SGI-HPOMetab-SAGE
+  dataset_slice_ratio: 0.125
+  dataset_slice_range_2: 2
+  lambda_l2: 0.00020170
+
 SGI-HPOMetab-SAGE-25P: &SGI-HPOMetab-SAGE-25P
   <<: *SGI-HPOMetab-SAGE
   dataset_slice_ratio: 0.25
@@ -485,6 +625,22 @@ SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT:
   dataset_slice_range_2: 7
   lambda_l2: 0.000019960
 
+SGI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX: &SGI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX
+  <<: *SGI-HPOMetab-SAGE
+  train_dataset_slice_range_1: 0.25
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 50
+  dataset_slice_range_2: 51
+  lambda_l2: 0.0000017804
+
+SGI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX: &SGI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX
+  <<: *SGI-HPOMetab-SAGE
+  train_dataset_slice_range_1: 0.50
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 50
+  dataset_slice_range_2: 51
+  lambda_l2: 0.0000017804
+
 SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
   <<: *SGI-HPOMetab-BASE
   dataset_slice_range_1: 2
@@ -499,6 +655,21 @@ SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
   lambda_l2: 0.0000038420
   lambda_aux_isi: 2.9300
   m: metab-inter-1
+
+SGI-HPOMetab-SAGE-SHORT-DGI-X-GB: &SGI-HPOMetab-SAGE-SHORT-DGI-X-GB
+  <<: *SGI-HPOMetab-BASE
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  use_deep_graph_infomax_in_isi: True  # this
+  lambda_aux_x: 0.0
+  readout_name: mean
+  epochs: 300
+  lambda_l2: 0.00053075
+  lambda_aux_isi: 3.23
 
 SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   <<: *HPOMetab
@@ -536,7 +707,7 @@ SGI-HPOMetab-E2D2F64-ISI-X: &SGI-HPOMetab-E2D2F64-ISI-X
   use_node_decoder: True
   use_edge_decoder: False
 
-SGI-HPOMetab-E2D2F64-ISI-X-GB:
+SGI-HPOMetab-E2D2F64-ISI-X-GB: &SGI-HPOMetab-E2D2F64-ISI-X-GB
   <<: *SGI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
@@ -544,6 +715,14 @@ SGI-HPOMetab-E2D2F64-ISI-X-GB:
   lambda_aux_x: 0.19
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
+
+SGI-HPOMetab-E2D2F64-ISI-X-GB-NTF:
+  <<: *SGI-HPOMetab-E2D2F64-ISI-X-GB
+  use_transformer: False
+
+SGI-HPOMetab-E2D2F64-ISI-X-GB-NSAP:
+  <<: *SGI-HPOMetab-E2D2F64-ISI-X-GB
+  use_soft_attention_pooling: False
 
 EMUser: &EMUser
   <<: *DEFAULT
@@ -614,6 +793,12 @@ SGI-EMUser-SAGE-SHORT: &SGI-EMUser-SAGE-SHORT
   dataset_slice_range_2: 11
   lambda_l2: 0.00019239
 
+SGI-EMUser-SAGE-12P: &SGI-EMUser-SAGE-12P
+  <<: *SGI-EMUser-SAGE
+  dataset_slice_ratio: 0.125
+  dataset_slice_range_2: 2
+  lambda_l2: 0.00052453
+
 SGI-EMUser-SAGE-25P: &SGI-EMUser-SAGE-25P
   <<: *SGI-EMUser-SAGE
   dataset_slice_ratio: 0.25
@@ -624,7 +809,7 @@ SGI-EMUser-SAGE-50P: &SGI-EMUser-SAGE-50P
   <<: *SGI-EMUser-SAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
-  lambda_l2: 0.0000070983
+  lambda_l2: 0.00016281
 
 SGI-EMUser-SAGE-MAX: &SGI-EMUser-SAGE-MAX
   <<: *SGI-EMUser-SAGE
@@ -640,6 +825,22 @@ SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT:
   dataset_slice_range_2: 11
   lambda_l2: 0.00024352
 
+SGI-EMUser-SAGE-TRAIN-25P-EVAL-MAX: &SGI-EMUser-SAGE-TRAIN-25P-EVAL-MAX
+  <<: *SGI-EMUser-SAGE
+  train_dataset_slice_range_1: 0.25
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 499
+  dataset_slice_range_2: 500
+  lambda_l2: 0.000039415
+
+SGI-EMUser-SAGE-TRAIN-50P-EVAL-MAX: &SGI-EMUser-SAGE-TRAIN-50P-EVAL-MAX
+  <<: *SGI-EMUser-SAGE
+  train_dataset_slice_range_1: 0.50
+  train_dataset_slice_range_2: 2
+  dataset_slice_range_1: 499
+  dataset_slice_range_2: 500
+  lambda_l2: 0.000039415
+
 SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
   <<: *SGI-EMUser-BASE
   dataset_slice_range_1: 6
@@ -654,6 +855,21 @@ SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
   lambda_l2: 2.3018e-7
   lambda_aux_isi: 1.3400
   m: emuser-inter-2
+
+SGI-EMUser-SAGE-SHORT-DGI-X-GB: &SGI-EMUser-SAGE-SHORT-DGI-X-GB
+  <<: *SGI-EMUser-BASE
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  use_inter_subgraph_infomax: True
+  use_deep_graph_infomax_in_isi: True  # this
+  lambda_aux_x: 0.0
+  readout_name: mean
+  epochs: 400
+  lambda_l2: 0.00022771
+  lambda_aux_isi: 2.12
 
 SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   <<: *EMUser
@@ -701,6 +917,15 @@ SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
   lambda_aux_isi: 0.55
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0174784981734352
+
+SGI-EMUser-E2D2F64-ISI-X-GB-NTF:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  use_transformer: False
+  lambda_l2: 0.000030807
+
+SGI-EMUser-E2D2F64-ISI-X-GB-NSAP:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  use_soft_attention_pooling: False
 
 SGI-EMUser-E2D2F64-ISI-X-GB-08:
   <<: *SGI-EMUser-E2D2F64-ISI-X-GB
@@ -754,3 +979,73 @@ SGI-EMUser-E2D2F64-ISI-X-GB-64:
   lambda_aux_isi: 1.0
   pool_ratio: 0.001
   m: emuser-64-v1
+
+SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-04:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_diff_train_eval/
+  m: emuser-TRAIN-08-EVAL-04
+  train_dataset_slice_range_1: 6
+  train_dataset_slice_range_2: 11
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+
+SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-08:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_diff_train_eval/
+  m: emuser-TRAIN-08-EVAL-08
+  train_dataset_slice_range_1: 6
+  train_dataset_slice_range_2: 11
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+
+SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-16:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_diff_train_eval/
+  m: emuser-TRAIN-08-EVAL-16
+  train_dataset_slice_range_1: 6
+  train_dataset_slice_range_2: 11
+  dataset_slice_range_1: 14
+  dataset_slice_range_2: 19
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+
+SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-32:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_diff_train_eval/
+  m: emuser-TRAIN-08-EVAL-32
+  train_dataset_slice_range_1: 6
+  train_dataset_slice_range_2: 11
+  dataset_slice_range_1: 30
+  dataset_slice_range_2: 35
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01
+
+SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-64:
+  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+  log_dir: ../lightning_logs_emuser_diff_train_eval/
+  m: emuser-TRAIN-08-EVAL-64
+  train_dataset_slice_range_1: 6
+  train_dataset_slice_range_2: 11
+  dataset_slice_range_1: 62
+  dataset_slice_range_2: 67
+  data_sampler_dropout_edges: 0.50
+  lambda_l2: 0.00001
+  lambda_aux_x: 1.0
+  lambda_aux_isi: 1.0
+  pool_ratio: 0.01

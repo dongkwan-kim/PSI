@@ -18,6 +18,7 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
                        legend="full",
                        n=150, err_style="band",
                        x_lim=None, y_lim=None, use_xlabel=True, use_ylabel=True,
+                       use_x_list_as_xticks=False,
                        facet_kws=None,
                        base_path="../figs/",
                        custom_key="",
@@ -49,6 +50,8 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
                        **relplot_kwargs)
     plot.set(xlim=x_lim)
     plot.set(ylim=y_lim)
+    if use_x_list_as_xticks:
+        plot.set(xticks=x_list)
     if not use_xlabel:
         plot.set_axis_labels(x_var="")
     if not use_ylabel:
@@ -59,6 +62,8 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
 
 
 if __name__ == '__main__':
+
+    HPARAM = "NUM_OBS"  # NUM_OBS, NUM_NEGATIVES, LAMBDA
     MODE = "ALL"  # FNTN, EMUser, ALL
     EXTENSION = "pdf"
 
@@ -68,30 +73,108 @@ if __name__ == '__main__':
     except NameError:
         pass
 
-    if MODE == "FNTN" or MODE == "ALL":
+    if HPARAM == "NUM_OBS":
+
+        USE_LOG2 = True
+
+        if USE_LOG2:
+            x_label = "$\log_2(\#)$ of observed nodes"
+        else:
+            x_label = "# of observed nodes"
+
+        sns.set_context("poster")
+
         TUPLE_TO_MEAN_LIST = {
-            ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
-                0.851807189, 0.8554216385, 0.8783132315, 0.874698782, 0.8771084189,
-                0.8807228565, 0.8746987581, 0.879518044, 0.8662650347, 0.87469877],
-            ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
-                0.8578312872, 0.8855421422, 0.8975903272, 0.8903614162, 0.8891565918,
-                0.8843373178, 0.8590361118, 0.8674698352, 0.8626505732, 0.8602409242],
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.883, 0.867, 0.858, 0.858],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.732, 0.745, 0.757, 0.783],
         }
         TUPLE_TO_STD_LIST = {
-            ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
-                0.02196937685, 0.0321598755, 0.01776852901, 0.006599070793, 0.0131981375,
-                0.00893517706, 0.0123457448, 0.004259676612, 0.007854473865, 0.01077624748],
-            ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
-                0.01979720785, 0.01127005298, 0.009524926568, 0.007854442088, 0.003299515193,
-                0.005040120917, 0.02278032561, 0.02293907632, 0.02498364785, 0.02104126657],
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.003, 0.009, 0.036, 0.024],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.040, 0.032, 0.055],
         }
-        NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
-        X_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
+        X_LIST = [8, 16, 32, 64]
+        if USE_LOG2:
+            X_LIST = np.log2(X_LIST)
 
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label="Value of $\lambda$",
+            x_label=x_label,
+            y_label="Test Accuracy",
+            name_label_list=NAME_LABEL_LIST,
+            x_list=X_LIST,
+            hue="Dataset",
+            style="Dataset",
+            row=None,
+            # col="Hyperparameter",
+            hue_order=None,
+            markers=True, dashes=False,
+            height=5, aspect=1.2,
+            legend=False,
+            n=20000, err_style="band",
+            x_lim=(None, None),
+            y_lim=None,
+            use_xlabel=True, use_ylabel=True,
+            use_x_list_as_xticks=True,  # important
+            facet_kws=None,
+            base_path="../figs/",
+            custom_key="obs_xx",
+            extension=EXTENSION)
+
+        TUPLE_TO_MEAN_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.866, 0.883, 0.876, 0.878, 0.875],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.621, 0.732, 0.740, 0.728, 0.740],
+        }
+        TUPLE_TO_STD_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.003, 0.026, 0.021, 0.015],
+            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.090, 0.024, 0.041, 0.065, 0.035],
+        }
+        NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
+        X_LIST = [4, 8, 16, 32, 64]
+        if USE_LOG2:
+            X_LIST = np.log2(X_LIST)
+
+        plot_line_with_std(
+            tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+            tuple_to_std_list=TUPLE_TO_STD_LIST,
+            x_label=x_label,
+            y_label="Test Accuracy",
+            name_label_list=NAME_LABEL_LIST,
+            x_list=X_LIST,
+            hue="Dataset",
+            style="Dataset",
+            row=None,
+            # col="Hyperparameter",
+            hue_order=None,
+            markers=True, dashes=False,
+            height=5, aspect=1.2,
+            legend=False,
+            n=20000, err_style="band",
+            x_lim=(None, None),
+            y_lim=None,
+            use_xlabel=True, use_ylabel=True,
+            use_x_list_as_xticks=True,  # important
+            facet_kws=None,
+            base_path="../figs/",
+            custom_key="obs_eval",
+            extension=EXTENSION)
+
+    elif HPARAM == "NUM_NEGATIVES":
+
+        TUPLE_TO_MEAN_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of negatives"): [0.896, 0.873, 0.872, 0.863],
+        }
+        TUPLE_TO_STD_LIST = {
+            ("FNTN", "Intra/Inter-SGI", "# of negatives"): [0.018, 0.010, 0.020, 0.012],
+        }
+        NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
+        X_LIST = [1, 2, 4, 8]
+
+        plot_line_with_std(
+            tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+            tuple_to_std_list=TUPLE_TO_STD_LIST,
+            x_label="Number of negative subgraphs",
             y_label="Test Acc.",
             name_label_list=NAME_LABEL_LIST,
             x_list=X_LIST,
@@ -108,29 +191,20 @@ if __name__ == '__main__':
             y_lim=None, use_xlabel=True, use_ylabel=True,
             facet_kws=None,
             base_path="../figs/",
-            custom_key="fntn",
+            custom_key="negatives_fntn",
             extension=EXTENSION)
 
-    if MODE == "EMUser" or MODE == "ALL":
         TUPLE_TO_MEAN_LIST = {
-            ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
-                0.6382978499, 0.7489361405, 0.7744680524, 0.6978723168, 0.71914891, 0.7021276355, 0.6936169982],
-            ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
-                0.7234042287, 0.7574467778, 0.7234042287, 0.7276595473, 0.6893616736, 0.4893616915, 0.5276595652],
+            ("EM-User", "Intra/Inter-SGI", "# of negatives"): [0.770, 0.685, 0.719, 0.685],
         }
         TUPLE_TO_STD_LIST = {
-            ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
-                0.1370648765, 0.05297828985, 0.03226755123, 0.03496101014, 0.02774128352, 0.05424488198, 0.02425904871],
-            ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
-                0.05211679683, 0.03226755123, 0.01504482334, 0.06626557296, 0.1255138808, 0.07056649221, 0.04092635503],
+            ("EM-User", "Intra/Inter-SGI", "# of negatives"): [0.052, 0.041, 0.057, 0.035],
         }
-        NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
-        X_LIST = [0, 0.5, 1, 1.5, 2, 3, 4]
 
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label="Value of $\lambda$",
+            x_label="Number of negative subgraphs",
             y_label="Test Acc.",
             name_label_list=NAME_LABEL_LIST,
             x_list=X_LIST,
@@ -143,9 +217,94 @@ if __name__ == '__main__':
             height=5, aspect=1.0,
             legend=False,
             n=150, err_style="band",
-            x_lim=(0, None),
+            x_lim=(0, 8),
             y_lim=None, use_xlabel=True, use_ylabel=True,
             facet_kws=None,
             base_path="../figs/",
-            custom_key="emuser",
+            custom_key="negatives_emuser",
             extension=EXTENSION)
+
+    elif HPARAM == "LAMBDA":
+        if MODE == "FNTN" or MODE == "ALL":
+            TUPLE_TO_MEAN_LIST = {
+                ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
+                    0.851807189, 0.8554216385, 0.8783132315, 0.874698782, 0.8771084189,
+                    0.8807228565, 0.8746987581, 0.879518044, 0.8662650347, 0.87469877],
+                ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                    0.8578312872, 0.8855421422, 0.8975903272, 0.8903614162, 0.8891565918,
+                    0.8843373178, 0.8590361118, 0.8674698352, 0.8626505732, 0.8602409242],
+            }
+            TUPLE_TO_STD_LIST = {
+                ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
+                    0.02196937685, 0.0321598755, 0.01776852901, 0.006599070793, 0.0131981375,
+                    0.00893517706, 0.0123457448, 0.004259676612, 0.007854473865, 0.01077624748],
+                ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                    0.01979720785, 0.01127005298, 0.009524926568, 0.007854442088, 0.003299515193,
+                    0.005040120917, 0.02278032561, 0.02293907632, 0.02498364785, 0.02104126657],
+            }
+            NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
+            X_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+            plot_line_with_std(
+                tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+                tuple_to_std_list=TUPLE_TO_STD_LIST,
+                x_label="Value of $\lambda$",
+                y_label="Test Acc.",
+                name_label_list=NAME_LABEL_LIST,
+                x_list=X_LIST,
+                # hue="Dataset",
+                style="Dataset",
+                row=None,
+                col="Hyperparameter",
+                hue_order=None,
+                markers=True, dashes=False,
+                height=5, aspect=1.0,
+                legend=False,
+                n=150, err_style="band",
+                x_lim=(0, None),
+                y_lim=None, use_xlabel=True, use_ylabel=True,
+                facet_kws=None,
+                base_path="../figs/",
+                custom_key="fntn",
+                extension=EXTENSION)
+
+        if MODE == "EMUser" or MODE == "ALL":
+            TUPLE_TO_MEAN_LIST = {
+                ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
+                    0.6382978499, 0.7489361405, 0.7744680524, 0.6978723168, 0.71914891, 0.7021276355, 0.6936169982],
+                ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                    0.7234042287, 0.7574467778, 0.7234042287, 0.7276595473, 0.6893616736, 0.4893616915, 0.5276595652],
+            }
+            TUPLE_TO_STD_LIST = {
+                ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
+                    0.1370648765, 0.05297828985, 0.03226755123, 0.03496101014, 0.02774128352, 0.05424488198,
+                    0.02425904871],
+                ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                    0.05211679683, 0.03226755123, 0.01504482334, 0.06626557296, 0.1255138808, 0.07056649221,
+                    0.04092635503],
+            }
+            NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
+            X_LIST = [0, 0.5, 1, 1.5, 2, 3, 4]
+
+            plot_line_with_std(
+                tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
+                tuple_to_std_list=TUPLE_TO_STD_LIST,
+                x_label="Value of $\lambda$",
+                y_label="Test Acc.",
+                name_label_list=NAME_LABEL_LIST,
+                x_list=X_LIST,
+                # hue="Dataset",
+                style="Dataset",
+                row=None,
+                col="Hyperparameter",
+                hue_order=None,
+                markers=True, dashes=False,
+                height=5, aspect=1.0,
+                legend=False,
+                n=150, err_style="band",
+                x_lim=(0, None),
+                y_lim=None, use_xlabel=True, use_ylabel=True,
+                facet_kws=None,
+                base_path="../figs/",
+                custom_key="emuser",
+                extension=EXTENSION)

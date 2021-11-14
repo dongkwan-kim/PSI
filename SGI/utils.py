@@ -1,6 +1,8 @@
 import hashlib
 from collections import Counter
 import time
+import random
+from itertools import tee, islice
 from typing import List, Tuple, Optional
 
 import networkx as nx
@@ -11,10 +13,28 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch_geometric
 from torch import Tensor
-from torch_geometric.utils import to_dense_batch, softmax
+from torch_geometric.utils import to_dense_batch, softmax, subgraph
 
 
 # PyTorch/PyTorch Geometric related
+
+
+def dropout_nodes(x, edge_index, edge_attr=None, p=0.5, training=True):
+    if p < 0. or p > 1.:
+        raise ValueError('Dropout probability has to be between 0 and 1, '
+                         'but got {}'.format(p))
+    if not training or p == 0.0:
+        return x, edge_index, edge_attr
+
+    N = x.size(0)
+    DN = int(N * (1.0 - p))
+    idx = torch.randperm(N)[:DN]
+
+    x = x[idx]
+    edge_index, edge_attr = subgraph(idx, edge_index, edge_attr, relabel_nodes=True, num_nodes=N)
+
+    return x, edge_index, edge_attr
+
 
 
 def softmax_half(src: Tensor, index: Tensor, num_nodes: Optional[int] = None) -> Tensor:
@@ -137,6 +157,27 @@ class EPSILON(object):
 
 
 # Others
+
+
+def sample_index_with_replacement_and_exclusion(max_index, num_to_sample, set_to_exclude=None):
+    set_to_exclude = set_to_exclude or set()
+    populations = []
+    num_candidates = num_to_sample + len(set_to_exclude)
+    while num_candidates > 0:
+        num_to_sample_at_this_iter = min(num_candidates, max_index)
+        pops = list(set(random.sample(range(max_index), num_to_sample_at_this_iter))
+                    - set_to_exclude)
+        populations += pops
+        num_candidates -= len(pops)
+    return populations[:num_to_sample]
+
+
+def n_wise(iterable, n=2):
+    # https://stackoverflow.com/a/21303303
+    iters = tee(iterable, n)
+    for i, it in enumerate(iters):
+        next(islice(it, i, i), None)
+    return zip(*iters)
 
 
 def del_attrs(o, keys: List[str]):
