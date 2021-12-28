@@ -174,7 +174,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False,
                  balanced_sampling=True,
                  use_inter_subgraph_infomax=False,
-                 use_deep_graph_infomax_in_isi=False,
+                 negative_sample_type_in_isi="SGI",
                  neg_sample_ratio_in_isi=1.0,
                  no_drop_pos_edges=False,
                  batch_size=1,
@@ -200,7 +200,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
         self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
-        self.use_deep_graph_infomax_in_isi = use_deep_graph_infomax_in_isi
+        self.negative_sample_type_in_isi = negative_sample_type_in_isi
         self.neg_sample_ratio_in_isi = neg_sample_ratio_in_isi
         self.no_drop_pos_edges = no_drop_pos_edges
 
@@ -408,7 +408,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         def corruption(_x):
             return _x[torch.randperm(_x.size(0))]
 
-        if not self.use_deep_graph_infomax_in_isi:
+        if self.negative_sample_type_in_isi in ["SGI", "INFOGRAPH"]:
             neg_data_idx_list = sample_index_with_replacement_and_exclusion(
                 num_subdata, num_to_sample=num_samples, set_to_exclude=set(pos_idx_list))
             neg_data_list = []
@@ -423,12 +423,14 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                         neg_subdata_list.append(subdata)
                     d = Batch.from_data_list(neg_subdata_list) if neg_magnification > 1 else neg_subdata_list[0]
                     neg_data_list.append(d)
-        else:
+        elif self.negative_sample_type_in_isi == "DGI":
             neg_data_list = []
             for pos_data in pos_data_list:
                 corr_data = pos_data.clone()
                 corr_data.x = corruption(corr_data.x)
                 neg_data_list.append(corr_data)
+        else:
+            raise ValueError(f"Wrong negative_sample_type: {self.negative_sample_type_in_isi}")
 
         _node_idx = torch.full((self.N,), fill_value=-1, dtype=torch.long)
 

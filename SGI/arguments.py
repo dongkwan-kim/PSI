@@ -124,7 +124,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--pool-ratio", default=0.1)
     parser.add_argument("--use-pool-min-score", default=False)
     parser.add_argument("--use-inter-subgraph-infomax", default=False)
-    parser.add_argument("--use-deep-graph-infomax-in-isi", default=False)
+    parser.add_argument("--negative-sample-type-in-isi", default=False)
     parser.add_argument("--neg-sample-ratio-in-isi", type=float, default=1.0)
     parser.add_argument("--inter-subgraph-infomax-edge-type", default="global",
                         type=str, choices=["global", "subgraph"])
@@ -191,7 +191,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
         "use_transformer", "use_soft_attention_pooling",
         "use_inter_subgraph_infomax", "inter_subgraph_infomax_edge_type", "include_obs_x_in_pooling",
-        "use_deep_graph_infomax_in_isi", "neg_sample_ratio_in_isi",
+        "negative_sample_type_in_isi", "neg_sample_ratio_in_isi",
         "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",
     ]
     ret = {}
