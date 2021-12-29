@@ -13,7 +13,7 @@ from model_embedding import VersatileEmbedding
 from model_encoder import GraphEncoder
 from model_decoder import SGIDecoder
 from model_readout import Readout
-from model_inter_sgi import SingleBranchContraLoss
+from model_contra import SingleBranchContraLoss
 
 
 class SGINet(nn.Module):
