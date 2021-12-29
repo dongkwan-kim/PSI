@@ -120,7 +120,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=self.hparams.data_sampler_balanced_sampling,
-            use_inter_subgraph_infomax=self.hparams.use_inter_subgraph_infomax,
+            subgraph_infomax_type=self.hparams.subgraph_infomax_type,
             negative_sample_type_in_isi=self.hparams.negative_sample_type_in_isi,
             neg_sample_ratio_in_isi=self.hparams.neg_sample_ratio_in_isi,
             no_drop_pos_edges=self.hparams.data_sampler_no_drop_pos_edges,
@@ -142,7 +142,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             use_obs_edge_only=self.hparams.data_use_obs_edge_only,
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=False,
-            use_inter_subgraph_infomax=False,
+            subgraph_infomax_type=None,
             negative_sample_type_in_isi="SGI",
             neg_sample_ratio_in_isi=None,
             no_drop_pos_edges=False,  # important

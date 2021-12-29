@@ -268,7 +268,7 @@ SGI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   use_pergraph_attr: True
   lambda_aux_x: 0.0
   readout_name: mean
@@ -284,7 +284,7 @@ SGI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   use_pergraph_attr: True
   lambda_aux_x: 0.0
@@ -299,7 +299,7 @@ SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-DGI-X-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -313,7 +313,7 @@ SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-INFOGRAPH-X-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "INFOGRAPH"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -383,7 +383,7 @@ SGI-FNTN-BIE2D2F64-EX:  # not-used
 
 SGI-FNTN-BIE2D2F64-ISI: &SGI-FNTN-BIE2D2F64-ISI
   <<: *SGI-FNTN-BIE2D2F64
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   data_sampler_dropout_edges: 0.3
 
 SGI-FNTN-BIE2D2F64-ISI-X: &SGI-FNTN-BIE2D2F64-ISI-X
@@ -694,7 +694,7 @@ SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   lambda_aux_x: 0.0
   readout_name: mean
   epochs: 300
@@ -709,7 +709,7 @@ SGI-HPOMetab-SAGE-SHORT-DGI-X-GB: &SGI-HPOMetab-SAGE-SHORT-DGI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -722,7 +722,7 @@ SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT-DGI-X-GB:
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -735,7 +735,7 @@ SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT-INFOGRAPH-X-GB:
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "INFOGRAPH"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -769,7 +769,7 @@ SGI-HPOMetab-E2D2F64-X:
 
 SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
   <<: *SGI-HPOMetab-E2D2F64
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False
 
@@ -928,7 +928,7 @@ SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   lambda_aux_x: 0.0
   readout_name: mean
   epochs: 400
@@ -943,7 +943,7 @@ SGI-EMUser-SAGE-SHORT-DGI-X-GB: &SGI-EMUser-SAGE-SHORT-DGI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -956,7 +956,7 @@ SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT-DGI-X-GB:
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -969,7 +969,7 @@ SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT-INFOGRAPH-X-GB:
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   negative_sample_type_in_isi: "INFOGRAPH"  # this
   lambda_aux_x: 0.0
   readout_name: mean
@@ -1004,7 +1004,7 @@ SGI-EMUser-E2D2F64-X:
 
 SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
   <<: *SGI-EMUser-E2D2F64
-  use_inter_subgraph_infomax: True
+  subgraph_infomax_type: "single"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False  # todo
 

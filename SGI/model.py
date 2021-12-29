@@ -13,7 +13,7 @@ from model_embedding import VersatileEmbedding
 from model_encoder import GraphEncoder
 from model_decoder import SGIDecoder
 from model_readout import Readout
-from model_inter_sgi import InterSGILoss
+from model_inter_sgi import SingleBranchContraLoss
 
 
 class SGINet(nn.Module):
@@ -36,8 +36,10 @@ class SGINet(nn.Module):
         else:
             self.dec_or_readout = Readout(args)
 
-        if self.args.use_inter_subgraph_infomax:
-            self.isi_loss = InterSGILoss(args)
+        if self.args.subgraph_infomax_type == "single":
+            self.isi_loss = SingleBranchContraLoss(args)
+        elif self.args.subgraph_infomax_type == "dual":
+            raise NotImplementedError
         else:
             self.isi_loss = None
 
@@ -60,7 +62,7 @@ class SGINet(nn.Module):
         else:  # Readout
             z_g, logits_g = self.dec_or_readout(x, pergraph_attr, batch)
 
-        if self.args.use_inter_subgraph_infomax and self.training:  # only for training
+        if self.args.subgraph_infomax_type and self.training:  # only for training
             assert x_idx_isi is not None
             x_isi = self.emb(x_idx_isi)
             x_isi = self.enc(x_isi, edge_index_isi)
@@ -70,8 +72,8 @@ class SGINet(nn.Module):
             )
 
         # Returns which are not None:
-        #   use_decoder & use_inter_subgraph_infomax: (logits_g, dec_x, dec_e, loss_isi)
-        #   use_inter_subgraph_infomax: (logits_g, loss_isi)
+        #   use_decoder & subgraph_infomax_type is not None: (logits_g, dec_x, dec_e, loss_isi)
+        #   subgraph_infomax_type is not None: (logits_g, loss_isi)
         #   use_decoder: (logits_g, dec_x, dec_e)
         #   else: logits_g
         return logits_g, dec_x, dec_e, loss_isi
@@ -88,7 +90,7 @@ if __name__ == '__main__':
     _args.use_decoder = True
     _args.use_node_decoder = True
     _args.use_edge_decoder = False
-    _args.use_inter_subgraph_infomax = True
+    _args.subgraph_infomax_type = True
     _args.use_pergraph_attr = True
     _args.readout_name = "mean-max"
     net = SGINet(_args)

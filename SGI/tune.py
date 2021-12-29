@@ -120,7 +120,7 @@ if __name__ == '__main__':
                 search_config["lambda_aux_x"] = ("discrete_uniform", 0.00, 5.0, 0.01)
             if tune_args.use_edge_decoder:
                 search_config["lambda_aux_e"] = ("discrete_uniform", 0.00, 5.0, 0.01)
-            if tune_args.use_inter_subgraph_infomax:
+            if tune_args.subgraph_infomax_type is not None:
                 search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
             if not tune_args.use_pool_min_score:
                 if tune_args.dataset_name in ["HPONeuro", "HPOMetab"]:
@@ -135,7 +135,7 @@ if __name__ == '__main__':
             else:
                 search_config["data_sampler_dropout_edges"] = ("discrete_uniform", 0.4, 0.6, 0.05)
 
-        elif tune_args.use_inter_subgraph_infomax:
+        elif tune_args.subgraph_infomax_type is not None:
             search_config["lambda_aux_isi"] = ("discrete_uniform", 0.00, 5.0, 0.01)
 
     else:  # ABLATION_GRID_SEARCH

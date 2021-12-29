@@ -162,7 +162,7 @@ class MainModel(LightningModule):
             logits_g, _, _, loss_isi = self(batch, batch_idx)
             # F.ce(logits_g, batch.y) or F.bce_w/_logits(logits_g, batch.y)
             total_loss = self.loss_with_logits(logits_g, batch.y)
-            if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
+            if self.hparams.subgraph_infomax_type is not None and self.hparams.lambda_aux_isi > 0:
                 if self.training:
                     total_loss += self.hparams.lambda_aux_isi * loss_isi
                     out["loss_isi"] = loss_isi
@@ -202,7 +202,7 @@ class MainModel(LightningModule):
             loss_e = F.cross_entropy(dec_e, batch.labels_e)
             total_loss += self.hparams.lambda_aux_e * loss_e
             o["loss_e"] = loss_e
-        if self.hparams.use_inter_subgraph_infomax and self.hparams.lambda_aux_isi > 0:
+        if self.hparams.subgraph_infomax_type is not None and self.hparams.lambda_aux_isi > 0:
             if self.training:
                 total_loss += self.hparams.lambda_aux_isi * loss_isi
                 o["loss_isi"] = loss_isi

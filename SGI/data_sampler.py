@@ -173,7 +173,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  obs_x_range=None, use_obs_edge_only=False,
                  use_pergraph_attr=False,
                  balanced_sampling=True,
-                 use_inter_subgraph_infomax=False,
+                 subgraph_infomax_type=None,
                  negative_sample_type_in_isi="SGI",
                  neg_sample_ratio_in_isi=1.0,
                  no_drop_pos_edges=False,
@@ -199,7 +199,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         self.use_obs_edge_only = use_obs_edge_only
         self.use_pergraph_attr = use_pergraph_attr
         self.balanced_sampling = balanced_sampling
-        self.use_inter_subgraph_infomax = use_inter_subgraph_infomax
+        self.subgraph_infomax_type = subgraph_infomax_type
         self.negative_sample_type_in_isi = negative_sample_type_in_isi
         self.neg_sample_ratio_in_isi = neg_sample_ratio_in_isi
         self.no_drop_pos_edges = no_drop_pos_edges
@@ -213,7 +213,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             self.subdata_list: List[Data] = [d for d in subdata_list
                                              if subdata_filter_func(d)]
 
-        if self.use_inter_subgraph_infomax:
+        if self.subgraph_infomax_type is not None:
             for idx, d in enumerate(self.subdata_list):
                 d.idx = idx
 
@@ -235,7 +235,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
 
         is_single_batch = len(data_list) == 1
 
-        if self.use_inter_subgraph_infomax:
+        if self.subgraph_infomax_type is not None:
             pos_attr_list, neg_attr_list = self.get_isi_attr_from_pos_data_list(data_list)
         else:
             pos_attr_list, neg_attr_list = [None for _ in range(self.B)], [None for _ in range(self.B)]
@@ -253,7 +253,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
             return processed_data_list[0]
         else:
             collated_batch = Batch.from_data_list(processed_data_list, follow_batch=["x_pos", "x_neg"])
-            if self.use_inter_subgraph_infomax:
+            if self.subgraph_infomax_type is not None:
                 collated_batch = DataPN.concat_pos_and_neg_in_batch_(collated_batch, batch_size=len(data_list))
             return collated_batch
 
@@ -540,7 +540,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.0, balanced_sampling=True,
         obs_x_range=None,
-        use_inter_subgraph_infomax=False,  # todo
+        subgraph_infomax_type=None,  # todo
         no_drop_pos_edges=False,  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
@@ -557,7 +557,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.9, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        use_inter_subgraph_infomax=True,  # todo
+        subgraph_infomax_type="single",  # todo
         no_drop_pos_edges=True,  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
@@ -575,7 +575,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        use_inter_subgraph_infomax=True,  # todo
+        subgraph_infomax_type="single",  # todo
         cache_hop_computation=False,
         batch_size=2,  # todo
         ke_method=KE_METHOD,
@@ -593,7 +593,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        use_inter_subgraph_infomax=True,  # todo
+        subgraph_infomax_type="single",  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
         shuffle=True,
@@ -610,7 +610,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=True,  # todo
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        use_inter_subgraph_infomax=False,  # todo
+        subgraph_infomax_type=None,  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
         shuffle=True,

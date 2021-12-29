@@ -14,9 +14,9 @@ from utils import EPSILON
 EPS = EPSILON()
 
 
-class InterSGILoss(DeepGraphInfomax):
+class SingleBranchContraLoss(DeepGraphInfomax):
 
-    def __init__(self, args, encoder=None):
+    def __init__(self, args, projector=None):
         self.args = args
         if args.main_decoder_type == "node":
             self.summary_channels = args.hidden_channels
@@ -25,8 +25,8 @@ class InterSGILoss(DeepGraphInfomax):
         else:
             raise ValueError
 
-        if encoder is None:
-            encoder = MLP(
+        if projector is None:
+            projector = MLP(
                 num_layers=args.num_decoder_body_layers,
                 num_input=args.hidden_channels,
                 num_hidden=args.hidden_channels,
@@ -37,7 +37,7 @@ class InterSGILoss(DeepGraphInfomax):
                 activate_last=True,
             )
 
-        super().__init__(args.hidden_channels, encoder=encoder, summary=None, corruption=None)
+        super().__init__(args.hidden_channels, encoder=projector, summary=None, corruption=None)
 
         # ref: In discriminate, torch.matmul(z, torch.matmul(self.weight, summary))
         del self.weight
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     from arguments import get_args
 
     _args = get_args("SGI", "FNTN", "TEST+MEMO")
-    _isi = InterSGILoss(_args)
+    _isi = SingleBranchContraLoss(_args)
     print(_isi)
     print("----")
     for m in _isi.modules():
