@@ -408,7 +408,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         def corruption(_x):
             return _x[torch.randperm(_x.size(0))]
 
-        if self.negative_sample_type_in_isi in ["SGI", "INFOGRAPH"]:
+        if self.negative_sample_type_in_isi in ["SGI", "MVGRL"]:
             neg_data_idx_list = sample_index_with_replacement_and_exclusion(
                 num_subdata, num_to_sample=num_samples, set_to_exclude=set(pos_idx_list))
             neg_data_list = []
@@ -429,6 +429,10 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 corr_data = pos_data.clone()
                 corr_data.x = corruption(corr_data.x)
                 neg_data_list.append(corr_data)
+        elif self.negative_sample_type_in_isi == "GraphCL":
+            # Others in the batch will be negative samples
+            neg_data_list = [Data(x=torch.Tensor([]), edge_index=torch.Tensor([[], []]).long())
+                             for _ in pos_data_list]
         else:
             raise ValueError(f"Wrong negative_sample_type: {self.negative_sample_type_in_isi}")
 
@@ -437,6 +441,8 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         def get_isi_attr(d: Data, isi_type: str = None) -> Tuple[Tensor, Tensor]:
             _x_isi = getattr(d, "x_cs", d.x).squeeze()
             _edge_index_isi = getattr(d, "edge_index_cs", d.edge_index)
+            if _x_isi.size(0) == 0:  # GraphCL
+                return _x_isi, _edge_index_isi
             # Relabeling
             _node_idx[_x_isi] = torch.arange(_x_isi.size(0))
             _edge_index_isi = _node_idx[_edge_index_isi]
@@ -583,6 +589,25 @@ if __name__ == '__main__':
     )
     seed_everything(42)
     cprint("Train ISI-X-GB multi-batch", "green")
+    for i, b in enumerate(sampler):
+        print(i, b)
+        if i >= 4:
+            break
+
+    sampler = KHopWithLabelsXESampler(
+        dataset_instance.global_data, train_data,
+        num_hops=1, use_labels_x=True, use_labels_e=False,
+        neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
+        obs_x_range=SLICE_RANGE,
+        subgraph_infomax_type="single",  # todo
+        negative_sample_type_in_isi="GraphCL",  # todo
+        cache_hop_computation=False,
+        batch_size=2,  # todo
+        ke_method=KE_METHOD,
+        shuffle=True,
+    )
+    seed_everything(42)
+    cprint("Train ISI-X-GB multi-batch (GraphCL)", "green")
     for i, b in enumerate(sampler):
         print(i, b)
         if i >= 4:
