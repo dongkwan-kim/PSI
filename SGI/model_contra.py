@@ -14,7 +14,7 @@ from utils import EPSILON
 EPS = EPSILON()
 
 
-class SingleBranchContraLoss(DeepGraphInfomax):
+class G2LContrastiveLoss(DeepGraphInfomax):
 
     def __init__(self, args, projector=None):
         self.args = args
@@ -107,7 +107,7 @@ class SingleBranchContraLoss(DeepGraphInfomax):
         return torch.sigmoid(value) if sigmoid else value
 
     def __repr__(self):
-        return '{}({}, {}, encoder={})'.format(
+        return '{}({}, {}, projector={})'.format(
             self.__class__.__name__, self.hidden_channels, self.summary_channels,
             self.encoder,
         )
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     from arguments import get_args
 
     _args = get_args("SGI", "FNTN", "TEST+MEMO")
-    _isi = SingleBranchContraLoss(_args)
+    _isi = G2LContrastiveLoss(_args)
     print(_isi)
     print("----")
     for m in _isi.modules():

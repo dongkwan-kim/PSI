@@ -54,7 +54,7 @@ SGI-FNTN-BASE: &SGI-FNTN-BASE
 SGI-FNTN-Linear: &SGI-FNTN-Linear
   <<: *SGI-FNTN-BASE
   gnn_name: Linear
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-FNTN-Linear-SHORT: &SGI-FNTN-Linear-SHORT
@@ -83,7 +83,7 @@ SGI-FNTN-BISAGE: &SGI-FNTN-BISAGE
   <<: *SGI-FNTN-BASE
   gnn_name: SAGEConv
   is_bidirectional: True
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-FNTN-BIGCN-SHORT: &SGI-FNTN-BIGCN-SHORT
@@ -268,10 +268,10 @@ SGI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   use_pergraph_attr: True
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
   lambda_l2: 0.00018279
   lambda_aux_isi: 2.00
   m: fntn-inter-3
@@ -284,11 +284,32 @@ SGI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
   is_bidirectional: True
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   negative_sample_type_in_isi: "DGI"  # this
   use_pergraph_attr: True
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
+  lambda_l2: 0.00038154
+  lambda_aux_isi: 4.02
+
+SGI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
+  <<: *SGI-FNTN-BASE
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+  gnn_name: SAGEConv
+  is_bidirectional: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  use_pergraph_attr: True
+  lambda_aux_x: 0.0
+  readout_name: att
   lambda_l2: 0.00038154
   lambda_aux_isi: 4.02
 
@@ -355,7 +376,7 @@ SGI-FNTN-BIE2D2F64-EX:  # not-used
 
 SGI-FNTN-BIE2D2F64-ISI: &SGI-FNTN-BIE2D2F64-ISI
   <<: *SGI-FNTN-BIE2D2F64
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.3
 
 SGI-FNTN-BIE2D2F64-ISI-X: &SGI-FNTN-BIE2D2F64-ISI-X
@@ -376,6 +397,17 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
+  lambda_l2: 0.0018817
+  lambda_aux_x: 5.80
+  lambda_aux_isi: 1.85
+  data_sampler_dropout_edges: 0.60
+  pool_ratio: 0.010994
+
+SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+  use_pergraph_attr: True
+  inter_subgraph_infomax_edge_type: global
+  negative_sample_type_in_isi: "DGI"
   lambda_l2: 0.0018817
   lambda_aux_x: 5.80
   lambda_aux_isi: 1.85
@@ -567,7 +599,7 @@ SGI-HPOMetab-BASE: &SGI-HPOMetab-BASE
 SGI-HPOMetab-Linear: &SGI-HPOMetab-Linear
   <<: *SGI-HPOMetab-BASE
   gnn_name: Linear
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-HPOMetab-Linear-SHORT: &SGI-HPOMetab-Linear-SHORT
@@ -588,7 +620,7 @@ SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SH
 SGI-HPOMetab-SAGE: &SGI-HPOMetab-SAGE
   <<: *SGI-HPOMetab-BASE
   gnn_name: SAGEConv
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-HPOMetab-GCN-SHORT:
@@ -666,9 +698,9 @@ SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
   epochs: 300
   lambda_l2: 0.0000038420
   lambda_aux_isi: 2.9300
@@ -681,10 +713,30 @@ SGI-HPOMetab-SAGE-SHORT-DGI-X-GB: &SGI-HPOMetab-SAGE-SHORT-DGI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
+  epochs: 300
+  lambda_l2: 0.00053075
+  lambda_aux_isi: 3.23
+
+SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
+  <<: *SGI-HPOMetab-BASE
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_aux_x: 0.0
+  readout_name: att
   epochs: 300
   lambda_l2: 0.00053075
   lambda_aux_isi: 3.23
@@ -715,7 +767,7 @@ SGI-HPOMetab-E2D2F64-X:
 
 SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
   <<: *SGI-HPOMetab-E2D2F64
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False
 
@@ -729,6 +781,16 @@ SGI-HPOMetab-E2D2F64-ISI-X-GB: &SGI-HPOMetab-E2D2F64-ISI-X-GB
   <<: *SGI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
+  lambda_l2: 4.57171498822754E-06
+  lambda_aux_x: 0.19
+  lambda_aux_isi: 2.07
+  pool_ratio: 8.51626658225878E-05
+
+SGI-HPOMetab-E2D2F64-DGI-X-GB: &SGI-HPOMetab-E2D2F64-DGI-X-GB
+  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+  epochs: 350
+  inter_subgraph_infomax_edge_type: global
+  negative_sample_type_in_isi: "DGI"
   lambda_l2: 4.57171498822754E-06
   lambda_aux_x: 0.19
   lambda_aux_isi: 2.07
@@ -775,7 +837,7 @@ SGI-EMUser-BASE: &SGI-EMUser-BASE
 SGI-EMUser-Linear: &SGI-EMUser-Linear
   <<: *SGI-EMUser-BASE
   gnn_name: Linear
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-EMUser-Linear-SHORT: &SGI-EMUser-Linear-SHORT
@@ -796,7 +858,7 @@ SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT
 SGI-EMUser-SAGE: &SGI-EMUser-SAGE
   <<: *SGI-EMUser-BASE
   gnn_name: SAGEConv
-  readout_name: mean
+  readout_name: att
   lambda_l2: 1e-3
 
 SGI-EMUser-GCN-SHORT:
@@ -874,9 +936,9 @@ SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
   epochs: 400
   lambda_l2: 2.3018e-7
   lambda_aux_isi: 1.3400
@@ -889,10 +951,30 @@ SGI-EMUser-SAGE-SHORT-DGI-X-GB: &SGI-EMUser-SAGE-SHORT-DGI-X-GB
   gnn_name: SAGEConv
   num_encoder_layers: 2
   num_decoder_body_layers: 2
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   negative_sample_type_in_isi: "DGI"  # this
   lambda_aux_x: 0.0
-  readout_name: mean
+  readout_name: att
+  epochs: 400
+  lambda_l2: 0.00022771
+  lambda_aux_isi: 2.12
+
+SGI-EMUser-SAGE-SHORT-MVGRL-X-GB: &SGI-EMUser-SAGE-SHORT-MVGRL-X-GB
+  <<: *SGI-EMUser-BASE
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_aux_x: 0.0
+  readout_name: att
   epochs: 400
   lambda_l2: 0.00022771
   lambda_aux_isi: 2.12
@@ -924,7 +1006,7 @@ SGI-EMUser-E2D2F64-X:
 
 SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
   <<: *SGI-EMUser-E2D2F64
-  subgraph_infomax_type: "single"
+  subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False  # todo
 
@@ -938,6 +1020,16 @@ SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
 SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
+  lambda_l2: 0.00019286991968807735
+  lambda_aux_x: 0.43
+  lambda_aux_isi: 0.55
+  data_sampler_dropout_edges: 0.45
+  pool_ratio: 0.0174784981734352
+
+SGI-EMUser-E2D2F64-DGI-X-GB: &SGI-EMUser-E2D2F64-DGI-X-GB
+  <<: *SGI-EMUser-E2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  negative_sample_type_in_isi: "DGI"
   lambda_l2: 0.00019286991968807735
   lambda_aux_x: 0.43
   lambda_aux_isi: 0.55

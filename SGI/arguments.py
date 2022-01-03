@@ -111,6 +111,9 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--dropout-channels", default=0.2, type=float)
     parser.add_argument("--is-bidirectional", default=False, type=bool)
     parser.add_argument("--use-skip", default=True, type=bool)
+    parser.add_argument("--use-dual-encoder", default=False, type=bool)
+    parser.add_argument("--augmentor-1", default=None)
+    parser.add_argument("--augmentor-2", default=None)
 
     # Model Decoder
     parser.add_argument("--readout-name", default=None, type=str)
@@ -186,6 +189,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "global_channel_type",
         "gnn_name", "num_encoder_layers", "activation", "hidden_channels", "dropout_channels", "is_bidirectional",
         "use_skip",
+        "use_dual_encoder", "augmentor_1", "augmentor_2",
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",

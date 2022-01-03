@@ -408,7 +408,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         def corruption(_x):
             return _x[torch.randperm(_x.size(0))]
 
-        if self.negative_sample_type_in_isi in ["SGI", "MVGRL"]:
+        if self.negative_sample_type_in_isi == "SGI":
             neg_data_idx_list = sample_index_with_replacement_and_exclusion(
                 num_subdata, num_to_sample=num_samples, set_to_exclude=set(pos_idx_list))
             neg_data_list = []
@@ -423,7 +423,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                         neg_subdata_list.append(subdata)
                     d = Batch.from_data_list(neg_subdata_list) if neg_magnification > 1 else neg_subdata_list[0]
                     neg_data_list.append(d)
-        elif self.negative_sample_type_in_isi == "DGI":
+        elif self.negative_sample_type_in_isi in ["DGI", "MVGRL"]:
             neg_data_list = []
             for pos_data in pos_data_list:
                 corr_data = pos_data.clone()
@@ -563,7 +563,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.9, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        subgraph_infomax_type="single",  # todo
+        subgraph_infomax_type="single_g2l",  # todo
         no_drop_pos_edges=True,  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
@@ -581,7 +581,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        subgraph_infomax_type="single",  # todo
+        subgraph_infomax_type="single_g2l",  # todo
         cache_hop_computation=False,
         batch_size=2,  # todo
         ke_method=KE_METHOD,
@@ -599,7 +599,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        subgraph_infomax_type="single",  # todo
+        subgraph_infomax_type="single_g2l",  # todo
         negative_sample_type_in_isi="GraphCL",  # todo
         cache_hop_computation=False,
         batch_size=2,  # todo
@@ -618,7 +618,7 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        subgraph_infomax_type="single",  # todo
+        subgraph_infomax_type="single_g2l",  # todo
         cache_hop_computation=False,
         ke_method=KE_METHOD,
         shuffle=True,
