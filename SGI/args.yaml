@@ -414,6 +414,23 @@ SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
+SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+  use_pergraph_attr: True
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_l2: 0.0018817
+  lambda_aux_x: 5.80
+  lambda_aux_isi: 1.85
+  data_sampler_dropout_edges: 0.60
+  pool_ratio: 0.010994
+
 SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NTF:
   <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   use_transformer: False
@@ -796,6 +813,22 @@ SGI-HPOMetab-E2D2F64-DGI-X-GB: &SGI-HPOMetab-E2D2F64-DGI-X-GB
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
 
+SGI-HPOMetab-E2D2F64-MVGRL-X-GB: &SGI-HPOMetab-E2D2F64-MVGRL-X-GB
+  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+  epochs: 350
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_l2: 4.57171498822754E-06
+  lambda_aux_x: 0.19
+  lambda_aux_isi: 2.07
+  pool_ratio: 8.51626658225878E-05
+
 SGI-HPOMetab-E2D2F64-ISI-X-GB-NTF:
   <<: *SGI-HPOMetab-E2D2F64-ISI-X-GB
   use_transformer: False
@@ -1030,6 +1063,22 @@ SGI-EMUser-E2D2F64-DGI-X-GB: &SGI-EMUser-E2D2F64-DGI-X-GB
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
+  lambda_l2: 0.00019286991968807735
+  lambda_aux_x: 0.43
+  lambda_aux_isi: 0.55
+  data_sampler_dropout_edges: 0.45
+  pool_ratio: 0.0174784981734352
+
+SGI-EMUser-E2D2F64-MVGRL-X-GB: &SGI-EMUser-E2D2F64-MVGRL-X-GB
+  <<: *SGI-EMUser-E2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  use_dual_encoder: True
+  subgraph_infomax_type: "dual_g2l"
+  negative_sample_type_in_isi: "MVGRL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
   lambda_l2: 0.00019286991968807735
   lambda_aux_x: 0.43
   lambda_aux_isi: 0.55
