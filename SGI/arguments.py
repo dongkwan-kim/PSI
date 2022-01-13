@@ -134,6 +134,7 @@ def get_args(model_name, dataset_name, custom_key="", yaml_path=None, yaml_check
     parser.add_argument("--include-obs-x-in-pooling", default=False)
     parser.add_argument("--use-transformer", default=True, type=bool)
     parser.add_argument("--use-soft-attention-pooling", default=True, type=bool)
+    parser.add_argument("--infonce-temperature", default=0.2, type=float)
 
     # per-graph feature (e.g., text)
     parser.add_argument("--use-pergraph-attr", default=False, type=bool)
@@ -193,7 +194,7 @@ def get_important_args(_args: argparse.Namespace) -> dict:
         "readout_name", "use_decoder", "num_decoder_body_layers",
         "main_decoder_type", "use_node_decoder", "use_edge_decoder",
         "obs_max_len", "is_obs_sequential", "pool_ratio", "use_pool_min_score",
-        "use_transformer", "use_soft_attention_pooling",
+        "use_transformer", "use_soft_attention_pooling", "infonce_temperature",
         "subgraph_infomax_type", "inter_subgraph_infomax_edge_type", "include_obs_x_in_pooling",
         "negative_sample_type_in_isi", "neg_sample_ratio_in_isi",
         "use_pergraph_attr", "pergraph_encoder_type", "pergraph_channels", "pergraph_hidden_channels",

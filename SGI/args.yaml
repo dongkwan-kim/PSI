@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [4]
+  gpu_ids: [3]
   num_gpus_total: 8
   num_gpus_to_use: 1
   model_debug: False
@@ -313,6 +313,36 @@ SGI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
   lambda_l2: 0.00038154
   lambda_aux_isi: 4.02
 
+SGI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
+  <<: *SGI-FNTN-BASE
+  dataset_slice_range_1: 5
+  dataset_slice_range_2: 10
+  gnn_name: SAGEConv
+  is_bidirectional: True
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  batch_size: 16
+  accumulate_grad_batches: 1
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
+  # --
+  obs_max_len: 3090
+  # --
+  use_pergraph_attr: True
+  lambda_aux_x: 0.0
+  readout_name: att
+  lambda_l2: 0.00038154
+  lambda_aux_isi: 4.02
+
 SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
   <<: *FNTN
   dataset_slice_range_1: 5
@@ -424,6 +454,32 @@ SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
   negative_sample_type_in_isi: "MVGRL"
   augmentor_1: ["Identity()"]
   augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_l2: 0.0018817
+  lambda_aux_x: 5.80
+  lambda_aux_isi: 1.85
+  data_sampler_dropout_edges: 0.60
+  pool_ratio: 0.010994
+
+SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA: &SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA
+  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+  use_pergraph_attr: True
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  batch_size: 16
+  accumulate_grad_batches: 1
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
+  # --
+  obs_max_len: 3090
   # --
   lambda_l2: 0.0018817
   lambda_aux_x: 5.80
@@ -758,6 +814,33 @@ SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
   lambda_l2: 0.00053075
   lambda_aux_isi: 3.23
 
+SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB
+  <<: *SGI-HPOMetab-BASE
+  dataset_slice_range_1: 2
+  dataset_slice_range_2: 7
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  batch_size: 16
+  accumulate_grad_batches: 4
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
+  # --
+  lambda_aux_x: 0.0
+  readout_name: att
+  epochs: 300
+  lambda_l2: 0.00053075
+  lambda_aux_isi: 3.23
+
 SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   <<: *HPOMetab
   dataset_slice_range_1: 2
@@ -823,6 +906,29 @@ SGI-HPOMetab-E2D2F64-MVGRL-X-GB: &SGI-HPOMetab-E2D2F64-MVGRL-X-GB
   negative_sample_type_in_isi: "MVGRL"
   augmentor_1: ["Identity()"]
   augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_l2: 4.57171498822754E-06
+  lambda_aux_x: 0.19
+  lambda_aux_isi: 2.07
+  pool_ratio: 8.51626658225878E-05
+
+SGI-HPOMetab-E2D2F64-GRAPHCL3-X-GB: &SGI-HPOMetab-E2D2F64-GRAPHCL3-X-GB
+  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+  epochs: 350
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  batch_size: 16
+  accumulate_grad_batches: 4
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
   # --
   lambda_l2: 4.57171498822754E-06
   lambda_aux_x: 0.19
@@ -1012,6 +1118,33 @@ SGI-EMUser-SAGE-SHORT-MVGRL-X-GB: &SGI-EMUser-SAGE-SHORT-MVGRL-X-GB
   lambda_l2: 0.00022771
   lambda_aux_isi: 2.12
 
+SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB
+  <<: *SGI-EMUser-BASE
+  dataset_slice_range_1: 6
+  dataset_slice_range_2: 11
+  gnn_name: SAGEConv
+  num_encoder_layers: 2
+  num_decoder_body_layers: 2
+  # -- important
+  batch_size: 64
+  accumulate_grad_batches: 1
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
+  # --
+  lambda_aux_x: 0.0
+  readout_name: att
+  epochs: 400
+  lambda_l2: 0.00022771
+  lambda_aux_isi: 2.12
+
 SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   <<: *EMUser
   dataset_slice_range_1: 6
@@ -1078,6 +1211,29 @@ SGI-EMUser-E2D2F64-MVGRL-X-GB: &SGI-EMUser-E2D2F64-MVGRL-X-GB
   negative_sample_type_in_isi: "MVGRL"
   augmentor_1: ["Identity()"]
   augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  # --
+  lambda_l2: 0.00019286991968807735
+  lambda_aux_x: 0.43
+  lambda_aux_isi: 0.55
+  data_sampler_dropout_edges: 0.45
+  pool_ratio: 0.0174784981734352
+
+SGI-EMUser-E2D2F64-GRAPHCL3-X-GB: &SGI-EMUser-E2D2F64-GRAPHCL3-X-GB
+  <<: *SGI-EMUser-E2D2F64-ISI-X
+  inter_subgraph_infomax_edge_type: global
+  # -- important
+  batch_size: 64
+  accumulate_grad_batches: 1
+  # --
+  use_dual_encoder: False
+  subgraph_infomax_type: "dual_g2g"
+  negative_sample_type_in_isi: "GRAPHCL"
+  augmentor_1: ["Identity()"]
+  augmentor_2: [
+      "RandomChoice([NodeDropping(pn=0.1),
+                     FeatureMasking(pf=0.1),
+                     EdgeRemoving(pe=0.1)], 1)"
+  ]
   # --
   lambda_l2: 0.00019286991968807735
   lambda_aux_x: 0.43
