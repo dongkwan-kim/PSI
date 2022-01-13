@@ -14,7 +14,7 @@ from model_embedding import VersatileEmbedding
 from model_encoder import GraphEncoder
 from model_decoder import SGIDecoder
 from model_readout import Readout
-from model_contra import G2LContrastiveLoss
+from model_contra import G2LContrastiveLoss, G2GContrastiveLoss
 
 
 class SGINet(nn.Module):
@@ -55,7 +55,7 @@ class SGINet(nn.Module):
         elif "g2l" in self.args.subgraph_infomax_type:
             self.infomax_loss = G2LContrastiveLoss(args)
         elif "g2g" in self.args.subgraph_infomax_type:
-            raise NotImplementedError
+            self.infomax_loss = G2GContrastiveLoss(args)
         else:
             raise ValueError(f"Wrong subgraph_infomax_type:"
                              f"{self.args.subgraph_infomax_type}")
@@ -72,7 +72,7 @@ class SGINet(nn.Module):
         else:
             x = self.enc(x, edge_index_01)
 
-        dec_x, dec_e, loss_isi = None, None, None
+        dec_x, dec_e, loss_isi, x_isi = None, None, None, None
 
         if self.args.use_decoder:  # SGIDecoder
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
@@ -95,10 +95,11 @@ class SGINet(nn.Module):
 
             if self.args.subgraph_infomax_type == "dual_g2g":
                 assert batch_isi is not None
-                assert not self.args.use_decoder
-                z_g_isi, _ = self.dec_or_readout(x_isi, pergraph_attr, batch_isi)
+                if self.args.use_decoder:
+                    z_g_isi = self.dec_or_readout.obs_sg_pooler_k(x_isi, batch_isi)
+                else:
+                    z_g_isi, _ = self.dec_or_readout(x_isi, pergraph_attr, batch_isi)
                 loss_isi = self.infomax_loss(summarized=z_g, summarized_2=z_g_isi)
-                raise NotImplementedError
 
             elif self.args.subgraph_infomax_type in ["dual_g2l", "single_g2l"]:
                 loss_isi = self.infomax_loss(
