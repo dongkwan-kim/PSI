@@ -429,9 +429,10 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                 corr_data = pos_data.clone()
                 corr_data.x = corruption(corr_data.x)
                 neg_data_list.append(corr_data)
-        elif self.negative_sample_type_in_isi == "GraphCL":
+        elif self.negative_sample_type_in_isi == "GRAPHCL":
             # Others in the batch will be negative samples
-            neg_data_list = [Data(x=torch.Tensor([]), edge_index=torch.Tensor([[], []]).long())
+            neg_data_list = [Data(x=torch.Tensor([]).long(),
+                                  edge_index=torch.Tensor([[], []]).long())
                              for _ in pos_data_list]
         else:
             raise ValueError(f"Wrong negative_sample_type: {self.negative_sample_type_in_isi}")
@@ -599,10 +600,10 @@ if __name__ == '__main__':
         num_hops=1, use_labels_x=True, use_labels_e=False,
         neg_sample_ratio=1.0, dropout_edges=0.3, balanced_sampling=True,
         obs_x_range=SLICE_RANGE,
-        subgraph_infomax_type="single_g2l",  # todo
-        negative_sample_type_in_isi="GraphCL",  # todo
+        subgraph_infomax_type="dual_g2g",  # todo
+        negative_sample_type_in_isi="GRAPHCL",  # todo
         cache_hop_computation=False,
-        batch_size=2,  # todo
+        batch_size=3,  # todo
         ke_method=KE_METHOD,
         shuffle=True,
     )
