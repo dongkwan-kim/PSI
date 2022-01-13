@@ -159,14 +159,14 @@ class SGIDecoder(nn.Module):
 
         B = int(batch.max().item() + 1) if batch is not None else 1
         batch_obs_x = batch[obs_x_index] if batch is not None else None
-        obs_x_k = self.obs_sg_pooler_k(x[obs_x_index], batch_obs_x)  # [B, F]
+        obs_g_k = self.obs_sg_pooler_k(x[obs_x_index], batch_obs_x)  # [B, F]
         x_q = self.body_fc_q(x)  # [N, F]
         x_v = self.body_fc_v(x)  # [N, F]
 
         dec_x, pool_x, dec_e, pool_e = None, None, None, None
         if self.args.use_node_decoder:
             dec_x, pool_x = self.decode_and_pool(
-                obs_x_k, obs_x_index, x_q, x_v, edge_index_01,
+                obs_g_k, obs_x_index, x_q, x_v, edge_index_01,
                 decoder_type="node",
                 use_pool=self.main_decoder_type == "node",
                 batch=batch, batch_size=B,
@@ -177,7 +177,7 @@ class SGIDecoder(nn.Module):
             else:
                 edge_index_012 = edge_index_01
             dec_e, pool_e = self.decode_and_pool(
-                obs_x_k, obs_x_index, x_q, x_v, edge_index_012,
+                obs_g_k, obs_x_index, x_q, x_v, edge_index_012,
                 decoder_type="edge",
                 use_pool=self.main_decoder_type == "edge",
                 idx_to_pool=edge_index_01.size(1),
@@ -194,7 +194,7 @@ class SGIDecoder(nn.Module):
         logits_g = self.graph_fc(z_with_p_g).view(B, -1)
         return z_g, logits_g, dec_x, dec_e
 
-    def decode_and_pool(self, obs_x_k, obs_x_index, x_q, x_v, edge_index,
+    def decode_and_pool(self, obs_g_k, obs_x_index, x_q, x_v, edge_index,
                         decoder_type, use_pool, idx_to_pool=None, batch=None, batch_size=1):
         # x_q, x_v: [N, F]
         # obs_x_k: [B, F]
@@ -204,14 +204,14 @@ class SGIDecoder(nn.Module):
         if decoder_type == "node":
             o_q, o_v = x_q, x_v  # [N, F]
             o_q, mask = to_dense_batch(o_q, batch)  # [B, N_max, F]
-            decoded = self.node_dec(obs_x_k, o_q)  # [N, 2] or [B, N_max, 2]
+            decoded = self.node_dec(obs_g_k, o_q)  # [N, 2] or [B, N_max, 2]
 
         # [B, F] * [B, E_max, 2F] -> [B, E_max, 3] -> [\sum E, 3]
         elif decoder_type == "edge":
             o_q = x_q[edge_index].view(-1, 2 * self.args.hidden_channels)  # [\sum E, 2F]
             o_v = x_v[edge_index].view(-1, 2 * self.args.hidden_channels)  # [\sum E, 2F]
             o_q, mask = to_dense_batch(o_q, batch)   # [B, E_max, F]
-            decoded = self.edge_dec(obs_x_k, o_q)  # [\sum E, 3] or [B, E_max, 3]
+            decoded = self.edge_dec(obs_g_k, o_q)  # [\sum E, 3] or [B, E_max, 3]
 
         else:
             raise ValueError(f"Wrong decoder_type: {decoder_type}")
