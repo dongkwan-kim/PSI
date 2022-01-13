@@ -25,6 +25,7 @@ class Graph(NamedTuple):
 
 class Augmentor(ABC):
     """Base class for graph augmentors."""
+
     def __init__(self):
         pass
 
@@ -37,6 +38,10 @@ class Augmentor(ABC):
             edge_index: torch.LongTensor, edge_weight: Optional[torch.FloatTensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
         return self.augment(Graph(x, edge_index, edge_weight)).unfold()
+
+    def __repr__(self):
+        values = ", ".join(str(v) for v in self.__dict__.values())
+        return f"{self.__class__.__name__}({values})"
 
 
 class Compose(Augmentor):
@@ -177,7 +182,6 @@ class PPRDiffusion(Augmentor):
 
 
 class PyGAugmentor:
-
     """PyG augmentor interfaces for PyGCL."""
 
     def __init__(self, *augmentors: Union[Augmentor, str]):
@@ -212,8 +216,7 @@ class PyGAugmentor:
     def __repr__(self):
         repr_list = []
         for a in self.run_aug.augmentors:
-            values = ", ".join(str(v) for v in a.__dict__.values())
-            repr_list.append(f"{a.__class__.__name__}({values})")
+            repr_list.append(a.__repr__())
         return "Aug({})".format(", ".join(repr_list))
 
 
@@ -234,7 +237,10 @@ if __name__ == '__main__':
     print("E", _edge_index)
 
     print("- " * 7)
-    pga = PyGAugmentor("EdgeAdding(0.5)", "PPRDiffusion(alpha=0.2)")
+    pga = PyGAugmentor("RandomChoice(["
+                       "NodeDropping(pn=0.1),"
+                       "FeatureMasking(pf=0.1),"
+                       "EdgeRemoving(pe=0.1) ], 1)")
     print(pga)
     _o = pga(_d.clone())
     print(_o)
@@ -258,5 +264,3 @@ if __name__ == '__main__':
     print("E", _o[1])
     print(_d.x)
     print(_d.edge_index)
-
-
