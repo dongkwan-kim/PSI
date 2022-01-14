@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [3]
+  gpu_ids: [2]
   num_gpus_total: 8
   num_gpus_to_use: 1
   model_debug: False
@@ -814,7 +814,7 @@ SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
   lambda_l2: 0.00053075
   lambda_aux_isi: 3.23
 
-SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB
+SGI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
   <<: *SGI-HPOMetab-BASE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
@@ -822,8 +822,8 @@ SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-HPOMetab-SAGE-SHORT-GRAPHCL3-X-GB
   num_encoder_layers: 2
   num_decoder_body_layers: 2
   # -- important
-  batch_size: 16
-  accumulate_grad_batches: 4
+  batch_size: 64
+  accumulate_grad_batches: 1
   # --
   use_dual_encoder: False
   subgraph_infomax_type: "dual_g2g"
@@ -912,13 +912,13 @@ SGI-HPOMetab-E2D2F64-MVGRL-X-GB: &SGI-HPOMetab-E2D2F64-MVGRL-X-GB
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
 
-SGI-HPOMetab-E2D2F64-GRAPHCL3-X-GB: &SGI-HPOMetab-E2D2F64-GRAPHCL3-X-GB
+SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB: &SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB
   <<: *SGI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
   # -- important
-  batch_size: 16
-  accumulate_grad_batches: 4
+  batch_size: 64
+  accumulate_grad_batches: 1
   # --
   use_dual_encoder: False
   subgraph_infomax_type: "dual_g2g"
