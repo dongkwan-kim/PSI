@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Tuple, NamedTuple, List, Union
 
 from torch_geometric.data import Batch, Data
-from torch_geometric.utils import dropout_adj
+from torch_geometric.utils import dropout_adj, remove_self_loops
 
 from augmentor_functional import add_edge, dropout_feature, drop_feature, drop_node, permute, random_walk_subgraph, \
     compute_ppr
@@ -176,6 +176,32 @@ class PPRDiffusion(Augmentor):
             edge_index, edge_weights,
             alpha=self.alpha, eps=self.eps, ignore_edge_attr=False, add_self_loop=self.add_self_loop
         )
+        res = Graph(x=x, edge_index=edge_index, edge_weights=edge_weights)
+        self._cache = res
+        return res
+
+
+class PPRDiffusionWOSelfLoops(Augmentor):
+    def __init__(self, alpha: float = 0.2, eps: float = 1e-4,
+                 use_cache: bool = False,
+                 remove_self_loop: bool = True):
+        super(PPRDiffusionWOSelfLoops, self).__init__()
+        self.alpha = alpha
+        self.eps = eps
+        self._cache = None
+        self.use_cache = use_cache
+        self.remove_self_loop = remove_self_loop
+
+    def augment(self, g: Graph) -> Graph:
+        if self._cache is not None and self.use_cache:
+            return self._cache
+        x, edge_index, edge_weights = g.unfold()
+        edge_index, edge_weights = compute_ppr(
+            edge_index, edge_weights,
+            alpha=self.alpha, eps=self.eps, ignore_edge_attr=False, add_self_loop=False,
+        )
+        if self.remove_self_loop:
+            edge_index, edge_weights = remove_self_loops(edge_index, edge_weights)
         res = Graph(x=x, edge_index=edge_index, edge_weights=edge_weights)
         self._cache = res
         return res
