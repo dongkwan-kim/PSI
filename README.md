@@ -1,11 +1,11 @@
-# SGI
+# PSI
 
-Official Implementation of 'Intra- and Inter-Subgraph InfoMax' from 'Learning Representations of Partial Subgraphs by Intra- and Inter-Subgraph InfoMax'
+Official Implementation of 'Partial Subgraph InfoMax' from 'Learning Representations of Partially Observed Subgraphs by Mutual Information Maximization'.
 
 ## Installation
 
 ```bash
-bash SGI/install.sh ${CUDA, optional, default is cu102.}
+bash PSI/install.sh ${CUDA, optional, default is cu102.}
 ```
 
 - If you have any trouble installing PyTorch Geometric, please install PyG's dependencies manually.
@@ -13,13 +13,13 @@ bash SGI/install.sh ${CUDA, optional, default is cu102.}
 - PYG's [FAQ](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html#frequently-asked-questions) might be helpful.
 
 ## Basics
-- The main train/test code is in `SGI/main.py`.
-- If you want to see hyperparameter settings, refer to `SGI/args.yaml` and `SGI/arguments.py`.
+- The main train/test code is in `PSI/main.py`.
+- If you want to see hyperparameter settings, refer to `PSI/args.yaml` and `PSI/arguments.py`.
 
 ## Run
 
 ```bash
-python -u SGI/main.py \
+python -u PSI/main.py \
     --dataset-name FNTN \
     --custom-key BIE2D2F64-ISI-X-GB-PGA \
     --gpu-ids 0 \
@@ -29,10 +29,10 @@ python -u SGI/main.py \
 ### GPU Setting
 
 There are three arguments for GPU settings (`--num-gpus-total`, `--num-gpus-to-use`, `--gpu-ids`).
-Default values are from the author's machine, so we recommend you modify these values from `SGI/args.yaml` or by the command line.
+Default values are from the author's machine, so we recommend you modify these values from `PSI/args.yaml` or by the command line.
 - `--num-gpus-total` (default 4): The total number of GPUs in your machine.
 - `--num-gpus-to-use` (default 1): The number of GPUs you want to use.
-- `--gpu-deny-list` (default: `[0]`): The ids of GPUs you want to use.
+- `--gpu-ids` (default: `[0]`): The ids of GPUs you want to use.
 
 ### Datasets
 
@@ -54,13 +54,17 @@ EMUSER  FNTN  HPOMETAB
 
 ### Models (`--custom-key`)
 
-| Type            | FNTN                       | EMUser & HPOMetab       |
-|-----------------|----------------------------|-------------------------|
-| Intra-SGI       | BIE2D2F64-X-PGA            | E2D2F64-X               |
-| Inter-SGI       | BISAGE-SHORT-ISI-X-GB-PGA  | SAGE-SHORT-ISI-X-GB     |
-| Intra/Inter-SGI | BIE2D2F64-ISI-X-GB-PGA     | E2D2F64-ISI-X-GB        |
+| Type                     | FNTN                           | EMUser & HPOMetab                     |
+|--------------------------|--------------------------------|---------------------------------------|
+| PS-DGI                   | BISAGE-SHORT-DGI-X-GB-PGA      | SAGE-SHORT-DGI-X-GB                   |
+| PS-InfoGraph             | BISAGE-SHORT-ISI-X-GB-PGA      | SAGE-SHORT-ISI-X-GB                   |
+| PS-MVGRL                 | BISAGE-SHORT-MVGRL-X-GB-PGA    | SAGE-SHORT-MVGRL-X-GB                 |
+| PS-GraphCL               | BISAGE-SHORT-GRAPHCL3-X-GB-PGA | SAGE-SHORT-GRAPHCL3FB-X-GB (HPOMetab) |
+| k-hop PSI                | BIE2D2F64-X-PGA                | E2D2F64-X                             |
+| k-hop PSI + PS-DGI       | BIE2D2F64-DGI-X-GB-PGA         | E2D2F64-DGI-X-GB                      |
+| k-hop PSI + PS-InfoGraph | BIE2D2F64-ISI-X-GB-PGA         | E2D2F64-ISI-X-GB                      |
 
 
 ### Other Hyperparameters
 
-See `SGI/args.yaml` or run `$ python SGI/main.py --help`.
+See `PSI/args.yaml` or run `$ python PSI/main.py --help`.
