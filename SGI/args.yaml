@@ -1,6 +1,6 @@
 DEFAULT: &DEFAULT
   use_gpu: True  # todo
-  gpu_ids: [0]
+  gpu_ids: [2]
   num_gpus_total: 4
   num_gpus_to_use: 1
   model_debug: False
@@ -781,13 +781,13 @@ SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
   subgraph_infomax_type: "dual_g2l"
   negative_sample_type_in_isi: "MVGRL"
   augmentor_1: ["Identity()"]
-  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  augmentor_2: ["PPRDiffusionWOSelfLoops(alpha=0.2)"]
   # --
   lambda_aux_x: 0.0
   readout_name: mean
   epochs: 300
-  lambda_l2: 0.00053075
-  lambda_aux_isi: 3.23
+  lambda_l2: 0.000098100
+  lambda_aux_isi: 0.68
 
 SGI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
   <<: *SGI-HPOMetab-BASE
