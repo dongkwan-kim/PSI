@@ -307,13 +307,13 @@ SGI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
   subgraph_infomax_type: "dual_g2l"
   negative_sample_type_in_isi: "MVGRL"
   augmentor_1: ["Identity()"]
-  augmentor_2: ["PPRDiffusion(alpha=0.2)"]
+  augmentor_2: ["PPRDiffusionWOSelfLoops(alpha=0.2)"]
   # --
   use_pergraph_attr: True
   lambda_aux_x: 0.0
   readout_name: mean
-  lambda_l2: 0.00038154
-  lambda_aux_isi: 4.02
+  lambda_l2: 0.00083774
+  lambda_aux_isi: 4.46
 
 SGI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
   <<: *SGI-FNTN-BASE
@@ -1142,11 +1142,13 @@ SGI-EMUser-E2D2F64-X:
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
+  use_transformer: False
+  use_soft_attention_pooling: False
   lambda_aux_isi: 0.0
-  lambda_l2: 0.00018086
-  lambda_aux_x: 1.00
-  data_sampler_dropout_edges: 0.6
-  pool_ratio: 0.0036169
+  lambda_aux_x: 1.20
+  data_sampler_dropout_edges: 0.45
+  pool_ratio: 0.0016169
+  lambda_l2: 0.00022086
 
 SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
   <<: *SGI-EMUser-E2D2F64
