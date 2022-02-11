@@ -836,6 +836,8 @@ SGI-HPOMetab-E2D2F64-X:
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
+  use_transformer: False
+  use_soft_attention_pooling: False
   lambda_l2: 9.586378119508694e-05
   lambda_aux_x: 3.38
   data_sampler_dropout_edges: 0.50
