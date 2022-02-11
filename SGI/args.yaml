@@ -371,9 +371,11 @@ SGI-FNTN-BIE2D2F64-X: &SGI-FNTN-BIE2D2F64-X  # not-used
 SGI-FNTN-BIE2D2F64-X-PGA:
   <<: *SGI-FNTN-BIE2D2F64-X
   use_pergraph_attr: True
+  use_transformer: False
+  use_soft_attention_pooling: False
   lambda_aux_isi: 0.0
   lambda_l2: 0.00024979
-  lambda_aux_x: 2.49
+  lambda_aux_x: 1.19
   data_sampler_dropout_edges: 0.55
   pool_ratio: 0.0016009
 
