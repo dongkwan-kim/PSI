@@ -143,7 +143,7 @@ class NoisySubgraphDataModule(pl.LightningDataModule):
             use_pergraph_attr=self.hparams.use_pergraph_attr,
             balanced_sampling=False,
             subgraph_infomax_type=None,
-            negative_sample_type_in_isi="SGI",
+            negative_sample_type_in_isi="PSI",
             neg_sample_ratio_in_isi=None,
             no_drop_pos_edges=False,  # important
             batch_size=(self.hparams.eval_batch_size or self.hparams.batch_size),  # important
@@ -202,7 +202,7 @@ def random_input_generator(n_p=49, n_n=50, F_f=10, e_p=11, e_n=13, batch_size=1,
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("SGI", "HPOMetab", "E2D2F64-ISI-X-GB")
+    _args = get_args("PSI", "HPOMetab", "E2D2F64-ISI-X-GB")
     pprint(_args)
 
     dm = NoisySubgraphDataModule(_args, prepare_data_and_setup=True)

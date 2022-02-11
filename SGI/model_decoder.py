@@ -84,7 +84,7 @@ class ObservedSubgraphPooler(nn.Module):
         )
 
 
-class SGIDecoder(nn.Module):
+class PSIDecoder(nn.Module):
 
     def __init__(self, args):
         super().__init__()
@@ -250,7 +250,7 @@ if __name__ == '__main__':
             print(f"_de: {_de.size(), _de.mean().item(), _de.std().item()}")
 
     seed_everything(42)
-    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _args = get_args("PSI", "FNTN", "TEST+MEMO")
     _args.use_pool_min_score = False  # todo
     _args.pool_ratio = 0.3
     _args.main_decoder_type = "node"  # todo
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     _args.use_pergraph_attr = True
     _args.use_transformer = False  # todo
     _args.use_soft_attention_pooling = False  # todo
-    dec = SGIDecoder(_args)
+    dec = PSIDecoder(_args)
     print(dec)
 
     _N = 9

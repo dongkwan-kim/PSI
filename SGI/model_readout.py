@@ -152,7 +152,7 @@ class Readout(nn.Module):
 if __name__ == '__main__':
     from arguments import get_args
 
-    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _args = get_args("PSI", "FNTN", "TEST+MEMO")
     _args.readout_name = "mean-att"
     _args.use_pergraph_attr = True
     _args.num_decoder_body_layers = 2

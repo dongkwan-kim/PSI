@@ -33,7 +33,7 @@ FNTN: &FNTN
   obs_max_len: 20
   log_dir: ../lightning_logs_fntn/
 
-SGI-FNTN-TEST:
+PSI-FNTN-TEST:
   <<: *FNTN
   save_model: True
   model_debug: False
@@ -42,7 +42,7 @@ SGI-FNTN-TEST:
   lambda_aux_e: 1.0
   epochs: 2
 
-SGI-FNTN-BASE: &SGI-FNTN-BASE
+PSI-FNTN-BASE: &PSI-FNTN-BASE
   <<: *FNTN
   use_node_decoder: False
   use_edge_decoder: False
@@ -52,218 +52,218 @@ SGI-FNTN-BASE: &SGI-FNTN-BASE
   data_use_obs_edge_only: True
   use_decoder: False
 
-SGI-FNTN-Linear: &SGI-FNTN-Linear
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-Linear: &PSI-FNTN-Linear
+  <<: *PSI-FNTN-BASE
   gnn_name: Linear
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-FNTN-Linear-SHORT: &SGI-FNTN-Linear-SHORT
-  <<: *SGI-FNTN-Linear
+PSI-FNTN-Linear-SHORT: &PSI-FNTN-Linear-SHORT
+  <<: *PSI-FNTN-Linear
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-Linear-SHORT-PGA:
-  <<: *SGI-FNTN-Linear-SHORT
+PSI-FNTN-Linear-SHORT-PGA:
+  <<: *PSI-FNTN-Linear-SHORT
   use_pergraph_attr: True
   lambda_l2: 4.5200e-7
 
-SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-FNTN-Linear
+PSI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT: &PSI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-FNTN-Linear
   train_dataset_slice_range_1: 3089
   train_dataset_slice_range_2: 3090
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT-PGA:
-  <<: *SGI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
+PSI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT-PGA:
+  <<: *PSI-FNTN-Linear-TRAIN-MAX-EVAL-SHORT
   use_pergraph_attr: True
   lambda_l2: 1.6697e-7
 
-SGI-FNTN-BISAGE: &SGI-FNTN-BISAGE
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-BISAGE: &PSI-FNTN-BISAGE
+  <<: *PSI-FNTN-BASE
   gnn_name: SAGEConv
   is_bidirectional: True
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-FNTN-BIGCN-SHORT: &SGI-FNTN-BIGCN-SHORT
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BIGCN-SHORT: &PSI-FNTN-BIGCN-SHORT
+  <<: *PSI-FNTN-BISAGE
   gnn_name: GCNConv
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-BIGAT-SHORT: &SGI-FNTN-BIGAT-SHORT
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BIGAT-SHORT: &PSI-FNTN-BIGAT-SHORT
+  <<: *PSI-FNTN-BISAGE
   gnn_name: GATConv
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-BISAGE-SHORT: &SGI-FNTN-BISAGE-SHORT
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-SHORT: &PSI-FNTN-BISAGE-SHORT
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-BISAGE-LONG: &SGI-FNTN-BISAGE-LONG
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-LONG: &PSI-FNTN-BISAGE-LONG
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_range_1: 100
   dataset_slice_range_2: 105
 
-SGI-FNTN-BISAGE-XLONG: &SGI-FNTN-BISAGE-XLONG
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-XLONG: &PSI-FNTN-BISAGE-XLONG
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_range_1: 200
   dataset_slice_range_2: 205
 
-SGI-FNTN-BISAGE-12P: &SGI-FNTN-BISAGE-12P
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-12P: &PSI-FNTN-BISAGE-12P
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_ratio: 0.125
   dataset_slice_range_2: 2
 
-SGI-FNTN-BISAGE-25P: &SGI-FNTN-BISAGE-25P
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-25P: &PSI-FNTN-BISAGE-25P
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
 
-SGI-FNTN-BISAGE-50P: &SGI-FNTN-BISAGE-50P
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-50P: &PSI-FNTN-BISAGE-50P
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
 
-SGI-FNTN-BISAGE-MAX: &SGI-FNTN-BISAGE-MAX
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-MAX: &PSI-FNTN-BISAGE-MAX
+  <<: *PSI-FNTN-BISAGE
   dataset_slice_range_1: 3089
   dataset_slice_range_2: 3090
   obs_max_len: 3090
 
-SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT: &SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT: &PSI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-FNTN-BISAGE
   train_dataset_slice_range_1: 3089
   train_dataset_slice_range_2: 3090
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
 
-SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX: &SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX: &PSI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
+  <<: *PSI-FNTN-BISAGE
   train_dataset_slice_range_1: 0.25
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 3089
   dataset_slice_range_2: 3090
 
-SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX: &SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
-  <<: *SGI-FNTN-BISAGE
+PSI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX: &PSI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
+  <<: *PSI-FNTN-BISAGE
   train_dataset_slice_range_1: 0.50
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 3089
   dataset_slice_range_2: 3090
 
-SGI-FNTN-BISAGE-SHORT-0SG: &SGI-FNTN-BISAGE-SHORT-0SG
-  <<: *SGI-FNTN-BISAGE-SHORT
+PSI-FNTN-BISAGE-SHORT-0SG: &PSI-FNTN-BISAGE-SHORT-0SG
+  <<: *PSI-FNTN-BISAGE-SHORT
   data_use_obs_edge_only: False
 
-SGI-FNTN-BISAGE-LONG-0SG: &SGI-FNTN-BISAGE-LONG-0SG
-  <<: *SGI-FNTN-BISAGE-LONG
+PSI-FNTN-BISAGE-LONG-0SG: &PSI-FNTN-BISAGE-LONG-0SG
+  <<: *PSI-FNTN-BISAGE-LONG
   data_use_obs_edge_only: False
 
-SGI-FNTN-BISAGE-XLONG-0SG: &SGI-FNTN-BISAGE-XLONG-0SG
-  <<: *SGI-FNTN-BISAGE-XLONG
+PSI-FNTN-BISAGE-XLONG-0SG: &PSI-FNTN-BISAGE-XLONG-0SG
+  <<: *PSI-FNTN-BISAGE-XLONG
   data_use_obs_edge_only: False
 
-SGI-FNTN-BISAGE-MAX-0SG: &SGI-FNTN-BISAGE-MAX-0SG
-  <<: *SGI-FNTN-BISAGE-MAX
+PSI-FNTN-BISAGE-MAX-0SG: &PSI-FNTN-BISAGE-MAX-0SG
+  <<: *PSI-FNTN-BISAGE-MAX
   data_use_obs_edge_only: False
 
-SGI-FNTN-BISAGE-SHORT-1SG: &SGI-FNTN-BISAGE-SHORT-1SG
-  <<: *SGI-FNTN-BISAGE-SHORT
+PSI-FNTN-BISAGE-SHORT-1SG: &PSI-FNTN-BISAGE-SHORT-1SG
+  <<: *PSI-FNTN-BISAGE-SHORT
   data_use_obs_edge_only: False
   data_sampler_num_hops: 1
 
-SGI-FNTN-BIGCN-SHORT-PGA:
-  <<: *SGI-FNTN-BIGCN-SHORT
+PSI-FNTN-BIGCN-SHORT-PGA:
+  <<: *PSI-FNTN-BIGCN-SHORT
   use_pergraph_attr: True
   lambda_l2: 7.6856e-7
 
-SGI-FNTN-BIGAT-SHORT-PGA:
-  <<: *SGI-FNTN-BIGAT-SHORT
+PSI-FNTN-BIGAT-SHORT-PGA:
+  <<: *PSI-FNTN-BIGAT-SHORT
   use_pergraph_attr: True
   lambda_l2: 3.7253e-7
 
-SGI-FNTN-BISAGE-SHORT-PGA:
-  <<: *SGI-FNTN-BISAGE-SHORT
+PSI-FNTN-BISAGE-SHORT-PGA:
+  <<: *PSI-FNTN-BISAGE-SHORT
   use_pergraph_attr: True
   lambda_l2: 0.00028476
 
-SGI-FNTN-BISAGE-LONG-PGA:
-  <<: *SGI-FNTN-BISAGE-LONG
+PSI-FNTN-BISAGE-LONG-PGA:
+  <<: *PSI-FNTN-BISAGE-LONG
   use_pergraph_attr: True
   lambda_l2: 0.00023504
 
-SGI-FNTN-BISAGE-12P-PGA:
-  <<: *SGI-FNTN-BISAGE-12P
+PSI-FNTN-BISAGE-12P-PGA:
+  <<: *PSI-FNTN-BISAGE-12P
   use_pergraph_attr: True
   lambda_l2: 0.00096833
 
-SGI-FNTN-BISAGE-25P-PGA:
-  <<: *SGI-FNTN-BISAGE-25P
+PSI-FNTN-BISAGE-25P-PGA:
+  <<: *PSI-FNTN-BISAGE-25P
   use_pergraph_attr: True
   lambda_l2: 0.00026687
 
-SGI-FNTN-BISAGE-50P-PGA:
-  <<: *SGI-FNTN-BISAGE-50P
+PSI-FNTN-BISAGE-50P-PGA:
+  <<: *PSI-FNTN-BISAGE-50P
   use_pergraph_attr: True
   lambda_l2: 0.00026903
 
-SGI-FNTN-BISAGE-XLONG-PGA:
-  <<: *SGI-FNTN-BISAGE-XLONG
+PSI-FNTN-BISAGE-XLONG-PGA:
+  <<: *PSI-FNTN-BISAGE-XLONG
   use_pergraph_attr: True
   lambda_l2: 0.00018054
 
-SGI-FNTN-BISAGE-MAX-PGA:
-  <<: *SGI-FNTN-BISAGE-MAX
+PSI-FNTN-BISAGE-MAX-PGA:
+  <<: *PSI-FNTN-BISAGE-MAX
   use_pergraph_attr: True
   lambda_l2: 0.00022044
 
-SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-PGA:
-  <<: *SGI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
+PSI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT-PGA:
+  <<: *PSI-FNTN-BISAGE-TRAIN-MAX-EVAL-SHORT
   use_pergraph_attr: True
   lambda_l2: 0.00031851
 
-SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX-PGA:
-  <<: *SGI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
+PSI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX-PGA:
+  <<: *PSI-FNTN-BISAGE-TRAIN-25P-EVAL-MAX
   use_pergraph_attr: True
   lambda_l2: 0.00022044
 
-SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX-PGA:
-  <<: *SGI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
+PSI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX-PGA:
+  <<: *PSI-FNTN-BISAGE-TRAIN-50P-EVAL-MAX
   use_pergraph_attr: True
   lambda_l2: 0.00022044
 
-SGI-FNTN-BISAGE-SHORT-0SG-PGA:
-  <<: *SGI-FNTN-BISAGE-SHORT-0SG
+PSI-FNTN-BISAGE-SHORT-0SG-PGA:
+  <<: *PSI-FNTN-BISAGE-SHORT-0SG
   use_pergraph_attr: True
   lambda_l2: 0.000010522
 
-SGI-FNTN-BISAGE-LONG-0SG-PGA:
-  <<: *SGI-FNTN-BISAGE-LONG-0SG
+PSI-FNTN-BISAGE-LONG-0SG-PGA:
+  <<: *PSI-FNTN-BISAGE-LONG-0SG
   use_pergraph_attr: True
   lambda_l2: 0.000043985
 
-SGI-FNTN-BISAGE-XLONG-0SG-PGA:
-  <<: *SGI-FNTN-BISAGE-XLONG-0SG
+PSI-FNTN-BISAGE-XLONG-0SG-PGA:
+  <<: *PSI-FNTN-BISAGE-XLONG-0SG
   use_pergraph_attr: True
   lambda_l2: 0.000027055
 
-SGI-FNTN-BISAGE-MAX-0SG-PGA:
-  <<: *SGI-FNTN-BISAGE-MAX-0SG
+PSI-FNTN-BISAGE-MAX-0SG-PGA:
+  <<: *PSI-FNTN-BISAGE-MAX-0SG
   use_pergraph_attr: True
   lambda_l2: 0.000056615
 
-SGI-FNTN-BISAGE-SHORT-1SG-PGA:
-  <<: *SGI-FNTN-BISAGE-SHORT-1SG
+PSI-FNTN-BISAGE-SHORT-1SG-PGA:
+  <<: *PSI-FNTN-BISAGE-SHORT-1SG
   use_pergraph_attr: True
   lambda_l2: 0.000347723
 
-SGI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
+  <<: *PSI-FNTN-BASE
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
   gnn_name: SAGEConv
@@ -278,8 +278,8 @@ SGI-FNTN-BISAGE-SHORT-ISI-X-GB-PGA:
   lambda_aux_isi: 2.00
   m: fntn-inter-3
 
-SGI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
+  <<: *PSI-FNTN-BASE
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
   gnn_name: SAGEConv
@@ -294,8 +294,8 @@ SGI-FNTN-BISAGE-SHORT-DGI-X-GB-PGA:
   lambda_l2: 0.00038154
   lambda_aux_isi: 4.02
 
-SGI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
+  <<: *PSI-FNTN-BASE
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
   gnn_name: SAGEConv
@@ -315,8 +315,8 @@ SGI-FNTN-BISAGE-SHORT-MVGRL-X-GB-PGA:
   lambda_l2: 0.00083774
   lambda_aux_isi: 4.46
 
-SGI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
-  <<: *SGI-FNTN-BASE
+PSI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
+  <<: *PSI-FNTN-BASE
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
   gnn_name: SAGEConv
@@ -345,7 +345,7 @@ SGI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
   lambda_l2: 0.00044087
   lambda_aux_isi: 0.14
 
-SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
+PSI-FNTN-BIE2D2F64: &PSI-FNTN-BIE2D2F64
   <<: *FNTN
   dataset_slice_range_1: 5
   dataset_slice_range_2: 10
@@ -359,8 +359,8 @@ SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
   num_encoder_layers: 2
   num_decoder_body_layers: 2
 
-SGI-FNTN-BIE2D2F64-X: &SGI-FNTN-BIE2D2F64-X  # not-used
-  <<: *SGI-FNTN-BIE2D2F64
+PSI-FNTN-BIE2D2F64-X: &PSI-FNTN-BIE2D2F64-X  # not-used
+  <<: *PSI-FNTN-BIE2D2F64
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
@@ -368,8 +368,8 @@ SGI-FNTN-BIE2D2F64-X: &SGI-FNTN-BIE2D2F64-X  # not-used
   lambda_aux_x: 0.1
   pool_ratio: 0.1
 
-SGI-FNTN-BIE2D2F64-X-PGA:
-  <<: *SGI-FNTN-BIE2D2F64-X
+PSI-FNTN-BIE2D2F64-X-PGA:
+  <<: *PSI-FNTN-BIE2D2F64-X
   use_pergraph_attr: True
   use_transformer: False
   use_soft_attention_pooling: False
@@ -379,27 +379,27 @@ SGI-FNTN-BIE2D2F64-X-PGA:
   data_sampler_dropout_edges: 0.55
   pool_ratio: 0.0016009
 
-SGI-FNTN-BIE2D2F64-ISI: &SGI-FNTN-BIE2D2F64-ISI
-  <<: *SGI-FNTN-BIE2D2F64
+PSI-FNTN-BIE2D2F64-ISI: &PSI-FNTN-BIE2D2F64-ISI
+  <<: *PSI-FNTN-BIE2D2F64
   subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.3
 
-SGI-FNTN-BIE2D2F64-ISI-X: &SGI-FNTN-BIE2D2F64-ISI-X
-  <<: *SGI-FNTN-BIE2D2F64-ISI
+PSI-FNTN-BIE2D2F64-ISI-X: &PSI-FNTN-BIE2D2F64-ISI-X
+  <<: *PSI-FNTN-BIE2D2F64-ISI
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB:  # not-used
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-ISI-X-GB:  # not-used
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 1e-3
   lambda_aux_x: 0.1
   lambda_aux_isi: 0.1
   pool_ratio: 0.1
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 0.0018817
@@ -408,8 +408,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
-SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &PSI-FNTN-BIE2D2F64-DGI-X-GB-PGA
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
@@ -419,8 +419,8 @@ SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA
   data_sampler_dropout_edges: 0.50
   pool_ratio: 0.0102758
 
-SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &PSI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
   # -- important
@@ -436,8 +436,8 @@ SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
-SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA: &SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA: &PSI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
   # -- important
@@ -462,16 +462,16 @@ SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA: &SGI-FNTN-BIE2D2F64-GRAPHCL3-X-GB-PGA
   data_sampler_dropout_edges: 0.60
   pool_ratio: 0.010994
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NTF:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NTF:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   use_transformer: False
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NSAP:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-NSAP:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   use_soft_attention_pooling: False
 
-SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X
+PSI-FNTN-BIE2D2F64-ISI-X-SG-PGA: &PSI-FNTN-BIE2D2F64-ISI-X-SG-PGA
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: subgraph
   lambda_l2: 0.0010923
@@ -480,16 +480,16 @@ SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA: &SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
   data_sampler_dropout_edges: 0.50
   pool_ratio: 0.037004
 
-SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA-08:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-SG-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-SG-PGA-08:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-SG-PGA
   data_sampler_dropout_edges: 0.50
   lambda_l2: 0.001
   lambda_aux_x: 2.0
   lambda_aux_isi: 3.0
   pool_ratio: 0.001
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_grid_report/
   data_sampler_dropout_edges: 0.50
   lambda_l2: 0.001
@@ -498,8 +498,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-08:
   pool_ratio: 0.01
   m: fntn-08-v1
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-16:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-16:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 13
   dataset_slice_range_2: 18
@@ -511,8 +511,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-16:
   pool_ratio: 0.01
   m: fntn-16-v2
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-32:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-32:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 29
   dataset_slice_range_2: 34
@@ -524,8 +524,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-32:
   pool_ratio: 0.01
   m: fntn-32-v2
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_grid_report/
   dataset_slice_range_1: 61
   dataset_slice_range_2: 66
@@ -537,8 +537,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-64:
   pool_ratio: 0.001
   m: fntn-real-64-v2
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-04:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-04:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_diff_train_eval/
   m: fntn-TRAIN-08-EVAL-04
   train_dataset_slice_range_1: 5
@@ -552,8 +552,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-04:
   lambda_aux_isi: 3.0
   pool_ratio: 0.01
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-08:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-08:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_diff_train_eval/
   m: fntn-TRAIN-08-EVAL-08
   train_dataset_slice_range_1: 5
@@ -567,8 +567,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-08:
   lambda_aux_isi: 3.0
   pool_ratio: 0.01
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-16:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-16:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_diff_train_eval/
   m: fntn-TRAIN-08-EVAL-16
   train_dataset_slice_range_1: 5
@@ -582,8 +582,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-16:
   lambda_aux_isi: 3.0
   pool_ratio: 0.01
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-32:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-32:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_diff_train_eval/
   m: fntn-TRAIN-08-EVAL-32
   train_dataset_slice_range_1: 5
@@ -597,8 +597,8 @@ SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-32:
   lambda_aux_isi: 3.0
   pool_ratio: 0.01
 
-SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-64:
-  <<: *SGI-FNTN-BIE2D2F64-ISI-X-GB-PGA
+PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA-TRAIN-08-EVAL-64:
+  <<: *PSI-FNTN-BIE2D2F64-ISI-X-GB-PGA
   log_dir: ../lightning_logs_fntn_diff_train_eval/
   m: fntn-TRAIN-08-EVAL-64
   train_dataset_slice_range_1: 5
@@ -634,7 +634,7 @@ HPOMetab: &HPOMetab
   log_dir: ../lightning_logs_metab/
 
 
-SGI-HPOMetab-BASE: &SGI-HPOMetab-BASE
+PSI-HPOMetab-BASE: &PSI-HPOMetab-BASE
   <<: *HPOMetab
   use_node_decoder: False
   use_edge_decoder: False
@@ -644,20 +644,20 @@ SGI-HPOMetab-BASE: &SGI-HPOMetab-BASE
   data_use_obs_edge_only: True
   use_decoder: False
 
-SGI-HPOMetab-Linear: &SGI-HPOMetab-Linear
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-Linear: &PSI-HPOMetab-Linear
+  <<: *PSI-HPOMetab-BASE
   gnn_name: Linear
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-HPOMetab-Linear-SHORT: &SGI-HPOMetab-Linear-SHORT
-  <<: *SGI-HPOMetab-Linear
+PSI-HPOMetab-Linear-SHORT: &PSI-HPOMetab-Linear-SHORT
+  <<: *PSI-HPOMetab-Linear
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.000055036
 
-SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-HPOMetab-Linear
+PSI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT: &PSI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-HPOMetab-Linear
   train_dataset_slice_range_1: 50
   train_dataset_slice_range_2: 51
   dataset_slice_range_1: 2
@@ -665,82 +665,82 @@ SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-HPOMetab-Linear-TRAIN-MAX-EVAL-SH
   lambda_l2: 0.0000031107
 
 
-SGI-HPOMetab-SAGE: &SGI-HPOMetab-SAGE
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-SAGE: &PSI-HPOMetab-SAGE
+  <<: *PSI-HPOMetab-BASE
   gnn_name: SAGEConv
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-HPOMetab-GCN-SHORT:
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-GCN-SHORT:
+  <<: *PSI-HPOMetab-SAGE
   gnn_name: GCNConv
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.00077290
 
-SGI-HPOMetab-GAT-SHORT:
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-GAT-SHORT:
+  <<: *PSI-HPOMetab-SAGE
   gnn_name: GATConv
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.00022036
 
-SGI-HPOMetab-SAGE-SHORT: &SGI-HPOMetab-SAGE-SHORT
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-SHORT: &PSI-HPOMetab-SAGE-SHORT
+  <<: *PSI-HPOMetab-SAGE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.000028790
 
-SGI-HPOMetab-SAGE-12P: &SGI-HPOMetab-SAGE-12P
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-12P: &PSI-HPOMetab-SAGE-12P
+  <<: *PSI-HPOMetab-SAGE
   dataset_slice_ratio: 0.125
   dataset_slice_range_2: 2
   lambda_l2: 0.00020170
 
-SGI-HPOMetab-SAGE-25P: &SGI-HPOMetab-SAGE-25P
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-25P: &PSI-HPOMetab-SAGE-25P
+  <<: *PSI-HPOMetab-SAGE
   dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
   lambda_l2: 0.00039314
 
-SGI-HPOMetab-SAGE-50P: &SGI-HPOMetab-SAGE-50P
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-50P: &PSI-HPOMetab-SAGE-50P
+  <<: *PSI-HPOMetab-SAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
   lambda_l2: 0.00048598
 
-SGI-HPOMetab-SAGE-MAX: &SGI-HPOMetab-SAGE-MAX
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-MAX: &PSI-HPOMetab-SAGE-MAX
+  <<: *PSI-HPOMetab-SAGE
   dataset_slice_range_1: 50
   dataset_slice_range_2: 51
   lambda_l2: 0.0000017804
 
-SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT: &SGI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT: &PSI-HPOMetab-SAGE-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-HPOMetab-SAGE
   train_dataset_slice_range_1: 50
   train_dataset_slice_range_2: 51
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   lambda_l2: 0.000019960
 
-SGI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX: &SGI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX: &PSI-HPOMetab-SAGE-TRAIN-25P-EVAL-MAX
+  <<: *PSI-HPOMetab-SAGE
   train_dataset_slice_range_1: 0.25
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 50
   dataset_slice_range_2: 51
   lambda_l2: 0.0000017804
 
-SGI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX: &SGI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX
-  <<: *SGI-HPOMetab-SAGE
+PSI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX: &PSI-HPOMetab-SAGE-TRAIN-50P-EVAL-MAX
+  <<: *PSI-HPOMetab-SAGE
   train_dataset_slice_range_1: 0.50
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 50
   dataset_slice_range_2: 51
   lambda_l2: 0.0000017804
 
-SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-SAGE-SHORT-ISI-X-GB: &PSI-HPOMetab-SAGE-SHORT-ISI-X-GB
+  <<: *PSI-HPOMetab-BASE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   gnn_name: SAGEConv
@@ -754,8 +754,8 @@ SGI-HPOMetab-SAGE-SHORT-ISI-X-GB: &SGI-HPOMetab-SAGE-SHORT-ISI-X-GB
   lambda_aux_isi: 2.9300
   m: metab-inter-1
 
-SGI-HPOMetab-SAGE-SHORT-DGI-X-GB: &SGI-HPOMetab-SAGE-SHORT-DGI-X-GB
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-SAGE-SHORT-DGI-X-GB: &PSI-HPOMetab-SAGE-SHORT-DGI-X-GB
+  <<: *PSI-HPOMetab-BASE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   gnn_name: SAGEConv
@@ -769,8 +769,8 @@ SGI-HPOMetab-SAGE-SHORT-DGI-X-GB: &SGI-HPOMetab-SAGE-SHORT-DGI-X-GB
   lambda_l2: 0.00053075
   lambda_aux_isi: 3.23
 
-SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &PSI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
+  <<: *PSI-HPOMetab-BASE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   gnn_name: SAGEConv
@@ -789,8 +789,8 @@ SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB: &SGI-HPOMetab-SAGE-SHORT-MVGRL-X-GB
   lambda_l2: 0.000098100
   lambda_aux_isi: 0.68
 
-SGI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
-  <<: *SGI-HPOMetab-BASE
+PSI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
+  <<: *PSI-HPOMetab-BASE
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
   gnn_name: SAGEConv
@@ -816,7 +816,7 @@ SGI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
   lambda_l2: 0.00022857
   lambda_aux_isi: 2.59
 
-SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
+PSI-HPOMetab-E2D2F64: &PSI-HPOMetab-E2D2F64
   <<: *HPOMetab
   dataset_slice_range_1: 2
   dataset_slice_range_2: 7
@@ -831,8 +831,8 @@ SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   num_decoder_body_layers: 2
   epochs: 300  # todo
 
-SGI-HPOMetab-E2D2F64-X:
-  <<: *SGI-HPOMetab-E2D2F64
+PSI-HPOMetab-E2D2F64-X:
+  <<: *PSI-HPOMetab-E2D2F64
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
@@ -843,20 +843,20 @@ SGI-HPOMetab-E2D2F64-X:
   data_sampler_dropout_edges: 0.50
   pool_ratio: 0.00014429312990061905
 
-SGI-HPOMetab-E2D2F64-ISI: &SGI-HPOMetab-E2D2F64-ISI
-  <<: *SGI-HPOMetab-E2D2F64
+PSI-HPOMetab-E2D2F64-ISI: &PSI-HPOMetab-E2D2F64-ISI
+  <<: *PSI-HPOMetab-E2D2F64
   subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False
 
-SGI-HPOMetab-E2D2F64-ISI-X: &SGI-HPOMetab-E2D2F64-ISI-X
-  <<: *SGI-HPOMetab-E2D2F64-ISI
+PSI-HPOMetab-E2D2F64-ISI-X: &PSI-HPOMetab-E2D2F64-ISI-X
+  <<: *PSI-HPOMetab-E2D2F64-ISI
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
 
-SGI-HPOMetab-E2D2F64-ISI-X-GB: &SGI-HPOMetab-E2D2F64-ISI-X-GB
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+PSI-HPOMetab-E2D2F64-ISI-X-GB: &PSI-HPOMetab-E2D2F64-ISI-X-GB
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 4.57171498822754E-06
@@ -864,8 +864,8 @@ SGI-HPOMetab-E2D2F64-ISI-X-GB: &SGI-HPOMetab-E2D2F64-ISI-X-GB
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
 
-SGI-HPOMetab-E2D2F64-DGI-X-GB: &SGI-HPOMetab-E2D2F64-DGI-X-GB
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+PSI-HPOMetab-E2D2F64-DGI-X-GB: &PSI-HPOMetab-E2D2F64-DGI-X-GB
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
@@ -875,8 +875,8 @@ SGI-HPOMetab-E2D2F64-DGI-X-GB: &SGI-HPOMetab-E2D2F64-DGI-X-GB
   pool_ratio: 0.00033915
   data_sampler_dropout_edges: 0.55
 
-SGI-HPOMetab-E2D2F64-MVGRL-X-GB: &SGI-HPOMetab-E2D2F64-MVGRL-X-GB
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+PSI-HPOMetab-E2D2F64-MVGRL-X-GB: &PSI-HPOMetab-E2D2F64-MVGRL-X-GB
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
   # -- important
@@ -891,8 +891,8 @@ SGI-HPOMetab-E2D2F64-MVGRL-X-GB: &SGI-HPOMetab-E2D2F64-MVGRL-X-GB
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
 
-SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB: &SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X
+PSI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB: &PSI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X
   epochs: 350
   inter_subgraph_infomax_edge_type: global
   # -- important
@@ -914,12 +914,12 @@ SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB: &SGI-HPOMetab-E2D2F64-GRAPHCL3FB-X-GB
   lambda_aux_isi: 2.07
   pool_ratio: 8.51626658225878E-05
 
-SGI-HPOMetab-E2D2F64-ISI-X-GB-NTF:
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X-GB
+PSI-HPOMetab-E2D2F64-ISI-X-GB-NTF:
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X-GB
   use_transformer: False
 
-SGI-HPOMetab-E2D2F64-ISI-X-GB-NSAP:
-  <<: *SGI-HPOMetab-E2D2F64-ISI-X-GB
+PSI-HPOMetab-E2D2F64-ISI-X-GB-NSAP:
+  <<: *PSI-HPOMetab-E2D2F64-ISI-X-GB
   use_soft_attention_pooling: False
 
 EMUser: &EMUser
@@ -942,7 +942,7 @@ EMUser: &EMUser
   log_dir: ../lightning_logs_emuser/
 
 
-SGI-EMUser-BASE: &SGI-EMUser-BASE
+PSI-EMUser-BASE: &PSI-EMUser-BASE
   <<: *EMUser
   use_node_decoder: False
   use_edge_decoder: False
@@ -952,20 +952,20 @@ SGI-EMUser-BASE: &SGI-EMUser-BASE
   data_use_obs_edge_only: True
   use_decoder: False
 
-SGI-EMUser-Linear: &SGI-EMUser-Linear
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-Linear: &PSI-EMUser-Linear
+  <<: *PSI-EMUser-BASE
   gnn_name: Linear
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-EMUser-Linear-SHORT: &SGI-EMUser-Linear-SHORT
-  <<: *SGI-EMUser-Linear
+PSI-EMUser-Linear-SHORT: &PSI-EMUser-Linear-SHORT
+  <<: *PSI-EMUser-Linear
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   lambda_l2: 0.0000014086
 
-SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-EMUser-Linear
+PSI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT: &PSI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-EMUser-Linear
   train_dataset_slice_range_1: 499
   train_dataset_slice_range_2: 500
   dataset_slice_range_1: 6
@@ -973,82 +973,82 @@ SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT: &SGI-EMUser-Linear-TRAIN-MAX-EVAL-SHORT
   lambda_l2: 0.00010494
 
 
-SGI-EMUser-SAGE: &SGI-EMUser-SAGE
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-SAGE: &PSI-EMUser-SAGE
+  <<: *PSI-EMUser-BASE
   gnn_name: SAGEConv
   readout_name: mean
   lambda_l2: 1e-3
 
-SGI-EMUser-GCN-SHORT:
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-GCN-SHORT:
+  <<: *PSI-EMUser-SAGE
   gnn_name: GCNConv
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   lambda_l2: 0.0000033999
 
-SGI-EMUser-GAT-SHORT:
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-GAT-SHORT:
+  <<: *PSI-EMUser-SAGE
   gnn_name: GATConv
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   lambda_l2: 0.0000023733
 
-SGI-EMUser-SAGE-SHORT: &SGI-EMUser-SAGE-SHORT
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-SHORT: &PSI-EMUser-SAGE-SHORT
+  <<: *PSI-EMUser-SAGE
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   lambda_l2: 0.00019239
 
-SGI-EMUser-SAGE-12P: &SGI-EMUser-SAGE-12P
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-12P: &PSI-EMUser-SAGE-12P
+  <<: *PSI-EMUser-SAGE
   dataset_slice_ratio: 0.125
   dataset_slice_range_2: 2
   lambda_l2: 0.00052453
 
-SGI-EMUser-SAGE-25P: &SGI-EMUser-SAGE-25P
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-25P: &PSI-EMUser-SAGE-25P
+  <<: *PSI-EMUser-SAGE
   dataset_slice_ratio: 0.25
   dataset_slice_range_2: 2
   lambda_l2: 0.00023945
 
-SGI-EMUser-SAGE-50P: &SGI-EMUser-SAGE-50P
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-50P: &PSI-EMUser-SAGE-50P
+  <<: *PSI-EMUser-SAGE
   dataset_slice_ratio: 0.5
   dataset_slice_range_2: 2
   lambda_l2: 0.00016281
 
-SGI-EMUser-SAGE-MAX: &SGI-EMUser-SAGE-MAX
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-MAX: &PSI-EMUser-SAGE-MAX
+  <<: *PSI-EMUser-SAGE
   dataset_slice_range_1: 499
   dataset_slice_range_2: 500
   lambda_l2: 0.000039415
 
-SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT: &SGI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT: &PSI-EMUser-SAGE-TRAIN-MAX-EVAL-SHORT
+  <<: *PSI-EMUser-SAGE
   train_dataset_slice_range_1: 499
   train_dataset_slice_range_2: 500
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   lambda_l2: 0.00024352
 
-SGI-EMUser-SAGE-TRAIN-25P-EVAL-MAX: &SGI-EMUser-SAGE-TRAIN-25P-EVAL-MAX
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-TRAIN-25P-EVAL-MAX: &PSI-EMUser-SAGE-TRAIN-25P-EVAL-MAX
+  <<: *PSI-EMUser-SAGE
   train_dataset_slice_range_1: 0.25
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 499
   dataset_slice_range_2: 500
   lambda_l2: 0.000039415
 
-SGI-EMUser-SAGE-TRAIN-50P-EVAL-MAX: &SGI-EMUser-SAGE-TRAIN-50P-EVAL-MAX
-  <<: *SGI-EMUser-SAGE
+PSI-EMUser-SAGE-TRAIN-50P-EVAL-MAX: &PSI-EMUser-SAGE-TRAIN-50P-EVAL-MAX
+  <<: *PSI-EMUser-SAGE
   train_dataset_slice_range_1: 0.50
   train_dataset_slice_range_2: 2
   dataset_slice_range_1: 499
   dataset_slice_range_2: 500
   lambda_l2: 0.000039415
 
-SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-SAGE-SHORT-ISI-X-GB: &PSI-EMUser-SAGE-SHORT-ISI-X-GB
+  <<: *PSI-EMUser-BASE
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   gnn_name: SAGEConv
@@ -1062,8 +1062,8 @@ SGI-EMUser-SAGE-SHORT-ISI-X-GB: &SGI-EMUser-SAGE-SHORT-ISI-X-GB
   lambda_aux_isi: 1.3400
   m: emuser-inter-2
 
-SGI-EMUser-SAGE-SHORT-DGI-X-GB: &SGI-EMUser-SAGE-SHORT-DGI-X-GB
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-SAGE-SHORT-DGI-X-GB: &PSI-EMUser-SAGE-SHORT-DGI-X-GB
+  <<: *PSI-EMUser-BASE
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   gnn_name: SAGEConv
@@ -1077,8 +1077,8 @@ SGI-EMUser-SAGE-SHORT-DGI-X-GB: &SGI-EMUser-SAGE-SHORT-DGI-X-GB
   lambda_l2: 0.00022771
   lambda_aux_isi: 2.12
 
-SGI-EMUser-SAGE-SHORT-MVGRL-X-GB: &SGI-EMUser-SAGE-SHORT-MVGRL-X-GB
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-SAGE-SHORT-MVGRL-X-GB: &PSI-EMUser-SAGE-SHORT-MVGRL-X-GB
+  <<: *PSI-EMUser-BASE
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   gnn_name: SAGEConv
@@ -1097,8 +1097,8 @@ SGI-EMUser-SAGE-SHORT-MVGRL-X-GB: &SGI-EMUser-SAGE-SHORT-MVGRL-X-GB
   lambda_l2: 0.00022771
   lambda_aux_isi: 2.12
 
-SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB
-  <<: *SGI-EMUser-BASE
+PSI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB: &PSI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB
+  <<: *PSI-EMUser-BASE
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
   gnn_name: SAGEConv
@@ -1124,7 +1124,7 @@ SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB
   lambda_l2: 0.000014039
   lambda_aux_isi: 0.31
 
-SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
+PSI-EMUser-E2D2F64: &PSI-EMUser-E2D2F64
   <<: *EMUser
   dataset_slice_range_1: 6
   dataset_slice_range_2: 11
@@ -1139,8 +1139,8 @@ SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   num_decoder_body_layers: 2
   epochs: 400
 
-SGI-EMUser-E2D2F64-X:
-  <<: *SGI-EMUser-E2D2F64
+PSI-EMUser-E2D2F64-X:
+  <<: *PSI-EMUser-E2D2F64
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
@@ -1152,21 +1152,21 @@ SGI-EMUser-E2D2F64-X:
   pool_ratio: 0.0016169
   lambda_l2: 0.00022086
 
-SGI-EMUser-E2D2F64-ISI: &SGI-EMUser-E2D2F64-ISI
-  <<: *SGI-EMUser-E2D2F64
+PSI-EMUser-E2D2F64-ISI: &PSI-EMUser-E2D2F64-ISI
+  <<: *PSI-EMUser-E2D2F64
   subgraph_infomax_type: "single_g2l"
   data_sampler_dropout_edges: 0.5
   data_sampler_no_drop_pos_edges: False  # todo
 
-SGI-EMUser-E2D2F64-ISI-X: &SGI-EMUser-E2D2F64-ISI-X
-  <<: *SGI-EMUser-E2D2F64-ISI
+PSI-EMUser-E2D2F64-ISI-X: &PSI-EMUser-E2D2F64-ISI-X
+  <<: *PSI-EMUser-E2D2F64-ISI
   main_decoder_type: node
   use_node_decoder: True
   use_edge_decoder: False
   epochs: 600
 
-SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
-  <<: *SGI-EMUser-E2D2F64-ISI-X
+PSI-EMUser-E2D2F64-ISI-X-GB: &PSI-EMUser-E2D2F64-ISI-X-GB
+  <<: *PSI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   lambda_l2: 0.00019286991968807735
   lambda_aux_x: 0.43
@@ -1174,8 +1174,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB: &SGI-EMUser-E2D2F64-ISI-X-GB
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0174784981734352
 
-SGI-EMUser-E2D2F64-DGI-X-GB: &SGI-EMUser-E2D2F64-DGI-X-GB
-  <<: *SGI-EMUser-E2D2F64-ISI-X
+PSI-EMUser-E2D2F64-DGI-X-GB: &PSI-EMUser-E2D2F64-DGI-X-GB
+  <<: *PSI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
   lambda_l2: 0.0000104926
@@ -1184,8 +1184,8 @@ SGI-EMUser-E2D2F64-DGI-X-GB: &SGI-EMUser-E2D2F64-DGI-X-GB
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0083319
 
-SGI-EMUser-E2D2F64-MVGRL-X-GB: &SGI-EMUser-E2D2F64-MVGRL-X-GB
-  <<: *SGI-EMUser-E2D2F64-ISI-X
+PSI-EMUser-E2D2F64-MVGRL-X-GB: &PSI-EMUser-E2D2F64-MVGRL-X-GB
+  <<: *PSI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   # -- important
   use_dual_encoder: True
@@ -1200,8 +1200,8 @@ SGI-EMUser-E2D2F64-MVGRL-X-GB: &SGI-EMUser-E2D2F64-MVGRL-X-GB
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0174784981734352
 
-SGI-EMUser-E2D2F64-GRAPHCL3-X-GB: &SGI-EMUser-E2D2F64-GRAPHCL3-X-GB
-  <<: *SGI-EMUser-E2D2F64-ISI-X
+PSI-EMUser-E2D2F64-GRAPHCL3-X-GB: &PSI-EMUser-E2D2F64-GRAPHCL3-X-GB
+  <<: *PSI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   # -- important
   batch_size: 64
@@ -1223,17 +1223,17 @@ SGI-EMUser-E2D2F64-GRAPHCL3-X-GB: &SGI-EMUser-E2D2F64-GRAPHCL3-X-GB
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0174784981734352
 
-SGI-EMUser-E2D2F64-ISI-X-GB-NTF:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-NTF:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   use_transformer: False
   lambda_l2: 0.000030807
 
-SGI-EMUser-E2D2F64-ISI-X-GB-NSAP:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-NSAP:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   use_soft_attention_pooling: False
 
-SGI-EMUser-E2D2F64-ISI-X-GB-08:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-08:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_grid_report/
   data_sampler_dropout_edges: 0.50
   lambda_l2: 0.00001
@@ -1242,8 +1242,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-08:
   pool_ratio: 0.01
   m: emuser-08-v2
 
-SGI-EMUser-E2D2F64-ISI-X-GB-16:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-16:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_grid_report/
   dataset_slice_range_1: 14
   dataset_slice_range_2: 19
@@ -1254,8 +1254,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-16:
   pool_ratio: 0.001
   m: emuser-16-v1
 
-SGI-EMUser-E2D2F64-ISI-X-GB-32:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-32:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_grid_report/
   batch_size: 16
   eval_batch_size: 2
@@ -1269,8 +1269,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-32:
   pool_ratio: 0.001
   m: emuser-32-v1
 
-SGI-EMUser-E2D2F64-ISI-X-GB-64:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-64:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_grid_report/
   data_sampler_num_workers: 40
   batch_size: 8
@@ -1285,8 +1285,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-64:
   pool_ratio: 0.001
   m: emuser-64-v1
 
-SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-04:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-04:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_diff_train_eval/
   m: emuser-TRAIN-08-EVAL-04
   train_dataset_slice_range_1: 6
@@ -1299,8 +1299,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-04:
   lambda_aux_isi: 1.0
   pool_ratio: 0.01
 
-SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-08:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-08:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_diff_train_eval/
   m: emuser-TRAIN-08-EVAL-08
   train_dataset_slice_range_1: 6
@@ -1313,8 +1313,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-08:
   lambda_aux_isi: 1.0
   pool_ratio: 0.01
 
-SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-16:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-16:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_diff_train_eval/
   m: emuser-TRAIN-08-EVAL-16
   train_dataset_slice_range_1: 6
@@ -1327,8 +1327,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-16:
   lambda_aux_isi: 1.0
   pool_ratio: 0.01
 
-SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-32:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-32:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_diff_train_eval/
   m: emuser-TRAIN-08-EVAL-32
   train_dataset_slice_range_1: 6
@@ -1341,8 +1341,8 @@ SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-32:
   lambda_aux_isi: 1.0
   pool_ratio: 0.01
 
-SGI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-64:
-  <<: *SGI-EMUser-E2D2F64-ISI-X-GB
+PSI-EMUser-E2D2F64-ISI-X-GB-TRAIN-08-EVAL-64:
+  <<: *PSI-EMUser-E2D2F64-ISI-X-GB
   log_dir: ../lightning_logs_emuser_diff_train_eval/
   m: emuser-TRAIN-08-EVAL-64
   train_dataset_slice_range_1: 6

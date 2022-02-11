@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     if MODE == "G2LContrastiveLoss":
 
-        _args = get_args("SGI", "FNTN", "TEST+MEMO")
+        _args = get_args("PSI", "FNTN", "TEST+MEMO")
         _isi = G2LContrastiveLoss(_args)
         print(_isi)
         print("----")
@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
     elif MODE == "G2GContrastiveLoss":
 
-        _args = get_args("SGI", "FNTN", "TEST+MEMO")
+        _args = get_args("PSI", "FNTN", "TEST+MEMO")
         _isi = G2GContrastiveLoss(_args)
         print(_isi)
 

@@ -85,12 +85,12 @@ if __name__ == '__main__':
         sns.set_context("poster")
 
         TUPLE_TO_MEAN_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.883, 0.867, 0.858, 0.858],
-            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.732, 0.745, 0.757, 0.783],
+            ("FNTN", "Intra/Inter-PSI", "# of observed nodes"): [0.883, 0.867, 0.858, 0.858],
+            ("EM-User", "Intra/Inter-PSI", "# of observed nodes"): [0.732, 0.745, 0.757, 0.783],
         }
         TUPLE_TO_STD_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.003, 0.009, 0.036, 0.024],
-            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.040, 0.032, 0.055],
+            ("FNTN", "Intra/Inter-PSI", "# of observed nodes"): [0.003, 0.009, 0.036, 0.024],
+            ("EM-User", "Intra/Inter-PSI", "# of observed nodes"): [0.024, 0.040, 0.032, 0.055],
         }
         NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
         X_LIST = [8, 16, 32, 64]
@@ -123,12 +123,12 @@ if __name__ == '__main__':
             extension=EXTENSION)
 
         TUPLE_TO_MEAN_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.866, 0.883, 0.876, 0.878, 0.875],
-            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.621, 0.732, 0.740, 0.728, 0.740],
+            ("FNTN", "Intra/Inter-PSI", "# of observed nodes"): [0.866, 0.883, 0.876, 0.878, 0.875],
+            ("EM-User", "Intra/Inter-PSI", "# of observed nodes"): [0.621, 0.732, 0.740, 0.728, 0.740],
         }
         TUPLE_TO_STD_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of observed nodes"): [0.024, 0.003, 0.026, 0.021, 0.015],
-            ("EM-User", "Intra/Inter-SGI", "# of observed nodes"): [0.090, 0.024, 0.041, 0.065, 0.035],
+            ("FNTN", "Intra/Inter-PSI", "# of observed nodes"): [0.024, 0.003, 0.026, 0.021, 0.015],
+            ("EM-User", "Intra/Inter-PSI", "# of observed nodes"): [0.090, 0.024, 0.041, 0.065, 0.035],
         }
         NAME_LABEL_LIST = ["Dataset", "Model", "Variable"]
         X_LIST = [4, 8, 16, 32, 64]
@@ -163,10 +163,10 @@ if __name__ == '__main__':
     elif HPARAM == "NUM_NEGATIVES":
 
         TUPLE_TO_MEAN_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of negatives"): [0.896, 0.873, 0.872, 0.863],
+            ("FNTN", "Intra/Inter-PSI", "# of negatives"): [0.896, 0.873, 0.872, 0.863],
         }
         TUPLE_TO_STD_LIST = {
-            ("FNTN", "Intra/Inter-SGI", "# of negatives"): [0.018, 0.010, 0.020, 0.012],
+            ("FNTN", "Intra/Inter-PSI", "# of negatives"): [0.018, 0.010, 0.020, 0.012],
         }
         NAME_LABEL_LIST = ["Dataset", "Model", "Hyperparameter"]
         X_LIST = [1, 2, 4, 8]
@@ -195,10 +195,10 @@ if __name__ == '__main__':
             extension=EXTENSION)
 
         TUPLE_TO_MEAN_LIST = {
-            ("EM-User", "Intra/Inter-SGI", "# of negatives"): [0.770, 0.685, 0.719, 0.685],
+            ("EM-User", "Intra/Inter-PSI", "# of negatives"): [0.770, 0.685, 0.719, 0.685],
         }
         TUPLE_TO_STD_LIST = {
-            ("EM-User", "Intra/Inter-SGI", "# of negatives"): [0.052, 0.041, 0.057, 0.035],
+            ("EM-User", "Intra/Inter-PSI", "# of negatives"): [0.052, 0.041, 0.057, 0.035],
         }
 
         plot_line_with_std(

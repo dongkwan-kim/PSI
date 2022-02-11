@@ -93,7 +93,7 @@ if __name__ == '__main__':
     N_TRIALS = 50
 
     tune_args = get_args(
-        model_name="SGI",
+        model_name="PSI",
         dataset_name="FNTN",
         custom_key="BIE2D2F64-ISI-X-GB-PGA",  # BISAGE, SMALL-E
     )

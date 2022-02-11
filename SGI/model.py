@@ -12,12 +12,12 @@ from augmentor import PyGAugmentor
 from model_bidirectional import BiConv
 from model_embedding import VersatileEmbedding
 from model_encoder import GraphEncoder
-from model_decoder import SGIDecoder
+from model_decoder import PSIDecoder
 from model_readout import Readout
 from model_contra import G2LContrastiveLoss, G2GContrastiveLoss
 
 
-class SGINet(nn.Module):
+class PSINet(nn.Module):
 
     def __init__(self, args, embedding=None):
         super().__init__()
@@ -46,7 +46,7 @@ class SGINet(nn.Module):
             self.enc_2 = None
 
         if self.args.use_decoder:
-            self.dec_or_readout = SGIDecoder(args)
+            self.dec_or_readout = PSIDecoder(args)
         else:
             self.dec_or_readout = Readout(args)
 
@@ -74,7 +74,7 @@ class SGINet(nn.Module):
 
         dec_x, dec_e, loss_isi, x_isi = None, None, None, None
 
-        if self.args.use_decoder:  # SGIDecoder
+        if self.args.use_decoder:  # PSIDecoder
             z_g, logits_g, dec_x, dec_e = self.dec_or_readout(
                 x, obs_x_index, edge_index_01, edge_index_2,
                 pergraph_attr, batch,
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     from arguments import get_args
     from utils import count_parameters
 
-    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _args = get_args("PSI", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 19
     _args.main_decoder_type = "node"
     _args.is_bidirectional = True
@@ -134,8 +134,8 @@ if __name__ == '__main__':
     _args.augmentor_2 = ["PPRDiffusion(alpha=0.2)"]
     # --
     _args.use_pergraph_attr = True
-    _args.readout_name = "att"
-    net = SGINet(_args)
+    _args.readout_name = "mean"
+    net = PSINet(_args)
     print(net)
     print(f"#: {count_parameters(net)}")
 

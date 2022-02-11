@@ -65,7 +65,7 @@ class TimerCallback(Callback):
 
 if __name__ == '__main__':
     main_args = get_args(
-        model_name="SGI",
+        model_name="PSI",
         dataset_name="FNTN",  # FNTN, EMUser, HPOMetab
         custom_key="BIE2D2F64-ISI-X-GB-PGA",
         # E2D2F64-X, BIE2D2F64-X-PGA,

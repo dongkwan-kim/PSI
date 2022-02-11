@@ -32,7 +32,7 @@ class BiConv(nn.Module):
 if __name__ == '__main__':
     from model_encoder import GraphEncoder
     from arguments import get_args
-    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _args = get_args("PSI", "FNTN", "TEST+MEMO")
     enc = BiConv(GraphEncoder(_args))
     print(enc)
 

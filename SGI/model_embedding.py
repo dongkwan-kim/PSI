@@ -46,7 +46,7 @@ class VersatileEmbedding(nn.Module):
 
 if __name__ == '__main__':
     from arguments import get_args
-    _args = get_args("SGI", "FNTN", "TEST+MEMO")
+    _args = get_args("PSI", "FNTN", "TEST+MEMO")
     _args.num_nodes_global = 11
     _args.global_channels = 32
 

@@ -20,7 +20,7 @@ from sklearn.metrics import f1_score
 
 from arguments import get_args_key, get_args, pprint_args, get_args_hash
 from data import NoisySubgraphDataModule
-from model import SGINet
+from model import PSINet
 from utils import merge_or_update, cprint_arg_conditionally
 
 
@@ -49,8 +49,8 @@ class MainModel(LightningModule):
     def setup(self, stage: str = None):
         self.hparams.num_nodes_global = self.dataset.num_nodes_global
         self.hparams.num_classes = self.dataset.num_classes
-        if self.hparams.model_name == "SGI" and self.hparams.version == "1.0":
-            self.model = SGINet(self.hparams, self.dataset.embedding)
+        if self.hparams.model_name == "PSI" and self.hparams.version == "1.0":
+            self.model = PSINet(self.hparams, self.dataset.embedding)
         else:
             raise ValueError(f"Wrong model ({self.hparams.model_name}) or version ({self.hparams.version})")
         if self.hparams.debug_batch_idx is not None:
@@ -337,7 +337,7 @@ if __name__ == '__main__':
     NUM_RUNS = 5
 
     main_args = get_args(
-        model_name="SGI",
+        model_name="PSI",
         dataset_name="FNTN",  # FNTN, EMUser, HPOMetab
         custom_key="BIE2D2F64-ISI-X-GB-PGA",  # E2D2F64-X, BIE2D2F64-X-PGA, E2D2F64-ISI-X-GB, BIE2D2F64-ISI-X-GB-PGA
     )

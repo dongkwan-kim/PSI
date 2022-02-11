@@ -174,7 +174,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
                  use_pergraph_attr=False,
                  balanced_sampling=True,
                  subgraph_infomax_type=None,
-                 negative_sample_type_in_isi="SGI",
+                 negative_sample_type_in_isi="PSI",
                  neg_sample_ratio_in_isi=1.0,
                  no_drop_pos_edges=False,
                  batch_size=1,
@@ -408,7 +408,7 @@ class KHopWithLabelsXESampler(torch.utils.data.DataLoader):
         def corruption(_x):
             return _x[torch.randperm(_x.size(0))]
 
-        if self.negative_sample_type_in_isi == "SGI":
+        if self.negative_sample_type_in_isi == "PSI":
             neg_data_idx_list = sample_index_with_replacement_and_exclusion(
                 num_subdata, num_to_sample=num_samples, set_to_exclude=set(pos_idx_list))
             neg_data_list = []
