@@ -63,7 +63,7 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
 
 if __name__ == '__main__':
 
-    HPARAM = "NUM_OBS"  # NUM_OBS, NUM_NEGATIVES, LAMBDA
+    HPARAM = "LAMBDA"  # NUM_OBS, NUM_NEGATIVES, LAMBDA
     MODE = "ALL"  # FNTN, EMUser, ALL
     EXTENSION = "pdf"
 
@@ -225,20 +225,23 @@ if __name__ == '__main__':
             extension=EXTENSION)
 
     elif HPARAM == "LAMBDA":
+
+        sns.set_context("poster")
+
         if MODE == "FNTN" or MODE == "ALL":
             TUPLE_TO_MEAN_LIST = {
-                ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
+                ("FNTN", "$k$-hop PSI", "$\lambda^{khop}$"): [
                     0.851807189, 0.8554216385, 0.8783132315, 0.874698782, 0.8771084189,
                     0.8807228565, 0.8746987581, 0.879518044, 0.8662650347, 0.87469877],
-                ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                ("FNTN", "$k$-hop PSI + PS-InfoGraph", "$\lambda^{2nd}$"): [
                     0.8578312872, 0.8855421422, 0.8975903272, 0.8903614162, 0.8891565918,
                     0.8843373178, 0.8590361118, 0.8674698352, 0.8626505732, 0.8602409242],
             }
             TUPLE_TO_STD_LIST = {
-                ("FNTN", "Intra-SGI", "$\lambda$-Intra"): [
+                ("FNTN", "$k$-hop PSI", "$\lambda^{khop}$"): [
                     0.02196937685, 0.0321598755, 0.01776852901, 0.006599070793, 0.0131981375,
                     0.00893517706, 0.0123457448, 0.004259676612, 0.007854473865, 0.01077624748],
-                ("FNTN", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                ("FNTN", "$k$-hop PSI + PS-InfoGraph", "$\lambda^{2nd}$"): [
                     0.01979720785, 0.01127005298, 0.009524926568, 0.007854442088, 0.003299515193,
                     0.005040120917, 0.02278032561, 0.02293907632, 0.02498364785, 0.02104126657],
             }
@@ -249,7 +252,7 @@ if __name__ == '__main__':
                 tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
                 tuple_to_std_list=TUPLE_TO_STD_LIST,
                 x_label="Value of $\lambda$",
-                y_label="Test Acc.",
+                y_label="Test Accuracy",
                 name_label_list=NAME_LABEL_LIST,
                 x_list=X_LIST,
                 # hue="Dataset",
@@ -270,16 +273,16 @@ if __name__ == '__main__':
 
         if MODE == "EMUser" or MODE == "ALL":
             TUPLE_TO_MEAN_LIST = {
-                ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
+                ("EM-User", "$k$-hop PSI", "$\lambda^{khop}$"): [
                     0.6382978499, 0.7489361405, 0.7744680524, 0.6978723168, 0.71914891, 0.7021276355, 0.6936169982],
-                ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                ("EM-User", "$k$-hop PSI + PS-InfoGraph", "$\lambda^{2nd}$"): [
                     0.7234042287, 0.7574467778, 0.7234042287, 0.7276595473, 0.6893616736, 0.4893616915, 0.5276595652],
             }
             TUPLE_TO_STD_LIST = {
-                ("EM-User", "Intra-SGI", "$\lambda$-Intra"): [
+                ("EM-User", "$k$-hop PSI", "$\lambda^{khop}$"): [
                     0.1370648765, 0.05297828985, 0.03226755123, 0.03496101014, 0.02774128352, 0.05424488198,
                     0.02425904871],
-                ("EM-User", "Intra/Inter-SGI", "$\lambda$-Inter"): [
+                ("EM-User", "$k$-hop PSI + PS-InfoGraph", "$\lambda^{2nd}$"): [
                     0.05211679683, 0.03226755123, 0.01504482334, 0.06626557296, 0.1255138808, 0.07056649221,
                     0.04092635503],
             }
@@ -290,7 +293,7 @@ if __name__ == '__main__':
                 tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
                 tuple_to_std_list=TUPLE_TO_STD_LIST,
                 x_label="Value of $\lambda$",
-                y_label="Test Acc.",
+                y_label="Test Accuracy",
                 name_label_list=NAME_LABEL_LIST,
                 x_list=X_LIST,
                 # hue="Dataset",
