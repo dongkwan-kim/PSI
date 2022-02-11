@@ -343,7 +343,7 @@ SGI-FNTN-BISAGE-SHORT-GRAPHCL3-X-GB-PGA:
   lambda_aux_x: 0.0
   readout_name: mean
   lambda_l2: 0.00044087
-  lambda_aux_isi: 0.14 # 1.4400
+  lambda_aux_isi: 0.14
 
 SGI-FNTN-BIE2D2F64: &SGI-FNTN-BIE2D2F64
   <<: *FNTN
@@ -411,11 +411,11 @@ SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA: &SGI-FNTN-BIE2D2F64-DGI-X-GB-PGA
   use_pergraph_attr: True
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
-  lambda_l2: 0.0018817
-  lambda_aux_x: 5.80
-  lambda_aux_isi: 1.85
-  data_sampler_dropout_edges: 0.60
-  pool_ratio: 0.010994
+  lambda_l2: 0.0014345
+  lambda_aux_x: 5.03
+  lambda_aux_isi: 0.29
+  data_sampler_dropout_edges: 0.50
+  pool_ratio: 0.0102758
 
 SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA: &SGI-FNTN-BIE2D2F64-MVGRL-X-GB-PGA
   <<: *SGI-FNTN-BIE2D2F64-ISI-X
@@ -812,7 +812,7 @@ SGI-HPOMetab-SAGE-SHORT-GRAPHCL3FB-X-GB:
   readout_name: mean
   epochs: 300
   lambda_l2: 0.00022857
-  lambda_aux_isi: 4.19 # 2.99
+  lambda_aux_isi: 2.59
 
 SGI-HPOMetab-E2D2F64: &SGI-HPOMetab-E2D2F64
   <<: *HPOMetab
@@ -1118,7 +1118,7 @@ SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB: &SGI-EMUser-SAGE-SHORT-GRAPHCL3-X-GB
   readout_name: mean
   epochs: 400
   lambda_l2: 0.000014039
-  lambda_aux_isi: 0.31 # 0.41
+  lambda_aux_isi: 0.31
 
 SGI-EMUser-E2D2F64: &SGI-EMUser-E2D2F64
   <<: *EMUser
@@ -1172,9 +1172,9 @@ SGI-EMUser-E2D2F64-DGI-X-GB: &SGI-EMUser-E2D2F64-DGI-X-GB
   <<: *SGI-EMUser-E2D2F64-ISI-X
   inter_subgraph_infomax_edge_type: global
   negative_sample_type_in_isi: "DGI"
-  lambda_l2: 0.00019286991968807735
-  lambda_aux_x: 0.43
-  lambda_aux_isi: 0.55
+  lambda_l2: 0.0000104926
+  lambda_aux_x: 0.40
+  lambda_aux_isi: 2.26
   data_sampler_dropout_edges: 0.45
   pool_ratio: 0.0083319
 
