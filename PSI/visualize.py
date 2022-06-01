@@ -1,4 +1,5 @@
 import os
+from typing import Union, Dict, Tuple, List
 
 import pandas as pd
 import numpy as np
@@ -10,15 +11,18 @@ except ImportError:
     pass
 
 
-def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, name_label_list, x_list,
+def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list,
+                       tuple_to_x_list_or_x_list: Union[list, Dict[Tuple, list]],
+                       x_label, y_label, name_label_list,
                        hue=None, size=None, style=None, palette=None,
                        row=None, col=None, hue_order=None,
                        markers=True, dashes=False,
                        height=5, aspect=1.0,
-                       legend="full",
+                       legend: Union[str, bool] = "full",
                        n=150, err_style="band",
                        x_lim=None, y_lim=None, use_xlabel=True, use_ylabel=True,
                        use_x_list_as_xticks=False,
+                       y_ticks: List[float] = None,
                        facet_kws=None,
                        base_path="../figs/",
                        custom_key="",
@@ -26,10 +30,17 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
                        **relplot_kwargs):
     pd_data = {x_label: [], y_label: [], **{name_label: [] for name_label in name_label_list}}
     for name_tuple, mean_list in tuple_to_mean_list.items():
+
         if tuple_to_std_list is not None:
             std_list = tuple_to_std_list[name_tuple]
         else:
             std_list = [0 for _ in range(len(mean_list))]
+
+        if isinstance(tuple_to_x_list_or_x_list, list):
+            x_list = tuple_to_x_list_or_x_list
+        else:
+            x_list = tuple_to_x_list_or_x_list[name_tuple]
+
         for x, mean, std in zip(x_list, mean_list, std_list):
             for name_label, value_of_name in zip(name_label_list, name_tuple):
                 pd_data[name_label] += [value_of_name for _ in range(n)]
@@ -51,7 +62,17 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
     plot.set(xlim=x_lim)
     plot.set(ylim=y_lim)
     if use_x_list_as_xticks:
-        plot.set(xticks=x_list)
+        if isinstance(tuple_to_x_list_or_x_list, list):
+            plot.set(xticks=tuple_to_x_list_or_x_list)
+        else:
+            assert isinstance(tuple_to_x_list_or_x_list, dict)
+            values = []
+            for v in tuple_to_x_list_or_x_list.values():
+                values += v
+            values = sorted(set(values))
+            plot.set(xticks=values)
+    if y_ticks is not None:
+        plot.set(yticks=y_ticks)
     if not use_xlabel:
         plot.set_axis_labels(x_var="")
     if not use_ylabel:
@@ -64,7 +85,7 @@ def plot_line_with_std(tuple_to_mean_list, tuple_to_std_list, x_label, y_label, 
 if __name__ == '__main__':
 
     HPARAM = "LAMBDA"  # NUM_OBS, NUM_NEGATIVES, LAMBDA
-    MODE = "ALL"  # FNTN, EMUser, ALL
+    MODE = "ALL"  # FNTN, EMUser, ALL, FNTN_EMUser
     EXTENSION = "pdf"
 
     try:
@@ -78,9 +99,9 @@ if __name__ == '__main__':
         USE_LOG2 = True
 
         if USE_LOG2:
-            x_label = "$\log_2(\#)$ of observed nodes"
+            X_LABEL = "$\log_2(\#)$ of observed nodes"
         else:
-            x_label = "# of observed nodes"
+            X_LABEL = "# of observed nodes"
 
         sns.set_context("poster")
 
@@ -100,10 +121,10 @@ if __name__ == '__main__':
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label=x_label,
+            tuple_to_x_list_or_x_list=X_LIST,
+            x_label=X_LABEL,
             y_label="Test Accuracy",
             name_label_list=NAME_LABEL_LIST,
-            x_list=X_LIST,
             hue="Dataset",
             style="Dataset",
             row=None,
@@ -138,10 +159,10 @@ if __name__ == '__main__':
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
-            x_label=x_label,
+            tuple_to_x_list_or_x_list=X_LIST,
+            x_label=X_LABEL,
             y_label="Test Accuracy",
             name_label_list=NAME_LABEL_LIST,
-            x_list=X_LIST,
             hue="Dataset",
             style="Dataset",
             row=None,
@@ -174,10 +195,10 @@ if __name__ == '__main__':
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
+            tuple_to_x_list_or_x_list=X_LIST,
             x_label="Number of negative subgraphs",
             y_label="Test Acc.",
             name_label_list=NAME_LABEL_LIST,
-            x_list=X_LIST,
             # hue="Dataset",
             style="Dataset",
             row=None,
@@ -186,7 +207,7 @@ if __name__ == '__main__':
             markers=True, dashes=False,
             height=5, aspect=1.0,
             legend=False,
-            n=150, err_style="band",
+            n=20000, err_style="band",
             x_lim=(0, None),
             y_lim=None, use_xlabel=True, use_ylabel=True,
             facet_kws=None,
@@ -204,10 +225,10 @@ if __name__ == '__main__':
         plot_line_with_std(
             tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
             tuple_to_std_list=TUPLE_TO_STD_LIST,
+            tuple_to_x_list_or_x_list=X_LIST,
             x_label="Number of negative subgraphs",
             y_label="Test Acc.",
             name_label_list=NAME_LABEL_LIST,
-            x_list=X_LIST,
             # hue="Dataset",
             style="Dataset",
             row=None,
@@ -216,7 +237,7 @@ if __name__ == '__main__':
             markers=True, dashes=False,
             height=5, aspect=1.0,
             legend=False,
-            n=150, err_style="band",
+            n=20000, err_style="band",
             x_lim=(0, 8),
             y_lim=None, use_xlabel=True, use_ylabel=True,
             facet_kws=None,
@@ -251,21 +272,22 @@ if __name__ == '__main__':
             plot_line_with_std(
                 tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
                 tuple_to_std_list=TUPLE_TO_STD_LIST,
+                tuple_to_x_list_or_x_list=X_LIST,
                 x_label="Value of $\lambda$",
                 y_label="Test Accuracy",
                 name_label_list=NAME_LABEL_LIST,
-                x_list=X_LIST,
-                # hue="Dataset",
-                style="Dataset",
+                hue="Hyperparameter",
+                style="Hyperparameter",
                 row=None,
-                col="Hyperparameter",
+                # col="Hyperparameter",
                 hue_order=None,
                 markers=True, dashes=False,
-                height=5, aspect=1.0,
+                height=5, aspect=1.2,
                 legend=False,
-                n=150, err_style="band",
+                n=20000, err_style="band",
                 x_lim=(0, None),
                 y_lim=None, use_xlabel=True, use_ylabel=True,
+                y_ticks=[0.8, 0.85, 0.9],
                 facet_kws=None,
                 base_path="../figs/",
                 custom_key="fntn",
@@ -292,19 +314,19 @@ if __name__ == '__main__':
             plot_line_with_std(
                 tuple_to_mean_list=TUPLE_TO_MEAN_LIST,
                 tuple_to_std_list=TUPLE_TO_STD_LIST,
+                tuple_to_x_list_or_x_list=X_LIST,
                 x_label="Value of $\lambda$",
                 y_label="Test Accuracy",
                 name_label_list=NAME_LABEL_LIST,
-                x_list=X_LIST,
-                # hue="Dataset",
-                style="Dataset",
+                hue="Hyperparameter",
+                style="Hyperparameter",
                 row=None,
-                col="Hyperparameter",
+                # col="Hyperparameter",
                 hue_order=None,
                 markers=True, dashes=False,
-                height=5, aspect=1.0,
-                legend=False,
-                n=150, err_style="band",
+                height=5, aspect=1.2,
+                legend=True,
+                n=20000, err_style="band",
                 x_lim=(0, None),
                 y_lim=None, use_xlabel=True, use_ylabel=True,
                 facet_kws=None,
