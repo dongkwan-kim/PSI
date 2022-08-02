@@ -1,6 +1,12 @@
 # PSI
 
-Official Implementation of 'Partial Subgraph InfoMax' from 'Learning Representations of Partially Observed Subgraphs by Mutual Information Maximization'.
+Official Implementation of 'Partial Subgraph InfoMax (PSI)' from 'Models and Benchmarks for Representation Learning of Partially Observed Subgraphs', 31st ACM International Conference on Information and Knowledge Management (CIKM 2022, Short Papers Track).
+
+## BibTeX
+
+```
+TBA
+```
 
 ## Installation
 
@@ -46,7 +52,7 @@ Default values are from the author's machine, so we recommend you modify these v
 
 #### Path (`--dataset-path`)
 
-Download datasets in the supplementary material and put them into the specific path (`--dataset-path`).
+Download [datasets](https://github.com/mims-harvard/SubGNN#prepare-data) and put them into the specific path (`--dataset-path`).
 ```bash
 root@5b592ce:~$ ls /mnt/nas2/GNN-DATA/
 EMUSER  FNTN  HPOMETAB
@@ -54,15 +60,15 @@ EMUSER  FNTN  HPOMETAB
 
 ### Models (`--custom-key`)
 
-| Type                     | FNTN                           | EMUser & HPOMetab                     |
-|--------------------------|--------------------------------|---------------------------------------|
-| PS-DGI                   | BISAGE-SHORT-DGI-X-GB-PGA      | SAGE-SHORT-DGI-X-GB                   |
-| PS-InfoGraph             | BISAGE-SHORT-ISI-X-GB-PGA      | SAGE-SHORT-ISI-X-GB                   |
-| PS-MVGRL                 | BISAGE-SHORT-MVGRL-X-GB-PGA    | SAGE-SHORT-MVGRL-X-GB                 |
-| PS-GraphCL               | BISAGE-SHORT-GRAPHCL3-X-GB-PGA | SAGE-SHORT-GRAPHCL3FB-X-GB (HPOMetab) |
-| k-hop PSI                | BIE2D2F64-X-PGA                | E2D2F64-X                             |
-| k-hop PSI + PS-DGI       | BIE2D2F64-DGI-X-GB-PGA         | E2D2F64-DGI-X-GB                      |
-| k-hop PSI + PS-InfoGraph | BIE2D2F64-ISI-X-GB-PGA         | E2D2F64-ISI-X-GB                      |
+| Type                     | FNTN                           | EMUser & HPOMetab                              |
+|--------------------------|--------------------------------|------------------------------------------------|
+| PS-DGI                   | BISAGE-SHORT-DGI-X-GB-PGA      | SAGE-SHORT-DGI-X-GB                            |
+| PS-InfoGraph             | BISAGE-SHORT-ISI-X-GB-PGA      | SAGE-SHORT-ISI-X-GB                            |
+| PS-MVGRL                 | BISAGE-SHORT-MVGRL-X-GB-PGA    | SAGE-SHORT-MVGRL-X-GB                          |
+| PS-GraphCL               | BISAGE-SHORT-GRAPHCL3-X-GB-PGA | SAGE-SHORT-GRAPHCL3FB-X-GB (only for HPOMetab) |
+| k-hop PSI                | BIE2D2F64-X-PGA                | E2D2F64-X                                      |
+| k-hop PSI + PS-DGI       | BIE2D2F64-DGI-X-GB-PGA         | E2D2F64-DGI-X-GB                               |
+| k-hop PSI + PS-InfoGraph | BIE2D2F64-ISI-X-GB-PGA         | E2D2F64-ISI-X-GB                               |
 
 
 ### Other Hyperparameters
